@@ -1,14 +1,14 @@
 import { ChoiceList, type ChoiceItem } from "./ChoiceList";
 
 export interface MemoryItem {
-  index: number;
+  id: string;
   label: string;
 }
 
 export interface PledgePickerProps {
-  /** False memories still available to pawn. */
+  /** Fake memories still available to pawn. */
   memories: MemoryItem[];
-  onPledge: (index: number) => void;
+  onPledge: (id: string) => void;
   /** Plain choices of the pledge storylet, e.g. "pledge the night". */
   choices: ChoiceItem[];
   onChoose: (index: number) => void;
@@ -19,7 +19,7 @@ export function PledgePicker({ memories, onPledge, choices, onChoose }: PledgePi
   return (
     <div class="choices">
       {memories.map((m) => (
-        <button key={m.index} class="choice choice--memory" type="button" onClick={() => onPledge(m.index)}>
+        <button key={m.id} class="choice choice--memory" type="button" onClick={() => onPledge(m.id)}>
           <span class="choice__glyph" aria-hidden="true">✉</span> {m.label}
         </button>
       ))}

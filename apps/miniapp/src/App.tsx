@@ -38,7 +38,14 @@ export function App() {
 
   if (screen.kind === "loading") return <div class="screen" />;
   if (screen.kind === "error" || !content) return <div class="screen"><p class="scene__text" style="padding:24px">Ошибка: {screen.kind === "error" ? screen.message : "нет контента"}</p></div>;
-  const { world, src } = content;
+  const { world, src, assets } = content;
+  /** Portraits are full 9:16 scenes and replace the background; a square image (evidence close-up)
+   *  stays an inset over the background instead. Decided by the asset's own proportions. */
+  const visuals = (storylet: { background: string; portrait?: string | undefined }) => {
+    const p = storylet.portrait ? assets[storylet.portrait] : undefined;
+    const isScene = p !== undefined && p.h > p.w;
+    return { src: src(isScene ? storylet.portrait : storylet.background), inset: p && !isScene ? src(storylet.portrait) : undefined };
+  };
 
   const startNight = () => {
     const s = newNight(profile, world, randomSeed());
@@ -91,12 +98,11 @@ export function App() {
     .filter((q) => q.visible)
     .map((q) => ({ label: q.label ?? q.id, value: getQuality(state, world, q.id), max: q.max }));
 
-  // Portraits are full 9:16 scenes with the character in them, so one replaces the background.
   if (state.phase === "outcome") {
     const out = currentOutcome(state, world);
     return (
       <div class="screen">
-        <Backdrop src={src(out.storylet.portrait ?? out.storylet.background)}>
+        <Backdrop {...visuals(out.storylet)}>
           <QualityBar items={hud} />
           <SceneCard title={out.storylet.title} text={out.text}>
             <ChoiceList choices={[{ index: 0, text: "Дальше", available: true }]} onChoose={() => advance(continueOutcome(state, world))} />
@@ -112,12 +118,12 @@ export function App() {
   const picker = scene.storylet.layout === "doors"
     ? <DoorPicker doors={items} onChoose={onChoose} />
     : scene.storylet.layout === "pledge"
-      ? <PledgePicker memories={scene.memories} onPledge={(i) => advance(pledge(state, world, i))} choices={items} onChoose={onChoose} />
+      ? <PledgePicker memories={scene.memories} onPledge={(id) => advance(pledge(state, world, id))} choices={items} onChoose={onChoose} />
       : <ChoiceList choices={items} onChoose={onChoose} />;
 
   return (
     <div class="screen">
-      <Backdrop src={src(scene.storylet.portrait ?? scene.storylet.background)}>
+      <Backdrop {...visuals(scene.storylet)}>
         <QualityBar items={hud} />
         <SceneCard title={scene.storylet.title} text={scene.text}>
           {picker}

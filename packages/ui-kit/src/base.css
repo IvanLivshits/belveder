@@ -40,17 +40,25 @@ button { font: inherit; }
   0%, 100% { opacity: 0.9; } 7% { opacity: 0.55; } 9% { opacity: 0.95; } 11% { opacity: 0.5; }
   13% { opacity: 0.9; } 52% { opacity: 0.85; } 54% { opacity: 0.4; } 56% { opacity: 0.9; }
 }
+.backdrop__inset {
+  position: absolute; left: 50%; top: 14%; transform: translateX(-50%) rotate(-1.5deg);
+  width: min(62%, 300px); aspect-ratio: 1; object-fit: cover;
+  border: 6px solid #e8e2d3; border-bottom-width: 22px; box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+  filter: sepia(0.25) contrast(1.05);
+}
 @media (prefers-reduced-motion: reduce) { .backdrop__rain, .backdrop__lamp { animation: none; } }
 
 /* ---- bottom third: text + choices ---- */
+/* The whole panel scrolls as one, so long choice lists (pledge screen) never push the text out. */
 .panel {
   position: absolute; left: 0; right: 0; bottom: 0;
-  min-height: 34%; max-height: 62%;
+  min-height: 34%; max-height: 66%;
   display: flex; flex-direction: column; gap: 10px;
   padding: 14px 16px calc(16px + env(safe-area-inset-bottom));
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
   background: linear-gradient(180deg, rgba(20,23,31,0) 0%, rgba(20,23,31,0.92) 18%, rgba(20,23,31,0.97) 100%);
 }
-.panel__scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; min-height: 0; }
+.panel__scroll { flex: none; }
 .scene__title { margin: 0 0 6px; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hint); }
 .scene__text { margin: 0; font-size: 17px; line-height: 1.45; white-space: pre-line; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
 
@@ -96,5 +104,5 @@ button { font: inherit; }
 .title__hint { position: relative; font-size: 12px; color: var(--hint); }
 
 /* ---- pledge ---- */
-.choice--memory { border-style: dashed; font-style: italic; }
+.choice--memory { border-style: dashed; font-style: italic; padding-top: 8px; padding-bottom: 8px; }
 .choice__glyph { opacity: 0.7; margin-right: 4px; }
