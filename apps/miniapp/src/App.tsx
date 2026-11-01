@@ -1,5 +1,5 @@
-import { choose, currentReport, currentScene, emptyProfile, getQuality, newNight, profileOf, type GameState, type Profile } from "@belvedere/engine";
-import { Backdrop, ChoiceList, DoorPicker, QualityBar, ReportPage, SceneCard, TitleScreen } from "@belvedere/ui-kit";
+import { choose, continueOutcome, currentOutcome, currentReport, currentScene, emptyProfile, getQuality, newNight, pledge, profileOf, type GameState, type Profile } from "@belvedere/engine";
+import { Backdrop, ChoiceList, DoorPicker, PledgePicker, QualityBar, ReportPage, SceneCard, TitleScreen } from "@belvedere/ui-kit";
 import { useEffect, useState } from "preact/hooks";
 import { loadContent, type Content } from "./content";
 import { saves } from "./saves";
@@ -62,7 +62,7 @@ export function App() {
   }
 
   if (state.phase === "report") {
-    const entries = currentReport(state, world).map((r) => ({ slot: r.slot, label: r.label, text: r.fragment.text }));
+    const entries = currentReport(state, world).map((r) => ({ slot: r.slot, label: r.label, text: r.text }));
     const finish = () => {
       const p = profileOf(state);
       setProfile(p);
@@ -79,14 +79,11 @@ export function App() {
     );
   }
 
-  const scene = currentScene(state, world);
-  const items = scene.choices.map((c) => ({ index: c.index, text: c.choice.text, available: c.available }));
-  const onChoose = (index: number) => {
+  // Every move goes through here. Profile qualities can change mid-night (trust, visits), so both
+  // docs are saved every time. Writes are fire-and-forget: local first, cloud queued behind.
+  const advance = (next: GameState) => {
     haptic();
-    const next = choose(state, world, index);
     setState(next);
-    // Profile qualities can change mid-night (trust, visits), so both docs are saved every choice.
-    // Writes are fire-and-forget: local first, cloud queued behind; the UI never waits on them.
     saves.persistRun(next);
     saves.persistProfile(profileOf(next));
   };
@@ -95,14 +92,35 @@ export function App() {
     .map((q) => ({ label: q.label ?? q.id, value: getQuality(state, world, q.id), max: q.max }));
 
   // Portraits are full 9:16 scenes with the character in them, so one replaces the background.
+  if (state.phase === "outcome") {
+    const out = currentOutcome(state, world);
+    return (
+      <div class="screen">
+        <Backdrop src={src(out.storylet.portrait ?? out.storylet.background)}>
+          <QualityBar items={hud} />
+          <SceneCard title={out.storylet.title} text={out.text}>
+            <ChoiceList choices={[{ index: 0, text: "Дальше", available: true }]} onChoose={() => advance(continueOutcome(state, world))} />
+          </SceneCard>
+        </Backdrop>
+      </div>
+    );
+  }
+
+  const scene = currentScene(state, world);
+  const items = scene.choices.map((c) => ({ index: c.index, text: c.text, available: c.available }));
+  const onChoose = (index: number) => advance(choose(state, world, index));
+  const picker = scene.storylet.layout === "doors"
+    ? <DoorPicker doors={items} onChoose={onChoose} />
+    : scene.storylet.layout === "pledge"
+      ? <PledgePicker memories={scene.memories} onPledge={(i) => advance(pledge(state, world, i))} choices={items} onChoose={onChoose} />
+      : <ChoiceList choices={items} onChoose={onChoose} />;
+
   return (
     <div class="screen">
       <Backdrop src={src(scene.storylet.portrait ?? scene.storylet.background)}>
         <QualityBar items={hud} />
-        <SceneCard title={scene.storylet.title} text={scene.storylet.text}>
-          {scene.storylet.layout === "doors"
-            ? <DoorPicker doors={items} onChoose={onChoose} />
-            : <ChoiceList choices={items} onChoose={onChoose} />}
+        <SceneCard title={scene.storylet.title} text={scene.text}>
+          {picker}
         </SceneCard>
       </Backdrop>
     </div>
