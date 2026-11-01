@@ -7,11 +7,14 @@ export type Qualities = Record<string, number>;
 
 export interface LogEntry {
   storylet: string;
-  /** Index into storylet.choices (original, not filtered). */
+  /** Index into storylet.choices (original, not filtered); -1 for a memory pledge. */
   choice: number;
+  /** Index into world.memories when the entry is a pledge. */
+  pair?: number;
 }
 
-export type Phase = "scene" | "report";
+/** scene: waiting for a choice. outcome: showing a choice's outcome text. report: night over. */
+export type Phase = "scene" | "outcome" | "report";
 
 export interface GameState {
   v: typeof STATE_VERSION;
@@ -20,6 +23,8 @@ export interface GameState {
   phase: Phase;
   location: string;
   storyletId: string;
+  /** Choice whose outcome is on screen (phase === "outcome"). */
+  pendingChoice: number | null;
   run: Qualities;
   profile: Qualities;
   log: LogEntry[];

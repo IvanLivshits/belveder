@@ -34,6 +34,14 @@ export function parseEffect(src: string): ParsedEffect {
   return { quality: m[1]!, op: m[2] as EffectOp, value: Number(m[3]) };
 }
 
+/** `{quality_id}` inside text and outcome strings is replaced with the quality's value. */
+export const PLACEHOLDER_RE = /\{([^{}]*)\}/g;
+
+/** Every `{...}` found in a template, valid or not (the validator decides). */
+export function placeholders(template: string): string[] {
+  return Array.from(template.matchAll(PLACEHOLDER_RE), (m) => m[1]!);
+}
+
 /** Does a quality id match a declaration (exact id or `prefix.*` namespace)? */
 export function qualityMatches(decl: string, id: string): boolean {
   if (decl.endsWith(".*")) return id.startsWith(decl.slice(0, -1)) && id.length > decl.length - 1;

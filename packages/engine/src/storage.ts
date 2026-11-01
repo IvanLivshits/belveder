@@ -4,7 +4,7 @@
  *
  * Wire format (one logical document = one string, split into chunks):
  *   `b<STORAGE_VERSION>;<field>=<value>;<field>=<value>...`
- * Qualities are written as `q.<id>=<int>`, only non-default (non-zero) ones.
+ * Qualities are written as `q.<id>=<int>`, only non-default ones.
  * Chunk 0 starts with the header `<version>:<chunkCount>|`.
  */
 import { STATE_VERSION, type GameState, type Profile, type Qualities } from "./state";
@@ -15,11 +15,10 @@ export const CHUNK_SIZE = 4000;
 
 const SEP = ";";
 
+/** Bags only hold non-default values (setQuality drops defaults), so every key is written,
+ *  including explicit zeros for qualities whose default is not 0. */
 function encodeQualities(q: Qualities): string[] {
-  return Object.keys(q)
-    .sort()
-    .filter((k) => q[k] !== 0)
-    .map((k) => `q.${k}=${q[k]}`);
+  return Object.keys(q).sort().map((k) => `q.${k}=${q[k]}`);
 }
 
 function decodeFields(body: string): Map<string, string> {
@@ -74,7 +73,8 @@ export function serializeRun(state: GameState): string {
     `phase=${state.phase}`,
     `loc=${state.location}`,
     `sl=${state.storyletId}`,
-    `log=${state.log.map((e) => `${e.storylet}:${e.choice}`).join(",")}`,
+    `pc=${state.pendingChoice ?? ""}`,
+    `log=${state.log.map((e) => `${e.storylet}:${e.pair !== undefined ? `p${e.pair}` : e.choice}`).join(",")}`,
     `rep=${Object.keys(state.report).sort().map((s) => `${s}:${state.report[s]}`).join(",")}`,
     ...encodeQualities(state.run),
   ];
@@ -90,11 +90,15 @@ export function parseRun(doc: string, profile: Profile): GameState {
     return v;
   };
   const phase = need("phase");
-  if (phase !== "scene" && phase !== "report") throw new Error(`bad phase: ${phase}`);
+  if (phase !== "scene" && phase !== "outcome" && phase !== "report") throw new Error(`bad phase: ${phase}`);
   const log = need("log") === "" ? [] : need("log").split(",").map((e) => {
     const i = e.lastIndexOf(":");
-    return { storylet: e.slice(0, i), choice: Number(e.slice(i + 1)) };
+    const tail = e.slice(i + 1);
+    return tail.startsWith("p")
+      ? { storylet: e.slice(0, i), choice: -1, pair: Number(tail.slice(1)) }
+      : { storylet: e.slice(0, i), choice: Number(tail) };
   });
+  const pc = need("pc");
   const report: Record<string, string> = {};
   for (const pair of need("rep") === "" ? [] : need("rep").split(",")) {
     const i = pair.indexOf(":");
@@ -107,6 +111,7 @@ export function parseRun(doc: string, profile: Profile): GameState {
     phase,
     location: need("loc"),
     storyletId: need("sl"),
+    pendingChoice: pc === "" ? null : Number(pc),
     run: qualitiesFrom(f),
     profile: { ...profile.profile },
     log,

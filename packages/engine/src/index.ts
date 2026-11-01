@@ -6,5 +6,6 @@ export * from "./effects";
 export * from "./select";
 export * from "./report";
 export * from "./step";
+export * from "./text";
 export * from "./digest";
 export * from "./storage";

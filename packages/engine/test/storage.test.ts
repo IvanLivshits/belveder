@@ -1,16 +1,16 @@
 import { describe, expect, test } from "bun:test";
 import {
-  CHUNK_SIZE, choose, emptyProfile, fromChunks, newNight, parseProfile, parseRun,
+  CHUNK_SIZE, choose, continueOutcome, emptyProfile, fromChunks, newNight, parseProfile, parseRun, pledge,
   profileOf, serializeProfile, serializeRun, toChunks, type Profile,
 } from "../src";
 import { miniWorld } from "./mini-world";
 
 describe("storage codec", () => {
-  test("profile round-trips and drops zeros", () => {
-    const p: Profile = { v: 1, profile: { nights: 3, trust: 0, "visited.floor2.tenant": 1 } };
+  test("profile round-trips, keeping explicit zeros (non-zero defaults)", () => {
+    const p: Profile = { v: 1, profile: { nights: 3, "mem.false.a": 0, "visited.floor2.tenant": 1 } };
     const doc = serializeProfile(p);
-    expect(doc).toBe("b1;q.nights=3;q.visited.floor2.tenant=1");
-    expect(parseProfile(doc)).toEqual({ v: 1, profile: { nights: 3, "visited.floor2.tenant": 1 } });
+    expect(doc).toBe("b1;q.mem.false.a=0;q.nights=3;q.visited.floor2.tenant=1");
+    expect(parseProfile(doc)).toEqual(p);
   });
 
   test("large profile splits into chunks under the CloudStorage limit and comes back intact", () => {
@@ -38,6 +38,18 @@ describe("storage codec", () => {
     const restored = parseRun(fromChunks(toChunks(serializeRun(s))), { v: 1, profile: { trust: 2 } });
     expect(restored).toEqual(s);
     expect(choose(restored, miniWorld, 0)).toEqual(choose(s, miniWorld, 0));
+  });
+
+  test("outcome phase and pledge log entries round-trip", () => {
+    let s = newNight(emptyProfile(), miniWorld, 3);
+    s = choose(s, miniWorld, 0); // room
+    s = choose(s, miniWorld, 2); // vault with outcome
+    expect(s.phase).toBe("outcome");
+    expect(parseRun(serializeRun(s), profileOf(s))).toEqual(s);
+    s = continueOutcome(s, miniWorld);
+    s = pledge(s, miniWorld, 0);
+    expect(s.log.at(-1)).toEqual({ storylet: "vault_pledge", choice: -1, pair: 0 });
+    expect(parseRun(serializeRun(s), profileOf(s))).toEqual(s);
   });
 
   test("report phase run round-trips", () => {

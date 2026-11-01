@@ -10,8 +10,15 @@ export const miniWorld: World = WorldSchema.parse({
     { id: "nights", scope: "profile" },
     { id: "trust", scope: "profile" },
     { id: "seen.*", scope: "run" },
+    { id: "mem.false.*", scope: "profile", default: 1 },
+    { id: "mem.true.*", scope: "profile" },
+    { id: "night_pledged", scope: "run" },
   ],
-  locations: [{ id: "hall" }, { id: "room" }],
+  locations: [{ id: "hall" }, { id: "room" }, { id: "vault" }],
+  memories: [
+    { false: "mem.false.a", true: "mem.true.a", label_false: "False A", label_true: "True A", returnWhen: ["trust >= 1"] },
+    { false: "mem.false.b", true: "mem.true.b", label_false: "False B", label_true: "True B", returnWhen: ["heat >= 9"] },
+  ],
   rules: { start: "hall", onChoice: ["turn += 1"], nightEndWhen: ["turn >= 4"], onNightEnd: ["nights += 1"] },
   report: { slots: [{ id: "summary", label: "Summary" }] },
   storylets: [
@@ -26,9 +33,15 @@ export const miniWorld: World = WorldSchema.parse({
     { id: "hall_b", location: "hall", background: "bg", text: "B", choices: [{ text: "go room", goto: "room" }] },
     { id: "hall_c", location: "hall", background: "bg", text: "C", choices: [{ text: "go room", goto: "room" }] },
     {
-      id: "room_x", location: "room", background: "bg", text: "X", choices: [
+      id: "room_x", location: "room", background: "bg", text: "X heat={heat}", choices: [
         { text: "trust", effects: ["trust += 1"], goto: "hall" },
         { text: "hidden", when: ["heat >= 1"], effects: ["heat -= 1"], goto: "hall" },
+        { text: "vault", effects: ["heat += 2"], outcome: "Heat is now {heat}, trust {trust}.", goto: "vault" },
+      ],
+    },
+    {
+      id: "vault_pledge", location: "vault", layout: "pledge", background: "bg", text: "Pawn one.", choices: [
+        { text: "pledge the night", free: true, effects: ["night_pledged = 1"], endNight: true },
       ],
     },
   ],

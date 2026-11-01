@@ -1,5 +1,5 @@
 {
-  "digest": "6d769661237b955ab7bfe2e05c557f21221e8b5f3313a54a275e647e8dc8be2b",
+  "digest": "d5c1fec81fbf4eebb2535dd24620607d12229a47d923837dfb08911f9342bb63",
   "snapshot": {
     "location": "hall",
     "log": [
@@ -20,6 +20,7 @@
         "storylet": "hall_b"
       }
     ],
+    "pendingChoice": null,
     "phase": "report",
     "profile": {
       "nights": 1
