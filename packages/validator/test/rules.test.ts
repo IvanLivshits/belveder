@@ -67,3 +67,26 @@ describe("validator rules", () => {
     expect(r.endedByRule + r.endedByChoice).toBe(100);
   });
 });
+
+describe("expression syntax is rejected at build time", () => {
+  test.each(["turn >> 16", "turn >= sixteen", "turn >= 16 || clues > 1", "process.exit()", "turn >= 1; drop", "Turn >= 1"])(
+    "condition %p fails schema",
+    (bad) => {
+      const w = structuredClone(miniWorld) as WorldInput;
+      w.storylets[0]!.when = [bad];
+      expect(WorldSchema.safeParse(w).success).toBe(false);
+    },
+  );
+  test.each(["turn ++", "turn = 1 + 1", "turn -= -x", "turn = Math.random()"])("effect %p fails schema", (bad) => {
+    const w = structuredClone(miniWorld) as WorldInput;
+    w.storylets[0]!.choices[0]!.effects = [bad];
+    expect(WorldSchema.safeParse(w).success).toBe(false);
+  });
+  test("schema failure names the field", () => {
+    const w = structuredClone(miniWorld) as WorldInput;
+    w.rules.nightEndWhen = ["turn >= 16 && clues > 0"];
+    const r = WorldSchema.safeParse(w);
+    expect(r.success).toBe(false);
+    expect(r.error!.issues[0]!.path.join(".")).toBe("rules.nightEndWhen.0");
+  });
+});
