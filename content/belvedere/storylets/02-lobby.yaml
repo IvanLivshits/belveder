@@ -1,0 +1,234 @@
+# Вестибюль: Долли, грузовой лифт, почтовые ящики, залог.
+# Приход в вестибюль (seen.lobby == 0) — одна из четырёх карточек по priority.
+# Любой выбор в них ставит seen.lobby = 1, дальше вестибюль — хаб lobby_hub.
+
+- id: lobby_first_night
+  location: lobby
+  priority: 1
+  when: [seen.lobby == 0, nights == 0]
+  background: lobby
+  portrait: dolly
+  title: Вестибюль
+  text: |
+    Лифт не работает с тех пор, как город перестал верить в лифты. Долли сидит на табурете у шахты и вяжет что-то бесконечно серое.
+
+    — Хейл? — Она не поднимает глаз. — Поднимался. Курил «Пульман Ред». Спрашивал, сколько дают за имя.
+  choices:
+    - text: Спросить, сколько дают за имя
+      effects: [seen.lobby = 1, seen.dolly_hale = 1, clues += 1]
+      outcome: |
+        — Смотря чьё. — Спицы не останавливаются. — За своё дают мало. За чужое, если тебя им зовут, — столько, что хватает на всё.
+    - text: Предложить сигарету
+      when: [cigarettes >= 1]
+      effects: [seen.lobby = 1, seen.dolly_cig = 1, cigarettes -= 1, dolly_trust += 1]
+      outcome: |
+        Долли берёт сигарету и прячет её в карман фартука. Не закуривает. Так берут задаток.
+    - text: Молча пойти к лестнице
+      effects: [seen.lobby = 1, seen.lobby_silent = 1, suspicion += 1]
+      outcome: |
+        За спиной стихают спицы. Ты чувствуешь, как она запоминает твою спину.
+      goto: floor_01
+
+- id: lobby_wary
+  location: lobby
+  priority: 1
+  when: [seen.lobby == 0, nights >= 1, dolly_trust < 2]
+  background: lobby
+  portrait: dolly_suspicion
+  title: Вестибюль
+  text: |
+    Долли поднимает глаза раньше, чем за тобой закрывается дверь. Смотрит на твоё пальто, потом на ботинки, будто сверяет с описью.
+
+    — Опять ты. — Спицы снова идут. — Хейла тут нет. Хейла нигде нет.
+  choices:
+    - text: Спросить, сколько дают за имя
+      effects: [seen.lobby = 1, seen.dolly_hale = 1, clues += 1]
+      outcome: |
+        — Ты уже спрашивал. — Пауза. — Не ты. Он. Вы стоите на одном и том же месте.
+    - text: Предложить сигарету
+      when: [cigarettes >= 1]
+      effects: [seen.lobby = 1, seen.dolly_cig = 1, cigarettes -= 1, dolly_trust += 1]
+      outcome: |
+        Она берёт сигарету и кладёт к остальным. В кармане фартука их уже несколько. Все твоей марки.
+    - text: Молча пойти к лестнице
+      effects: [seen.lobby = 1, seen.lobby_silent = 1, suspicion += 1]
+      goto: floor_01
+
+- id: lobby_trusting
+  location: lobby
+  priority: 2
+  when: [seen.lobby == 0, dolly_trust >= 2]
+  background: lobby
+  portrait: dolly_trust
+  title: Вестибюль
+  text: |
+    Долли откладывает вязание и наливает чай во вторую чашку. Чашка стояла здесь до того, как ты вошёл.
+
+    — Садись на минуту. Наверху тебе сегодня не обрадуются. — Она кивает на решётку грузового лифта. — А он, может, и обрадуется.
+  choices:
+    - text: Сесть и выпить чаю
+      effects: [seen.lobby = 1, seen.dolly_tea = 1, suspicion -= 1]
+      outcome: |
+        Чай горький и горячий. Долли рассказывает, кто сегодня в доме, кто спит, а кто только делает вид. Про Гормана она говорит последним.
+    - text: Спросить, откуда она знает, что тебя ждут
+      effects: [seen.lobby = 1, seen.dolly_knows = 1, clues += 1]
+      outcome: |
+        — Я ничего не забываю, Ник. Совсем ничего. Я это продала. — Она снова берёт спицы. — Хорошая была сделка. Спроси меня лет через двадцать.
+
+- id: lobby_late
+  location: lobby
+  priority: 3
+  when: [seen.lobby == 0, nights >= 8]
+  background: lobby
+  portrait: dolly_worry
+  title: Вестибюль
+  text: |
+    Долли откладывает вязание раньше, чем ты успеваешь открыть рот.
+
+    — Ночей за тобой уже {nights}, а пальто всё то же. Пальто уже узнаёт меня само.
+  choices:
+    - text: Спросить, откуда она знает
+      effects: [seen.lobby = 1, seen.dolly_late = 1, dolly_trust += 1]
+      outcome: |
+        — Я считаю. Кто-то в этом доме должен считать. — Она смотрит на шахту лифта. — Фенн с десятого тоже считает. Только он считает часы, а я — тебя.
+    - text: Просто кивнуть и пройти
+      effects: [seen.lobby = 1]
+
+# Хаб вестибюля после первого разговора и при возвращении сверху.
+- id: lobby_hub
+  location: lobby
+  when: [seen.lobby == 1]
+  background: lobby
+  portrait: dolly
+  title: Вестибюль
+  text: |
+    Спицы, шахта лифта, мокрый след твоих ботинок от двери. Долли делает вид, что тебя здесь нет. В этом доме это считается вежливостью.
+  choices:
+    - text: Попросить ключ от служебной двери на четвёртом
+      when: [dolly_trust >= 2, has.archive_key == 0]
+      effects: [has.archive_key = 1]
+      outcome: |
+        Долли, не глядя, снимает с гвоздя ключ с бумажной биркой «4 — архив».
+
+        — Слоун поменял замок. Он думает, у меня нет второго. Пусть думает.
+    - text: Попросить грузовой лифт
+      when: [dolly_trust >= 3]
+      free: true
+      goto: freight_lift
+    - text: К лестнице
+      free: true
+      goto: floor_01
+    - text: Оставить залог и выйти
+      free: true
+      goto: pledge
+
+- id: freight_lift_panel
+  location: freight_lift
+  background: lobby
+  portrait: dolly_trust
+  title: Грузовой лифт
+  text: |
+    Долли сдвигает решётку. Кабина пахнет машинным маслом и чужими чемоданами. Она кладёт ладонь на рычаг.
+
+    — Куда? Выше четвёртого сегодня не повезу. Там ремонт, и не мой.
+  choices:
+    - text: На второй
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 2]
+      goto: floor_02
+    - text: На третий
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 3]
+      goto: floor_03
+    - text: На четвёртый
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 4]
+      goto: floor_04
+    - text: Передумать
+      free: true
+      goto: lobby
+
+- id: mailboxes_wall
+  location: mailboxes
+  background: lobby
+  title: Почтовые ящики
+  text: |
+    Сто сорок латунных ящиков, у каждого окошко и фамилия на картонке. Пыль везде, кроме одного.
+
+    «Н. Кэллоуэй, 3-В».
+
+    У тебя контора на Портовой. Ты никогда здесь не жил.
+  choices:
+    - text: Открыть свой ящик
+      when: [seen.mailbox_open == 0]
+      effects: [seen.mailbox_open = 1, seen.mailbox_name = 1, clues += 1]
+      outcome: |
+        Ящик не заперт. Внутри один листок, почерк ровный, как по линейке:
+
+        «Аренда комнаты 3-В оплачена до конца дела. Не благодарите. — В.»
+    - text: Поискать ящик Хейла
+      when: [seen.mailbox_hale == 0]
+      effects: [seen.mailbox_hale = 1]
+      outcome: |
+        Ящика с фамилией Хейл нет. Есть один пустой, с картонкой без букв. На латуни ещё видны дырочки от кнопок.
+    - text: Вернуться на площадку
+      free: true
+      goto: floor_01
+
+# Залог. Варианты воспоминаний рисует движок из `memories`.
+# Порядок priority: пойман > рассвет > обычный выход.
+
+- id: pledge_exit
+  location: pledge
+  layout: pledge
+  background: lobby
+  portrait: dolly
+  title: Залог
+  text: |
+    Долли протягивает конверт. Внутри пусто, пока ты туда что-нибудь не положишь.
+
+    — Из Белведера не уходят с пустыми руками. Что оставишь в этот раз, Ник?
+  choices:
+    - text: Заложить эту ночь
+      free: true
+      effects: [night_pledged = 1]
+      outcome: |
+        Долли заклеивает конверт и подписывает дату. Утром ты не вспомнишь, что подписывал её сам.
+      endNight: true
+
+- id: pledge_dawn
+  location: pledge
+  layout: pledge
+  priority: 1
+  when: [turn >= 16]
+  background: lobby_dawn
+  portrait: dolly_worry
+  title: Рассвет
+  text: |
+    В стёклах вестибюля серый свет. С улицы — сирена и хлопанье дверей: Горман приехал с нарядом.
+
+    Долли уже держит конверт. Ты не помнишь, как спустился.
+
+    — Быстро, — говорит она. — Пока он не поднялся.
+  choices:
+    - text: Заложить эту ночь
+      free: true
+      effects: [night_pledged = 1]
+      endNight: true
+
+- id: pledge_caught
+  location: pledge
+  layout: pledge
+  priority: 2
+  when: [suspicion >= 10]
+  background: lobby
+  portrait: tony_threat
+  title: Выход
+  text: |
+    Тони Риццо держит тебя за воротник, как мокрого щенка, и ставит перед стойкой. Он не злится. Ему просто поручили.
+
+    Долли не смотрит тебе в глаза.
+
+    — Выбирай сам, — говорит она тихо. — Пока за тебя не выбрал он.
+  choices:
+    - text: Заложить эту ночь
+      free: true
+      effects: [night_pledged = 1, seen.caught = 1]
+      endNight: true

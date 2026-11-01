@@ -1,0 +1,122 @@
+{
+  "digest": "d1a1a4de7eda9a6bb538d2829196ed74de776405f8b290333882fa758d908c00",
+  "snapshot": {
+    "location": "pledge",
+    "log": [
+      {
+        "choice": 2,
+        "storylet": "office_first_night"
+      },
+      {
+        "choice": 2,
+        "storylet": "facade_night"
+      },
+      {
+        "choice": 1,
+        "storylet": "lobby_first_night"
+      },
+      {
+        "choice": 2,
+        "storylet": "lobby_hub"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_01_doors"
+      },
+      {
+        "choice": 0,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_02_doors"
+      },
+      {
+        "choice": 1,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 1,
+        "storylet": "floor_03_doors"
+      },
+      {
+        "choice": 0,
+        "storylet": "room_first"
+      },
+      {
+        "choice": 1,
+        "storylet": "room_ring_found"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_03_doors"
+      },
+      {
+        "choice": 2,
+        "storylet": "stairs_eddie"
+      },
+      {
+        "choice": 4,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_02_doors"
+      },
+      {
+        "choice": 5,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 0,
+        "storylet": "floor_01_doors"
+      },
+      {
+        "choice": 3,
+        "storylet": "lobby_hub"
+      },
+      {
+        "choice": -1,
+        "pair": "ring",
+        "storylet": "pledge_exit"
+      }
+    ],
+    "pendingChoice": null,
+    "phase": "report",
+    "profile": {
+      "dolly_trust": 1,
+      "mem.false.marines": 0,
+      "mem.true.ring": 1,
+      "memories_returned": 1,
+      "nights": 1,
+      "visited.floor1.tenant": 1,
+      "visited.floor3.service": 1
+    },
+    "report": {
+      "client": "client_first",
+      "entry": "entry_cig",
+      "finding": "finding_ring",
+      "price": "price_marines",
+      "twist": "twist_ring_returned",
+      "witnesses": "witnesses_eddie"
+    },
+    "rng": 2024,
+    "run": {
+      "cigarettes": 2,
+      "clues": 1,
+      "debt.eddie": 1,
+      "floor": 1,
+      "has.ring": 1,
+      "pledged.ring": 1,
+      "returned.ring": 1,
+      "seen.client_first": 1,
+      "seen.dolly_cig": 1,
+      "seen.eddie": 1,
+      "seen.lobby": 1,
+      "turn": 8
+    },
+    "seed": 2024,
+    "storyletId": "pledge_exit",
+    "v": 1
+  }
+}

@@ -15,6 +15,9 @@ export const check: Rule = (world, assets) => {
       if (c.goto && !locations.has(c.goto)) issues.push(error(`storylet ${s.id} choice #${i}`, `goto unknown location: ${c.goto}`));
     });
   }
+  world.rules.interrupts.forEach((i, n) => {
+    if (!locations.has(i.goto)) issues.push(error(`rules.interrupts #${n}`, `goto unknown location: ${i.goto}`));
+  });
   const fids = new Set<string>();
   const slots = new Set(world.report.slots.map((s) => s.id));
   for (const f of world.fragments) {

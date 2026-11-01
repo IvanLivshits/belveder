@@ -1,67 +1,128 @@
-# Служебные комнаты 3–4.
-- id: service_03_room
+# Служебные комнаты 3 и 4.
+
+# ── 3. Комната для новых жильцов. Здесь кольцо (пара «ring») ────────────────
+
+- id: room_ring_found
   location: service_03
-  when: [seen.service_03 == 0]
+  priority: 2
+  when: [has.ring == 1]
   background: room_newtenant
+  portrait: ev_nick_hands
   title: Комната для новых жильцов
   text: |
-    Кровать застелена. На тумбочке бланк договора без имени. Чей-то чемодан под кроватью, и он не пустой.
+    Кольцо сидит так, будто ты его никогда не снимал. Ты пробуешь его повернуть, и палец сам помнит, в какую сторону.
   choices:
-    - text: Открыть чемодан
-      effects: [seen.service_03 = 1, clues += 1, suspicion += 2]
-      goto: floor_03
-    - text: Прочитать договор
-      effects: [seen.service_03 = 1, clues += 1]
-      goto: floor_03
-    - text: Выйти, пока никто не видел
-      free: true
-      effects: [seen.service_03 = 1]
-      goto: floor_03
-
-- id: service_03_again
-  location: service_03
-  priority: 1
-  when: [seen.service_03 == 1]
-  background: room_newtenant
-  title: Комната для новых жильцов
-  text: На бланке появилось имя. Ваше.
-  choices:
-    - text: Забрать бланк
+    - text: Открыть ящик тумбочки
+      when: [visited.floor3.service >= 2, has.contract == 0]
       effects: [has.contract = 1, clues += 1]
-      goto: floor_03
-    - text: Оставить всё как есть
-      effects: [suspicion += 1]
+      outcome: |
+        Договор найма на комнату 3-В, бессрочный. Арендатор: Н. Кэллоуэй.
+
+        Подпись внизу твоя. Ты расписываешься так с детства. Ты не помнишь, где прошло твоё детство.
+    - text: Уйти
+      free: true
       goto: floor_03
 
-- id: service_04_archive
-  location: service_04
-  when: [seen.service_04 == 0]
-  background: archive
-  title: Архив копий
+- id: room_again
+  location: service_03
+  priority: 1
+  when: [visited.floor3.service >= 3]
+  background: room_newtenant
+  title: Комната для новых жильцов
   text: |
-    Полки до потолка. Каждая книга в двух экземплярах. В углу люк жёлоба для белья и записка: «Не вниз».
-  choices:
-    - text: Сверить копии
-      effects: [seen.service_04 = 1, clues += 2]
-      goto: floor_04
-    - text: Спуститься по жёлобу
-      effects: [seen.service_04 = 1, paths.chute = 1, floor = 2]
-      goto: floor_02
-    - text: Поискать ключ наверх
-      effects: [seen.service_04 = 1, paths.upper_floors = 1, suspicion += 2]
-      goto: floor_04
+    Кровать опять заправлена туго, по-армейски. Ты не помнишь, кто её заправил. Хочется думать, что не ты.
 
-- id: service_04_again
+    На тумбочке твоя визитка. Ты кладёшь её сюда каждый раз? Или кто-то за тебя?
+  choices:
+    - text: Обыскать кровать
+      when: [has.ring == 0]
+      effects: [has.ring = 1, clues += 1]
+      outcome: |
+        Под матрасом, там же, где в прошлый раз. Тонкое золото, внутри гравировка: «В. и У. Навсегда».
+    - text: Открыть ящик тумбочки
+      when: [has.contract == 0]
+      effects: [has.contract = 1, clues += 1]
+      outcome: |
+        Договор найма на комнату 3-В, бессрочный. Арендатор: Н. Кэллоуэй. Подпись внизу твоя.
+    - text: Уйти
+      free: true
+      goto: floor_03
+
+- id: room_first
+  location: service_03
+  background: room_newtenant
+  title: Комната для новых жильцов
+  text: |
+    Железная кровать, заправленная туго, как в казарме. Шкаф. Чистая пепельница. На тумбочке визитка: «Ник Кэллоуэй, частный сыск».
+
+    Твоя визитка. Наверное, Хейл заходил к тебе в контору. Наверное.
+  choices:
+    - text: Обыскать кровать
+      when: [has.ring == 0]
+      effects: [has.ring = 1, clues += 1]
+      outcome: |
+        Под матрасом, у самой стены, — обручальное кольцо. Тонкое золото, внутри гравировка: «В. и У. Навсегда».
+
+        Ты примеряешь его, просто чтобы проверить. Оно впору.
+    - text: Открыть шкаф
+      when: [seen.room_wardrobe == 0]
+      effects: [seen.room_wardrobe = 1, clues += 1]
+      outcome: |
+        Пальто как у тебя. Шляпа с узкими полями, как у тебя. Ты смотришь на ярлык: твой размер.
+
+        Ты закрываешь шкаф аккуратно, как закрывают чужое.
+    - text: Уйти
+      free: true
+      goto: floor_03
+
+# ── 4. Архив копий. Настоящая и поддельная книга (пара «ledger») ────────────
+
+- id: archive_locked
   location: service_04
   priority: 1
-  when: [seen.service_04 == 1]
-  background: archive
+  when: [has.archive_key == 0, seen.archive_open == 0]
+  background: landing_04
   title: Архив копий
-  text: Полки те же. Записка исчезла.
+  text: |
+    Замок новый, медь ещё не потемнела. Ключа у тебя нет, а у Слоуна ты его просить не станешь.
   choices:
-    - text: Спуститься по жёлобу
-      effects: [floor = 2]
-      goto: floor_02
-    - text: Вернуться на площадку
+    - text: Вскрыть замок
+      effects: [seen.archive_open = 1, suspicion += 2]
+      outcome: |
+        Отмычка, две минуты, мокрые от пота ладони. Замок щёлкает так громко, что внизу, кажется, замолкает радио.
+    - text: Уйти
+      free: true
+      goto: floor_04
+
+- id: archive_shelves
+  location: service_04
+  background: archive
+  portrait: ev_ledgers
+  title: Архив копий
+  text: |
+    Стеллажи до потолка, на каждом корешке год и название клуба. «Синий фонарь» занимает целую полку. Пыль везде, кроме одной книги на ближнем краю.
+  choices:
+    - text: Взять копию с ближней полки
+      when: [has.ledger_fake == 0]
+      effects: [has.ledger_fake = 1, clues += 1]
+      outcome: |
+        Чистая книга, ровные столбцы. Март сходится до цента. Растраты не было.
+
+        Слишком чисто для бухгалтерии портового клуба.
+    - text: Пошарить за стеллажом
+      when: [seen.sloan_cashbox == 1, has.ledger_true == 0]
+      effects: [has.ledger_true = 1, clues += 1]
+      outcome: |
+        Слоун говорил, что деньги вернулись наутро. Значит, должна быть книга, где они сначала пропали.
+
+        За стеллажом вторая копия, перевязанная бечёвкой. Март, сорок первая строка: «Недостача 4 000. Погашена наличными в ночь на 15-е».
+    - text: Сверить две копии
+      when: [has.ledger_fake == 1, has.ledger_true == 1, seen.ledger_compare == 0]
+      effects: [seen.ledger_compare = 1, clues += 1]
+      outcome: |
+        Почерк один, бумага одна. Расходятся в одной строке. В одной строке недостача есть, в другой её никогда не было.
+
+        Ночь на 15 марта. Ты уже где-то видел эту дату.
+    - text: Уйти
       free: true
       goto: floor_04

@@ -1,0 +1,211 @@
+# Экраны трёх дверей. Порядок: дверь жильца, служебная дверь, лестница.
+# Войти в дверь = 1 ход. Выйти на лестницу и вернуться на площадку бесплатно,
+# пролёт вверх или вниз = 1 ход.
+
+- id: floor_01_doors
+  location: floor_01
+  layout: doors
+  background: landing_base
+  title: Площадка 1
+  text: |
+    Слева стеклянная будка Долли и мёртвая шахта лифта. Справа стена латунных почтовых ящиков. Лестница уходит вверх, пахнет мокрым деревом.
+  choices:
+    - text: Долли
+      free: true
+      effects: [visited.floor1.tenant += 1, floor = 1]
+      goto: lobby
+    - text: Почтовые ящики
+      effects: [visited.floor1.service += 1, floor = 1]
+      goto: mailboxes
+    - text: Лестница
+      free: true
+      effects: [floor = 1]
+      goto: stairwell
+
+- id: floor_02_doors
+  location: floor_02
+  layout: doors
+  background: landing_02
+  title: Площадка 2
+  text: |
+    Пар ползёт из-под двери прачечной и оседает на перилах. В стене гудит труба пневмопочты: кто-то наверху опять пишет записки. На служебной двери выцветшее «Бельё».
+  choices:
+    - text: Прачечная Эдди
+      effects: [visited.floor2.tenant += 1, floor = 2]
+      goto: tenant_02
+    - text: Бельевой желоб
+      when: [paths.laundry_chute == 1]
+      free: true
+      effects: [visited.floor2.service += 1, floor = 2]
+      goto: chute
+    - text: Лестница
+      free: true
+      effects: [floor = 2]
+      goto: stairwell
+
+- id: floor_03_doors
+  location: floor_03
+  layout: doors
+  background: landing_03
+  title: Площадка 3
+  text: |
+    У двери миссис Пул стоят мужские ботинки, начищенные до блеска. Их никто не носит. Служебная дверь без таблички. Говорят, за ней по утрам просыпаются новые жильцы.
+  choices:
+    - text: Квартира миссис Пул
+      effects: [visited.floor3.tenant += 1, floor = 3]
+      goto: tenant_03
+    - text: Служебная дверь
+      effects: [visited.floor3.service += 1, floor = 3]
+      goto: service_03
+    - text: Лестница
+      free: true
+      effects: [floor = 3]
+      goto: stairwell
+
+- id: floor_04_doors
+  location: floor_04
+  layout: doors
+  background: landing_04
+  title: Площадка 4
+  text: |
+    Из-под двери Слоуна зелёный свет настольной лампы. На служебной двери новый медный замок, ещё не потемневший. Пролёт наверх перегорожен козлами с табличкой «Ремонт».
+  choices:
+    - text: Кабинет Слоуна
+      effects: [visited.floor4.tenant += 1, floor = 4, seen.sloan_met = 1]
+      goto: tenant_04
+    - text: Служебная дверь
+      effects: [visited.floor4.service += 1, floor = 4]
+      goto: service_04
+    - text: Лестница
+      free: true
+      effects: [floor = 4]
+      goto: stairwell
+
+# Лестница. Одна локация на все этажи, выбор зависит от floor.
+# Встречи (Горман, Эдди) перехватывают лестницу по priority и после выбора
+# уступают место обычной карточке: их флаг seen.* уже стоит.
+
+- id: stairs_gorman
+  location: stairwell
+  priority: 6
+  when: [suspicion >= 4, seen.gorman == 0]
+  background: stairwell
+  portrait: gorman_threat
+  title: Лестница
+  text: |
+    На пролёте курит человек в мокром плаще. Он не прячет сигарету, когда видит тебя.
+
+    — Кэллоуэй. Ты ищешь Хейла. Я тоже. Разница в том, что тебе за это платят, а я за это плачу.
+  choices:
+    - text: Угостить сигаретой
+      when: [cigarettes >= 1]
+      effects: [seen.gorman = 1, cigarettes -= 1, suspicion -= 1]
+      outcome: |
+        Горман берёт сигарету, прикуривает от своей и выбрасывает свою в пролёт.
+
+        — Хорошие. Хейл курил такие же.
+    - text: Спросить, почему он платит
+      effects: [seen.gorman = 1, seen.gorman_debt = 1, clues += 1]
+      outcome: |
+        — Клуб «Синий фонарь» недосчитался четырёх тысяч. Ордер на Хейла выписан, а Хейла нет. Долг клубу теперь на мне. — Он улыбается без страха, как человек, которому нечего бояться. — Так что найди его, Кэллоуэй. Или я найду, кем его заменить.
+    - text: Сказать, что на четвёртом никого нет
+      when: [seen.sloan_met == 1]
+      effects: [seen.gorman = 1, debt.sloan += 1, suspicion += 1]
+      outcome: |
+        — Никого, — повторяет Горман. — Даже бухгалтера. Ладно.
+
+        Он не верит. Но наверх не идёт.
+
+- id: stairs_eddie
+  location: stairwell
+  priority: 5
+  when: [turn >= 3, seen.eddie == 0]
+  background: stairwell
+  portrait: eddie_scared
+  title: Лестница
+  text: |
+    Мальчишка в форменной кепке едва не сбивает тебя с ног. Карандаш за ухом, из кармана торчит цилиндр пневмопочты с печатью «В».
+  choices:
+    - text: Дать сигарету и спросить, кому записка
+      when: [cigarettes >= 1]
+      effects: [seen.eddie = 1, cigarettes -= 1, has.owner_note = 1, clues += 1]
+      outcome: |
+        Эдди прячет сигарету за ухо, к карандашу, и косится на лестницу.
+
+        — Наверх. Всегда наверх. — Он суёт тебе листок. — Я ничего не давал. Вы сами прочитали.
+
+        «Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»
+    - text: Выхватить цилиндр
+      effects: [seen.eddie = 1, seen.eddie_hostile = 1, suspicion += 2, has.owner_note = 1, clues += 1]
+      outcome: |
+        Крышка поддаётся с третьего раза. «Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»
+
+        Эдди смотрит на тебя так, будто ты отобрал у него не записку, а билет на поезд.
+    - text: Отпустить
+      effects: [seen.eddie = 1, debt.eddie += 1]
+      outcome: |
+        Эдди уже двумя пролётами ниже. Оттуда:
+
+        — Спасибо, мистер! Я запомню!
+
+- id: stairs
+  location: stairwell
+  background: stairwell_up
+  title: Лестница
+  text: |
+    Ступени скрипят заранее, будто предупреждают кого-то наверху. Пахнет мокрым деревом и чужим табаком. Выше четвёртого темно.
+  choices:
+    - text: Вверх, на второй
+      when: [floor == 1]
+      effects: [floor = 2]
+      goto: floor_02
+    - text: Вверх, на третий
+      when: [floor == 2]
+      effects: [floor = 3]
+      goto: floor_03
+    - text: Вверх, на четвёртый
+      when: [floor == 3]
+      effects: [floor = 4]
+      goto: floor_04
+    - text: Вниз, на третий
+      when: [floor == 4]
+      effects: [floor = 3]
+      goto: floor_03
+    - text: Вниз, на второй
+      when: [floor == 3]
+      effects: [floor = 2]
+      goto: floor_02
+    - text: Вниз, в вестибюль
+      when: [floor == 2]
+      effects: [floor = 1]
+      goto: floor_01
+    - text: Обратно на площадку
+      when: [floor == 1]
+      free: true
+      goto: floor_01
+    - text: Обратно на площадку
+      when: [floor == 2]
+      free: true
+      goto: floor_02
+    - text: Обратно на площадку
+      when: [floor == 3]
+      free: true
+      goto: floor_03
+    - text: Обратно на площадку
+      when: [floor == 4]
+      free: true
+      goto: floor_04
+
+# Желоб: в срезе это обещание подвала, вниз пока нельзя.
+- id: chute_peek
+  location: chute
+  background: landing_02
+  title: Бельевой желоб
+  text: |
+    Ты откидываешь заслонку. Снизу тянет теплом и угольной гарью. Где-то очень глубоко гудит топка, и кто-то поёт без слов.
+
+    Эдди говорил: отсюда можно попасть в подвал за секунду. Обратно — никак.
+  choices:
+    - text: Закрыть заслонку
+      free: true
+      goto: floor_02

@@ -1,0 +1,154 @@
+{
+  "digest": "f20f901b111097333cc90cb8ab0547b621a0d584e34ec95fd6eb034ae4c603fe",
+  "snapshot": {
+    "location": "pledge",
+    "log": [
+      {
+        "choice": 2,
+        "storylet": "office_first_night"
+      },
+      {
+        "choice": 2,
+        "storylet": "facade_night"
+      },
+      {
+        "choice": 2,
+        "storylet": "lobby_first_night"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_01_doors"
+      },
+      {
+        "choice": 0,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_02_doors"
+      },
+      {
+        "choice": 1,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_03_doors"
+      },
+      {
+        "choice": 2,
+        "storylet": "stairs_eddie"
+      },
+      {
+        "choice": 2,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_04_doors"
+      },
+      {
+        "choice": 3,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_03_doors"
+      },
+      {
+        "choice": 2,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_04_doors"
+      },
+      {
+        "choice": 3,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_03_doors"
+      },
+      {
+        "choice": 2,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_04_doors"
+      },
+      {
+        "choice": 3,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_03_doors"
+      },
+      {
+        "choice": 2,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_04_doors"
+      },
+      {
+        "choice": 3,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_03_doors"
+      },
+      {
+        "choice": 2,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_04_doors"
+      },
+      {
+        "choice": 3,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_03_doors"
+      },
+      {
+        "choice": 2,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_04_doors"
+      },
+      {
+        "choice": 3,
+        "storylet": "stairs"
+      }
+    ],
+    "pendingChoice": null,
+    "phase": "scene",
+    "profile": {},
+    "report": {},
+    "rng": 11,
+    "run": {
+      "debt.eddie": 1,
+      "floor": 3,
+      "seen.client_first": 1,
+      "seen.eddie": 1,
+      "seen.lobby": 1,
+      "seen.lobby_silent": 1,
+      "suspicion": 1,
+      "turn": 16
+    },
+    "seed": 11,
+    "storyletId": "pledge_dawn",
+    "v": 1
+  }
+}

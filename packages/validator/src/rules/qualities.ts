@@ -20,7 +20,7 @@ export const check: Rule = (world) => {
   };
 
   checkEffects("rules.onChoice", world.rules.onChoice);
-  checkConds("rules.nightEndWhen", world.rules.nightEndWhen);
+  world.rules.interrupts.forEach((i, n) => checkConds(`rules.interrupts #${n}`, i.when));
   checkEffects("rules.onNightEnd", world.rules.onNightEnd);
   if (!world.locations.some((l) => l.id === world.rules.start)) {
     issues.push(error("rules.start", `unknown location: ${world.rules.start}`));

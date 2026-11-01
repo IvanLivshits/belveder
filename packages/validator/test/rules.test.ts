@@ -20,7 +20,7 @@ describe("validator rules", () => {
   test("qualities: undeclared quality in effect and rules", () => {
     const w = broken((w) => {
       w.storylets[0]!.choices[0]!.effects = ["ghost += 1"];
-      w.rules.nightEndWhen = ["phantom >= 1"];
+      w.rules.interrupts = [{ when: ["phantom >= 1"], goto: "hall" }];
     });
     expect(messages(rules["qualities"]!(w, assets))).toMatch(/undeclared quality: ghost/);
     expect(messages(rules["qualities"]!(w, assets))).toMatch(/undeclared quality: phantom/);
@@ -78,17 +78,21 @@ describe("validator rules", () => {
     expect(out).not.toMatch(/\{turn\}/);
   });
 
-  test("memories: both flags declared, distinct, returnWhen uses declared qualities", () => {
+  test("memories: ids unique, both flags declared and distinct, returnWhen and reserved qualities declared", () => {
     const w = broken((w) => {
-      w.memories![0]!.true = "ghost.true";
+      w.memories![0]!.real = "ghost.true";
       w.memories![1]!.returnWhen = ["phantom >= 1"];
-      w.memories!.push({ false: "mem.false.a", true: "mem.false.a", label_false: "x", label_true: "y" });
+      w.memories!.push({ id: "a", fake: "mem.false.a", real: "mem.false.a", label_fake: "x", label_real: "y" });
+      w.qualities = w.qualities.filter((q) => q.id !== "returned.*" && q.id !== "memories_returned");
     });
     const out = messages(rules["memories"]!(w, assets));
     expect(out).toMatch(/flag is not a declared quality: ghost.true/);
     expect(out).toMatch(/returnWhen uses undeclared quality: phantom/);
     expect(out).toMatch(/used by more than one pair: mem.false.a/);
-    expect(out).toMatch(/false and true flags are the same/);
+    expect(out).toMatch(/fake and real flags are the same/);
+    expect(out).toMatch(/duplicate pair id/);
+    expect(out).toMatch(/engine writes returned.a on pledge but it is not declared/);
+    expect(out).toMatch(/engine writes memories_returned but it is not declared/);
   });
 
   test("memories: returnWhen syntax is rejected by the schema", () => {
@@ -99,12 +103,34 @@ describe("validator rules", () => {
     expect(r.error!.issues[0]!.path.join(".")).toBe("memories.0.returnWhen.0");
   });
 
+  test("references: interrupt goto must be a location", () => {
+    const w = broken((w) => { w.rules.interrupts = [{ when: ["turn >= 1"], goto: "nowhere" }]; });
+    expect(messages(rules["references"]!(w, assets))).toMatch(/interrupts #0: goto unknown location: nowhere/);
+  });
+
+  test("planned: condition on a quality nothing ever sets is a warning, not an error", () => {
+    const w = broken((w) => {
+      w.storylets[0]!.when = ["seen.later_floor == 1"];
+      w.memories![1]!.returnWhen = ["has.future_item == 1"];
+      w.qualities.push({ id: "has.*", scope: "run" });
+    });
+    const out = rules["planned"]!(w, assets);
+    expect(out.every((i) => i.level === "warning")).toBe(true);
+    const text = messages(out);
+    expect(text).toMatch(/planned: seen.later_floor is never set/);
+    expect(text).toMatch(/memory pair b: planned: has.future_item/);
+    expect(text).not.toMatch(/mem.false/); // default 1 counts as set
+    expect(text).not.toMatch(/returned.a/); // engine-written
+    expect(rules["planned"]!(miniWorld, assets)).toEqual([]);
+  });
+
   test("simulation finds no stuck state and covers the mini world", () => {
     const r = simulate(miniWorld, { nights: 100, seed: 1 });
     expect(r.stuck).toEqual([]);
     expect(r.errors).toEqual([]);
     expect(r.neverShown).toEqual([]);
-    expect(r.endedByRule + r.endedByChoice).toBe(100);
+    expect(r.endedByPledge + r.endedByChoice).toBe(100);
+    expect(r.endedByPledge).toBeGreaterThan(0);
     expect(r.neverTaken).toEqual([]);
   });
 });
@@ -125,9 +151,9 @@ describe("expression syntax is rejected at build time", () => {
   });
   test("schema failure names the field", () => {
     const w = structuredClone(miniWorld) as WorldInput;
-    w.rules.nightEndWhen = ["turn >= 16 && clues > 0"];
+    w.rules.interrupts = [{ when: ["turn >= 16 && clues > 0"], goto: "hall" }];
     const r = WorldSchema.safeParse(w);
     expect(r.success).toBe(false);
-    expect(r.error!.issues[0]!.path.join(".")).toBe("rules.nightEndWhen.0");
+    expect(r.error!.issues[0]!.path.join(".")).toBe("rules.interrupts.0.when.0");
   });
 });

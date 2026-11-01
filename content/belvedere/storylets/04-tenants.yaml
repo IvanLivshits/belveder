@@ -1,136 +1,251 @@
-# Комнаты жильцов 2–4.
-- id: eddie_first
+# Жильцы этажей 2–4. Схема у каждой двери одна:
+#   closed  (priority 10) — Подозрение 5+: дверь не открывают;
+#   intro   (priority 2)  — самый первый визит за всю игру, одна карточка;
+#   hub     (priority 0)  — разговор; каждый вопрос — 1 ход, после ответа он скрывается.
+
+# ── 2. Эдди Мэлоун, прачечная и узел пневмопочты ─────────────────────────────
+
+- id: eddie_closed
   location: tenant_02
-  when: [seen.eddie == 0]
+  priority: 10
+  when: [suspicion >= 5]
+  background: landing_02
+  title: Прачечная
+  text: |
+    Пар идёт, утюг шипит, но дверь заперта. Сквозь матовое стекло видно, как тень в кепке замирает и ждёт, пока ты уйдёшь.
+  choices:
+    - text: Уйти
+      free: true
+      goto: floor_02
+
+- id: eddie_hostile
+  location: tenant_02
+  priority: 9
+  when: [seen.eddie_hostile == 1]
   background: landing_02
   portrait: eddie
   title: Прачечная
   text: |
-    Эдди гладит рубашку, которая ему не по размеру. Цилиндр пневмопочты лежит рядом, как домашнее животное.
-    «Вы не жилец. Жильцы не стучат».
+    Эдди гладит рубашку, которая давно гладкая. Не поднимает головы. Карандаш за ухом, сигареты за ухом нет.
+
+    — Почта сегодня не для вас, мистер.
   choices:
-    - text: Спросить про хозяина ломбарда
-      effects: [seen.eddie = 1, clues += 1, suspicion += 1]
-      outcome: |
-        Эдди выключает утюг. «Хозяина никто не видел. Цилиндры приходят сверху, деньги уходят вниз. Я только глажу».
-        Он врёт ровно наполовину, и это уже улика. Подозрение: {suspicion}.
-      goto: floor_02
-    - text: Купить сигарет в долг
-      effects: [seen.eddie = 1, cigarettes += 2, debts += 1]
-      goto: floor_02
-    - text: Извиниться и выйти
+    - text: Уйти
       free: true
-      effects: [seen.eddie = 1]
       goto: floor_02
 
-- id: eddie_again
+- id: eddie_intro
   location: tenant_02
-  priority: 1
-  when: [seen.eddie == 1]
+  priority: 2
+  when: [visited.floor2.tenant == 1, seen.eddie_intro == 0]
   background: landing_02
   portrait: eddie_caught
   title: Прачечная
   text: |
-    Эдди ухмыляется, пряча цилиндр за спину. В цилиндре что-то звякнуло.
-  choices:
-    - text: Забрать цилиндр
-      effects: [has.pneumo_capsule = 1, clues += 1, suspicion += 2]
-      goto: floor_02
-    - text: Оставить его в покое
-      goto: floor_02
+    Пар, гладильные доски, трубы пневмопочты под потолком, как кишки дома. Мальчишка лет пятнадцати сидит на корзине с бельём и читает чужую записку под лампой.
 
-- id: eddie_remembers
+    Увидев тебя, он не прячет её. Ухмыляется.
+
+    — Я только проверяю, чтобы не промокла.
+  choices:
+    - text: Сделать вид, что не заметил
+      free: true
+      effects: [seen.eddie_intro = 1, debt.eddie += 1]
+
+- id: eddie_laundry
   location: tenant_02
-  priority: 2
-  when: [seen.eddie == 0, visited.floor2.tenant >= 3]
   background: landing_02
-  portrait: eddie_scared
+  portrait: eddie
   title: Прачечная
   text: |
-    Эдди прижимает цилиндр к груди. «Вы опять. Вы каждую ночь опять, и каждую ночь не помните».
+    Эдди Мэлоун, курьер пневмопочты, гладильщик и единственный человек в доме, который читает всё. За ухом карандаш, на полке под потолком — ряд латунных цилиндров.
   choices:
-    - text: Спросить, что он помнит
-      effects: [seen.eddie = 1, clues += 2]
-      goto: floor_02
-    - text: Уйти молча
+    - text: Угостить сигаретой и спросить, кому идут записки
+      when: [cigarettes >= 1, has.owner_note == 0]
+      effects: [seen.eddie = 1, cigarettes -= 1, debt.eddie += 1, has.owner_note = 1, clues += 1]
+      outcome: |
+        — Все наверх. Ему. — Эдди кивает в потолок и протягивает тебе листок. — И одна про вас. Я не давал, вы сами нашли.
+
+        «Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»
+    - text: Снять цилиндр с полки
+      when: [has.owner_note == 0]
+      effects: [seen.eddie = 1, seen.eddie_hostile = 1, suspicion += 2, has.owner_note = 1, clues += 1]
+      outcome: |
+        «Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»
+
+        Эдди молча забирает пустой цилиндр. Ему пятнадцать, и он только что решил, что ты такой же, как все в этом доме.
+    - text: Спросить про Хейла
+      when: [seen.eddie_hale == 0]
+      effects: [seen.eddie = 1, seen.eddie_hale = 1, clues += 1]
+      outcome: |
+        — Шляпа с узкими полями. Пальто как у вас. — Эдди смотрит на твоё пальто дольше, чем нужно. — Точь-в-точь как у вас, мистер.
+    - text: Спросить, куда он хочет уехать
+      when: [seen.eddie_dream == 0]
+      effects: [seen.eddie = 1, seen.eddie_dream = 1, debt.eddie += 1]
+      outcome: |
+        — В Чикаго. Или в Денвер. Куда угодно, где не дождь. — Он трёт запястье. — Отец говорил, в Денвере видно горы. Я лица его не помню, а горы помню. Смешно, да?
+    - text: Спросить, куда ведёт желоб
+      when: [debt.eddie >= 2, paths.laundry_chute == 0]
+      effects: [seen.eddie = 1, paths.laundry_chute = 1]
+      outcome: |
+        — В подвал, к Сайласу. Быстро, но только вниз. — Эдди откидывает заслонку и тут же захлопывает. — Не сегодня, мистер. Вы ещё не всё наверху посмотрели.
+    - text: Уйти
       free: true
-      effects: [seen.eddie = 1]
       goto: floor_02
 
-- id: pool_first
+# ── 3. Миссис Харриет Пул, меблированные комнаты ─────────────────────────────
+
+- id: pool_closed
   location: tenant_03
-  when: [seen.pool == 0]
+  priority: 10
+  when: [suspicion >= 5]
+  background: landing_03
+  title: Квартира миссис Пул
+  text: |
+    Ты стучишь. За дверью гремит половник, потом всё стихает. Миссис Пул не открывает тем, о ком уже говорят на лестнице.
+  choices:
+    - text: Уйти
+      free: true
+      goto: floor_03
+
+- id: pool_intro
+  location: tenant_03
+  priority: 2
+  when: [visited.floor3.tenant == 1, seen.pool_intro == 0]
   background: landing_03
   portrait: pool
   title: Квартира миссис Пул
   text: |
-    Стол накрыт на двоих. Миссис Пул наливает чай в обе чашки и садится напротив пустого стула.
-    «Уолтер задерживается. Вы его видели на лестнице?»
-  choices:
-    - text: Назваться Уолтером
-      effects: [seen.pool = 1, clues += 1, suspicion -= 1]
-      goto: floor_03
-    - text: Сказать правду
-      effects: [seen.pool = 1, suspicion += 1]
-      goto: floor_03
-    - text: Выпить чай и промолчать
-      effects: [seen.pool = 1, has.pool_key = 1]
-      goto: floor_03
+    В гостиной пахнет жареным луком. Стол накрыт на двоих. Миссис Пул ставит вторую тарелку перед тобой, будто ждала.
 
-- id: pool_recognizes
+    — Ешь, остынет. Ты всегда приходишь, когда остывает.
+  choices:
+    - text: Снять шляпу
+      free: true
+      effects: [seen.pool_intro = 1]
+
+- id: pool_table
   location: tenant_03
-  priority: 1
-  when: [seen.pool == 1]
   background: landing_03
-  portrait: pool_recognize
+  portrait: pool
   title: Квартира миссис Пул
   text: |
-    Она смотрит на вас дольше, чем нужно. «У Уолтера была такая же полоса от кольца».
+    Скатерть в клетку, вторая тарелка, напротив — пустой стул, к которому она обращается, когда думает, что ты не слушаешь. На комоде фотография юноши в морской форме, лицом к стене.
   choices:
-    - text: Спрятать руку в карман
-      effects: [suspicion += 1]
-      goto: floor_03
-    - text: Показать руку
-      effects: [clues += 1]
-      goto: floor_03
-
-- id: sloan_first
-  location: tenant_04
-  when: [seen.sloan == 0]
-  background: landing_04
-  portrait: sloan
-  title: Кабинет Слоуна
-  text: |
-    Слоун переписывает книгу учёта. Пальцы в чернилах по вторую фалангу.
-    «Я веду две копии. Одна для Владельца, одна для правды. Какая вам?»
-  choices:
-    - text: Поймать его на расхождении
-      when: [clues >= 2]
-      effects: [seen.sloan = 1, clues += 2, has.service_pass = 1]
+    - text: Сесть и поесть
+      when: [seen.pool_meal == 0]
+      effects: [seen.pool_meal = 1, turn += 1]
       outcome: |
-        Строка 41. В одной книге — «кольцо, залог, выкуплено». В другой — «кольцо, залог». Слоун кладёт на стол пропуск.
-        «Служебная на четвёртом. Там то, чего нет ни в одной копии». Улик теперь {clues}.
-      goto: floor_04
-    - text: Попросить копию для Владельца
-      effects: [seen.sloan = 1, clues += 1, suspicion += 2]
-      goto: floor_04
-    - text: Спросить про пожарную лестницу
-      effects: [seen.sloan = 1, paths.fire_escape = 1]
-      goto: floor_04
+        Суп с луком, горячий, как в детстве, которого ты не помнишь. Миссис Пул смотрит, как ты ешь, и шевелит губами, будто считает ложки.
 
-- id: sloan_caught
+        — Он тоже так держал ложку, — говорит она. Кто «он», не говорит.
+    - text: Спросить, кого она ждёт
+      when: [seen.pool == 0]
+      effects: [seen.pool = 1]
+      outcome: |
+        — Сына. Он служит на флоте, пишет редко. — Она поправляет вторую тарелку. — Скоро придёт. Они все приходят, если накрыть стол.
+    - text: Спросить про комнату для новых жильцов
+      when: [seen.pool == 1, seen.pool_room == 0]
+      effects: [seen.pool_room = 1, clues += 1]
+      outcome: |
+        — Там всегда кто-то просыпается. Утром я стучу и говорю: «Доброе утро, мистер…» — и жду. — Она улыбается. — Они сами договаривают фамилию. Ещё ни один не ошибся.
+    - text: Попросить книгу жильцов
+      when: [visited.floor3.tenant >= 2, has.tenant_register == 0]
+      effects: [has.tenant_register = 1, clues += 1]
+      outcome: |
+        Толстая книга в клеёнке. Ты листаешь до марта.
+
+        «Кэллоуэй Н., комната 3-В, с 15 марта». Графа «прежний адрес» пуста. Графа «прежнее имя» тоже. Почерк миссис Пул, а прочерки — чьи-то ещё.
+    - text: Показать кольцо
+      when: [has.ring == 1, seen.pool_ring == 0]
+      effects: [seen.pool_ring = 1, clues += 1]
+      outcome: |
+        Миссис Пул берёт твою руку и долго смотрит на кольцо.
+
+        — Его оставляют все, кто там просыпается. И никому оно не впору. — Она отпускает руку. — А тебе впору.
+    - text: Уйти
+      free: true
+      goto: floor_03
+
+# ── 4. Огден Слоун, аудитор ──────────────────────────────────────────────────
+
+- id: sloan_closed
   location: tenant_04
-  priority: 1
-  when: [seen.sloan == 1]
+  priority: 10
+  when: [suspicion >= 5]
   background: landing_04
-  portrait: sloan_caught
   title: Кабинет Слоуна
   text: |
-    Слоун закрывает обе книги. «Вы уже спрашивали. В прошлый раз тоже не помнили, что спрашивали».
+    Зелёная лампа гаснет, как только ты берёшься за ручку. Аудиторы умеют считать шаги на лестнице.
   choices:
     - text: Уйти
       free: true
       goto: floor_04
-    - text: Спросить, сколько раз
-      effects: [clues += 1, suspicion += 1]
+
+- id: sloan_intro
+  location: tenant_04
+  priority: 2
+  when: [visited.floor4.tenant == 1, seen.sloan_intro == 0]
+  background: landing_04
+  portrait: sloan
+  title: Кабинет Слоуна
+  text: |
+    Слоун не удивлён. Бухгалтеры удивляются только неровным столбцам. Он открывает ящик стола и тут же закрывает.
+
+    — Мистер Кэллоуэй. Я вас ждал. — Он поправляет нарукавники. — Нет, не так. Я знал, что вы придёте. Это разные вещи.
+  choices:
+    - text: Сесть без приглашения
+      free: true
+      effects: [seen.sloan_intro = 1]
+
+- id: sloan_office
+  location: tenant_04
+  background: landing_04
+  portrait: sloan
+  title: Кабинет Слоуна
+  text: |
+    Зелёная лампа, арифмометр, три ровные стопки бумаг. Огден Слоун хочет одного: чтобы его оставили в покое. Он смотрит на ящик стола чаще, чем на тебя.
+  choices:
+    - text: Надавить и потребовать книгу
+      when: [has.ledger_fake == 0, has.ledger_true == 0]
+      effects: [suspicion += 1, has.ledger_fake = 1, clues += 1]
+      outcome: |
+        Слоун без спора достаёт из ящика копию книги клуба. Слишком быстро.
+
+        Ты листаешь март. Цифры сходятся. Цифры у таких людей всегда сходятся.
+    - text: Угостить сигаретой
+      when: [cigarettes >= 1, seen.sloan_cig == 0]
+      effects: [seen.sloan_cig = 1, cigarettes -= 1, debt.sloan += 1]
+      outcome: |
+        Он не курит. Берёт сигарету, кладёт на край стола параллельно краю и немного успокаивается.
+    - text: Пообещать, что Горман о нём не узнает
+      when: [seen.sloan_promise == 0]
+      effects: [seen.sloan_promise = 1, debt.sloan += 1]
+      outcome: |
+        — Горман узнаёт всё, что ему выгодно. — Слоун снимает очки. — Но спасибо. Мне давно никто ничего не обещал.
+    - text: Спросить о клубе «Синий фонарь»
+      when: [seen.sloan_lantern == 0]
+      effects: [seen.sloan_lantern = 1]
+      outcome: |
+        — Никогда там не бывал. Я аудитор, а не любитель джаза.
+
+        На его столе лежит спичечный коробок с синим фонарём на этикетке. Он видит, что ты видишь.
+    - text: Спросить про ночь, когда пропали деньги
+      when: [debt.sloan >= 1, seen.sloan_cashbox == 0]
+      effects: [seen.sloan_cashbox = 1, has.pawn_ticket = 1, clues += 1]
+      outcome: |
+        Слоун долго молчит, потом кладёт на стол бумажку.
+
+        — Это лежало в кассе наутро, поверх денег. Все четыре тысячи вернулись. А человек — нет.
+
+        Квитанция ломбарда. «Предмет залога: имя». Подпись смазана дождём.
+    - text: "Предложить сделку: молчание за настоящую копию"
+      when: [debt.sloan >= 2, has.ledger_true == 0]
+      effects: [has.ledger_true = 1, clues += 1]
+      outcome: |
+        Слоун встаёт, отодвигает шкаф и достаёт из-за него вторую книгу, перевязанную бечёвкой.
+
+        — В архиве лежит та, что для Гормана. Эта — для вас. Март, сорок первая строка.
+    - text: Уйти
+      free: true
       goto: floor_04
