@@ -1,0 +1,32 @@
+export interface ReportEntry {
+  slot: string;
+  label: string;
+  text: string;
+}
+
+export interface ReportPageProps {
+  title: string;
+  entries: ReportEntry[];
+  nextLabel: string;
+  onNext: () => void;
+  /** CSS background-image value for paper texture, e.g. `url(/ui/paper_dark.webp)`. */
+  texture?: string | undefined;
+}
+
+/** Night report assembled from fragment slots. */
+export function ReportPage({ title, entries, nextLabel, onNext, texture }: ReportPageProps) {
+  return (
+    <article class={`paper${texture ? " paper--textured" : ""}`} style={texture ? { "--paper-texture": texture } : undefined}>
+      <h1 class="report__title">{title}</h1>
+      {entries.map((e) => (
+        <div key={e.slot} class="report__entry">
+          <span class="report__slot">{e.label}</span>
+          <p class="report__text">{e.text}</p>
+        </div>
+      ))}
+      <div class="report__actions">
+        <button class="choice choice--primary" type="button" onClick={onNext}>{nextLabel}</button>
+      </div>
+    </article>
+  );
+}

@@ -1,0 +1,98 @@
+/* Belvedere ui-kit. Telegram sets --tg-theme-*; fallbacks are the noir palette. */
+:root {
+  --bg: var(--tg-theme-bg-color, #0b0d12);
+  --panel: var(--tg-theme-secondary-bg-color, #14171f);
+  --text: var(--tg-theme-text-color, #e8e2d3);
+  --hint: var(--tg-theme-hint-color, #8d8775);
+  --accent: var(--tg-theme-button-color, #c9a24a);
+  --accent-text: var(--tg-theme-button-text-color, #0b0d12);
+  --link: var(--tg-theme-link-color, #d7b55e);
+  --app-height: var(--tg-viewport-stable-height, 100vh);
+  --font: Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: var(--font); }
+body { overflow: hidden; -webkit-user-select: none; user-select: none; }
+button { font: inherit; }
+
+.screen { position: relative; width: 100%; height: var(--app-height); overflow: hidden; background: var(--bg); }
+
+/* ---- backdrop: 9:16 image, rain, lamp flicker ---- */
+.backdrop { position: absolute; inset: 0; overflow: hidden; }
+.backdrop__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 35%; filter: saturate(0.85) contrast(1.05); }
+.backdrop__fade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 40%, rgba(11,13,18,0.85) 70%, var(--bg) 100%); }
+.backdrop__rain {
+  position: absolute; inset: -20% 0 0 0; pointer-events: none; opacity: 0.35;
+  background-image:
+    repeating-linear-gradient(100deg, transparent 0 7px, rgba(220,225,235,0.18) 7px 8px, transparent 8px 19px),
+    repeating-linear-gradient(97deg, transparent 0 13px, rgba(220,225,235,0.12) 13px 14px, transparent 14px 31px);
+  background-size: 100% 160px, 100% 240px;
+  animation: rain 0.55s linear infinite;
+}
+@keyframes rain { from { background-position: 0 0, 0 0; } to { background-position: -24px 160px, -36px 240px; } }
+.backdrop__lamp {
+  position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen;
+  background: radial-gradient(ellipse 70% 45% at 50% 12%, rgba(255, 214, 140, 0.28), transparent 70%);
+  animation: lamp 6s steps(1, end) infinite;
+}
+@keyframes lamp {
+  0%, 100% { opacity: 0.9; } 7% { opacity: 0.55; } 9% { opacity: 0.95; } 11% { opacity: 0.5; }
+  13% { opacity: 0.9; } 52% { opacity: 0.85; } 54% { opacity: 0.4; } 56% { opacity: 0.9; }
+}
+@media (prefers-reduced-motion: reduce) { .backdrop__rain, .backdrop__lamp { animation: none; } }
+
+/* ---- bottom third: text + choices ---- */
+.panel {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  min-height: 34%; max-height: 62%;
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px 16px calc(16px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(20,23,31,0) 0%, rgba(20,23,31,0.92) 18%, rgba(20,23,31,0.97) 100%);
+}
+.panel__scroll { overflow-y: auto; -webkit-overflow-scrolling: touch; min-height: 0; }
+.scene__title { margin: 0 0 6px; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hint); }
+.scene__text { margin: 0; font-size: 17px; line-height: 1.45; white-space: pre-line; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+
+.portrait { position: absolute; right: 0; bottom: 30%; height: 62%; max-width: 70%; object-fit: contain; object-position: right bottom; pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent 100%); mask-image: linear-gradient(180deg, #000 70%, transparent 100%); }
+
+.choices { display: flex; flex-direction: column; gap: 8px; }
+.choice {
+  width: 100%; text-align: left; padding: 11px 14px; border-radius: 10px;
+  border: 1px solid rgba(201,162,74,0.35); background: rgba(11,13,18,0.75); color: var(--text); cursor: pointer;
+  transition: background 0.12s, transform 0.08s;
+}
+.choice:active { transform: scale(0.985); background: rgba(201,162,74,0.18); }
+.choice--primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+.choice:disabled { opacity: 0.45; cursor: default; }
+
+/* ---- doors ---- */
+.doors { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.door {
+  display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px;
+  min-height: 110px; padding: 10px 6px; border-radius: 10px 10px 4px 4px;
+  border: 1px solid rgba(201,162,74,0.45); border-top-width: 3px;
+  background: linear-gradient(180deg, rgba(60,45,25,0.55), rgba(11,13,18,0.9)); color: var(--text); cursor: pointer; font-size: 13px; text-align: center; line-height: 1.25;
+}
+.door__glyph { font-size: 26px; line-height: 1; opacity: 0.9; }
+.door:active { transform: scale(0.97); }
+.door--locked { opacity: 0.4; cursor: default; filter: grayscale(1); }
+
+/* ---- HUD ---- */
+.hud { position: absolute; top: 0; left: 0; right: 0; display: flex; gap: 12px; flex-wrap: wrap; padding: calc(8px + env(safe-area-inset-top)) 14px 8px; font-size: 12px; color: var(--hint); background: linear-gradient(180deg, rgba(0,0,0,0.55), transparent); letter-spacing: 0.04em; pointer-events: none; }
+.hud__item b { color: var(--text); font-weight: 600; }
+
+/* ---- report & title ---- */
+.paper { position: absolute; inset: 0; overflow-y: auto; padding: calc(24px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom)); background: var(--panel); color: var(--text); }
+.paper--textured { background-image: var(--paper-texture); background-size: 512px; background-blend-mode: multiply; }
+.report__title { margin: 0 0 18px; font-size: 20px; letter-spacing: 0.12em; text-transform: uppercase; text-align: center; }
+.report__entry { margin: 0 0 14px; }
+.report__slot { display: block; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--hint); margin-bottom: 3px; }
+.report__text { margin: 0; font-size: 16px; line-height: 1.45; }
+.report__actions { margin-top: 24px; }
+
+.title { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 10px; padding: 24px 24px calc(28px + env(safe-area-inset-bottom)); }
+.title__cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.title__actions { position: relative; width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 8px; }
+.title__hint { position: relative; font-size: 12px; color: var(--hint); }
