@@ -8,7 +8,7 @@
     python3 convert.py            # конвертировать всё, что найдено
     python3 convert.py --check    # только показать, чего не хватает
 
-Результат: out/<category>/<id>.<hash>.webp и out/assets.json (id -> путь),
+Результат: assets/<category>/<id>.<hash>.webp и assets/assets.json (корень репо) (id -> путь),
 чтобы фронт брал картинки по id, а кеш браузера жил вечно.
 """
 import csv, hashlib, json, sys
@@ -16,7 +16,7 @@ from pathlib import Path
 from PIL import Image, ImageOps
 
 ROOT = Path(__file__).resolve().parent
-SRC, OUT = ROOT / "sources", ROOT / "out"
+SRC, OUT = ROOT / "sources", ROOT.parent.parent / "assets"
 EXTS = (".png", ".jpg", ".jpeg", ".webp")
 QUALITY = {"ui": 88, "evidence": 85, "envelopes": 85}  # остальное 80
 NO_HASH = {"paper_light", "paper_dark"}  # плитки CSS удобнее с постоянным именем
@@ -71,7 +71,7 @@ def main():
     if not check_only and assets:
         OUT.mkdir(exist_ok=True)
         (OUT / "assets.json").write_text(json.dumps(assets, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"\nГотово: {len(assets)} файлов, {total / 1024 / 1024:.1f} МБ -> out/")
+        print(f"\nГотово: {len(assets)} файлов, {total / 1024 / 1024:.1f} МБ -> {OUT}")
     if missing:
         print(f"\nНе хватает {len(missing)}:")
         for r in missing:

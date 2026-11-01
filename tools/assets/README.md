@@ -4,9 +4,9 @@
 2. Сохрани выбранный вариант каждой картинки в `sources/` под именем из колонки `id`
    (например `sources/dolly_trust.png`). Расширение любое.
 3. `pip install pillow`, затем `python3 convert.py --check` — покажет, чего не хватает и где опечатки.
-4. `python3 convert.py` — сложит всё в `out/` в WebP нужного размера и создаст `out/assets.json`.
+4. `python3 convert.py` — сложит всё в `assets/` (корень репо) в WebP нужного размера и создаст `assets/assets.json`.
 
-Папку `out/` целиком кладёшь в статику Mini App. Во фронте картинка берётся по id:
+Папка `assets/` отдаётся как статика Mini App (Vite `publicDir`). Во фронте картинка берётся по id:
 `assets["dolly_trust"].src`. В имени файла хеш, поэтому можно ставить
 `Cache-Control: public, max-age=31536000, immutable` — при замене картинки имя поменяется само.
 
