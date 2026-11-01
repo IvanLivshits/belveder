@@ -1,0 +1,39 @@
+{
+  "digest": "6d769661237b955ab7bfe2e05c557f21221e8b5f3313a54a275e647e8dc8be2b",
+  "snapshot": {
+    "location": "hall",
+    "log": [
+      {
+        "choice": 1,
+        "storylet": "hall_a"
+      },
+      {
+        "choice": 0,
+        "storylet": "hall_c"
+      },
+      {
+        "choice": 1,
+        "storylet": "room_x"
+      },
+      {
+        "choice": 0,
+        "storylet": "hall_b"
+      }
+    ],
+    "phase": "report",
+    "profile": {
+      "nights": 1
+    },
+    "report": {
+      "summary": "sum_default"
+    },
+    "rng": 3663131668,
+    "run": {
+      "seen.hall_a": 1,
+      "turn": 4
+    },
+    "seed": 42,
+    "storyletId": "hall_b",
+    "v": 1
+  }
+}
