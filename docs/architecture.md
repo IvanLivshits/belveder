@@ -24,8 +24,8 @@ GameState { seed, rng, phase: scene|outcome|report, location, storyletId, pendin
 newNight(profile, world, seed)  → state   # run сброшен, выбран первый сторилет в rules.start
 choose(state, world, index)     → state   # эффекты выбора → rules.onChoice (если не free)
                                           # → есть outcome ? фаза outcome : resolve
-continueOutcome(state, world)   → state   # resolve: nightEndWhen или endNight ? отчёт : выбор сторилета в goto
-pledge(state, world, pair)      → state   # false-флаг пары = 0; returnWhen ? true-флаг = 1; отчёт
+continueOutcome(state, world)   → state   # resolve: endNight ? отчёт : первый interrupt.goto ?? goto выбора
+pledge(state, world, pairId)    → state   # fake = 0, pledged.<id> = 1; returnWhen ? real = 1, returned.<id> = 1, memories_returned += 1; отчёт
 currentScene(state, world)      → { storylet, text, choices[{index, text, available}], memories[{index, label}] }
 currentOutcome(state, world)    → { storylet, text }
 currentReport(state, world)     → [{ slot, label, fragment, text }]
@@ -35,8 +35,8 @@ currentReport(state, world)     → [{ slot, label, fragment, text }]
 
 - **Качества** — целые числа в двух мешках: `run` (сбрасывается каждую ночь) и `profile` (живёт между ночами). Флаги и множества — тоже качества 0/1 с составным id (`visited.floor2.tenant`), объявленные через namespace `visited.*`. Значение, равное default, не хранится.
 - **Выбор сторилета**: все сторилеты локации с истинными `when`, берутся с максимальным `priority`, ничья решается seed-RNG (mulberry32, состояние в `state.rng`).
-- **Глобальные правила** из `world.rules`: `onChoice` (эффекты на каждый выбор, например `turn += 1`), `nightEndWhen` (условие конца ночи), `onNightEnd` (эффекты на профиль). Движок исполняет их, не зная смысла.
-- **Воспоминания**: `world.memories` — список пар флагов `false`/`true` с `returnWhen`. Для движка это непрозрачные id качеств. Сторилет `layout: pledge` показывает ложные воспоминания со значением 1; залог ночи целиком — обычный выбор с эффектом из контента.
+- **Глобальные правила** из `world.rules`: `onChoice` (эффекты на каждый выбор, например `turn += 1`), `interrupts` (список `{when, goto}`, первый подходящий после каждого выбора переносит игрока), `onNightEnd` (эффекты на профиль). Ночь заканчивается только `endNight`-выбором или залогом воспоминания, поэтому рассвет и поимка — перехваты в локацию залога. Движок исполняет всё это, не зная смысла.
+- **Воспоминания**: `world.memories` — список пар `{id, fake, real, returnWhen}`. Флаги для движка непрозрачные id качеств. При залоге пары движок пишет run-флаги `pledged.<id>`, `returned.<id>` и профильный `memories_returned` (константы `RESERVED_QUALITIES`), чтобы отчёт знал, что случилось этой ночью. Сторилет `layout: pledge` показывает ложные воспоминания со значением 1; залог ночи целиком — обычный выбор с эффектом из контента.
 - **Отчёт**: для каждого слота берётся фрагмент с истинными `when` и максимальным приоритетом; ничья через RNG. Считается до сброса run, поэтому может ссылаться на run-качества.
 - **Детерминизм**: одинаковый seed + действия → байт-в-байт одинаковое состояние. Проверяется golden digest = sha256 от канонического JSON.
 
@@ -56,7 +56,7 @@ currentReport(state, world)     → [{ slot, label, fragment, text }]
 
 ## Mini App (`apps/miniapp`)
 
-`telegram.ts` — единственное место с `window.Telegram.WebApp`. `content.ts` — загрузка и zod-валидация `world.json` и `assets.json`. `App.tsx` — экраны title / night (scene или report), вызовы engine, сохранение. Рендер — компоненты `ui-kit`. Фон 9:16 через `Backdrop` (портрет персонажа — тоже полная сцена, он заменяет фон), нижняя треть — `SceneCard` с `ChoiceList` или `DoorPicker`.
+`telegram.ts` — единственное место с `window.Telegram.WebApp`. `content.ts` — загрузка и zod-валидация `world.json` и `assets.json`. `App.tsx` — экраны title / night (scene или report), вызовы engine, сохранение. Рендер — компоненты `ui-kit`. Фон 9:16 через `Backdrop`: портрет-сцена (h > w в `assets.json`) заменяет фон, квадратная улика ложится вставкой-фотокарточкой поверх фона. Нижняя треть — `SceneCard` с `ChoiceList`, `DoorPicker` или `PledgePicker`.
 
 ## Бот (`apps/bot`)
 

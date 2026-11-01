@@ -9,7 +9,7 @@ description: Формат сторилета и фрагмента отчёта,
 
 ## Файлы
 
-- `world.yaml` — качества, локации, глобальные правила (`rules.onChoice`, `rules.nightEndWhen`, `rules.start`).
+- `world.yaml` — качества, локации, глобальные правила (`rules.start`, `rules.onChoice`, `rules.interrupts`, `rules.onNightEnd`), пары воспоминаний.
 - `storylets/*.yaml` — список сторилетов. Один файл на локацию или тему.
 - `report-fragments/*.yaml` — фрагменты отчёта по слотам.
 
@@ -26,7 +26,7 @@ description: Формат сторилета и фрагмента отчёта,
     - dolly_trust < 3
   layout: scene                  # scene (по умолчанию) | doors | pledge
   background: lobby              # id из assets/assets.json
-  portrait: dolly_suspicion      # необязательно; портреты — полные сцены 9:16, портрет заменяет фон на экране
+  portrait: dolly_suspicion      # необязательно; сцена 9:16 заменяет фон, квадратная улика (ev_*) ложится вставкой поверх фона
   title: Вестибюль
   text: |
     Долли смотрит на вас так, будто уже знает, зачем вы пришли. Улик при вас: {clues}.
@@ -54,6 +54,15 @@ description: Формат сторилета и фрагмента отчёта,
 
 `rules.onChoice` из `world.yaml` применяется после эффектов каждого выбора (например `turn += 1`). Если выбор не должен тратить ход, укажи `free: true`.
 
+**Перехваты.** `rules.interrupts` — список `{ when, goto }`. После каждого выбора (включая `free`, после эффектов и `onChoice`, а при `outcome` — после «Дальше») срабатывает первый подходящий и переносит игрока в `goto` вместо `goto` выбора. `endNight` сильнее перехвата. Ночь заканчивается **только** выбором с `endNight` или залогом воспоминания, поэтому рассвет и поимка — это перехваты в локацию залога:
+
+```yaml
+rules:
+  interrupts:
+    - { when: [suspicion >= 10], goto: pledge }
+    - { when: [turn >= 16], goto: pledge }
+```
+
 **Подстановки.** В `text` сторилета, `text` выбора, `outcome` и `text` фрагмента `{quality_id}` заменяется числом из состояния на момент показа. Для `outcome` это состояние после эффектов. Неизвестный id — ошибка validator (правило `placeholders`). Фигурные скобки в тексте можно использовать только для подстановок.
 
 **Экран последствия.** `outcome` у выбора: эффекты и `onChoice` применяются сразу, потом игрок видит текст с кнопкой «Дальше», и только после неё срабатывают `goto`, `endNight` и проверка `nightEndWhen`.
@@ -64,14 +73,15 @@ description: Формат сторилета и фрагмента отчёта,
 
 ```yaml
 memories:
-  - false: mem.false.dolly         # флаг ложного воспоминания (profile, default 1)
-    true: mem.true.dolly           # флаг настоящего (profile, default 0)
-    label_false: Долли никогда не выходила из-за стойки
-    label_true: Как забывают
-    returnWhen: [dolly_trust >= 2] # если выполнено в момент залога — настоящее возвращается
+  - id: ring                       # по нему движок пишет pledged.ring / returned.ring
+    fake: mem.false.marines        # флаг ложного воспоминания (profile, default 1)
+    real: mem.true.ring            # флаг настоящего (profile, default 0)
+    label_fake: Морская пехота, Тихий океан
+    label_real: "Кольцо: свадьба на Канал-стрит"
+    returnWhen: [has.ring == 1]    # если выполнено в момент залога — настоящее возвращается
 ```
 
-Оба флага должны быть объявлены в `qualities` (обычно namespace `mem.false.*` с `default: 1` и `mem.true.*`). Движок смысла пар не знает: он только ставит `false` в 0, проверяет `returnWhen`, ставит `true` в 1 и завершает ночь.
+Ключи именно `fake`/`real`: по YAML 1.2 `false:`/`true:` — булевы значения. Оба флага должны быть объявлены в `qualities` (обычно namespace `mem.false.*` с `default: 1` и `mem.true.*`). Движок смысла пар не знает. При залоге пары `X` он: ставит `fake` в 0 и run-флаг `pledged.X = 1`; если `returnWhen` выполнено — `real = 1`, `returned.X = 1`, `memories_returned += 1`; затем завершает ночь. Отчёт собирается до сброса run, так что фрагменты могут смотреть на `pledged.*` и `returned.*`. Мир с парами обязан объявить `pledged.*`, `returned.*` (run) и `memories_returned` (profile), иначе validator падает.
 
 Сторилет с `layout: pledge` показывает кнопку на каждое ложное воспоминание со значением 1 плюс свои обычные `choices`. Обязателен хотя бы один безусловный `endNight`-выбор — «Заложить ночь» (`effects: [night_pledged = 1]`, воспоминания не трогаются; фрагменты отчёта смотрят на `night_pledged`).
 

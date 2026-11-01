@@ -8,9 +8,9 @@ description: Как менять packages/engine: чистые функции, s
 ## Принципы
 
 - Всё в engine — чистые функции: `step(state, action, world) -> state`. Действия: `choose`, `continue` (уйти с экрана последствия), `pledge` (заложить воспоминание), `newNight`. Ни одной мутации входа, ни одного побочного эффекта.
-- Фазы состояния: `scene` → (`outcome` →) `scene` … → `report`. Эффекты выбора применяются до фазы `outcome`, `goto`/`endNight`/`nightEndWhen` — после неё.
+- Фазы состояния: `scene` → (`outcome` →) `scene` … → `report`. Эффекты выбора применяются до фазы `outcome`; после неё: `endNight` → отчёт, иначе первый подходящий `interrupts[].goto`, иначе `goto` выбора. Ночь заканчивается только `endNight` или залогом воспоминания.
 - Рандом только через `rng.ts` (mulberry32): состояние RNG лежит в `state.rng`, каждое использование возвращает новое значение. Одинаковый seed + одинаковые действия = одинаковое состояние, байт в байт.
-- Движок не знает о мире: имена качеств, локаций, сторилетов приходят из `world`. Глобальные правила (`onChoice`, `nightEndWhen`) — тоже данные из `world.rules`.
+- Движок не знает о мире: имена качеств, локаций, сторилетов приходят из `world`. Глобальные правила (`onChoice`, `interrupts`, `onNightEnd`) — тоже данные из `world.rules`. Единственные id, которые движок пишет сам, — `RESERVED_QUALITIES` из content-schema (`pledged.<id>`, `returned.<id>`, `memories_returned`): это имена механики, а не мира, и validator требует их объявления.
 - Нет `Date`, `Math.random`, `console`, `fetch`, `window`.
 
 ## Тесты

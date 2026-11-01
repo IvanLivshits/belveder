@@ -12,16 +12,19 @@ description: Что проверяет validator, как добавить нов
 
 | Правило | Что ловит | Уровень |
 |---|---|---|
-| `qualities` | условие или эффект на необъявленное качество; `rules.onChoice` / `nightEndWhen` ссылаются на необъявленное; `rules.start` указывает на несуществующую локацию | error |
-| `references` | `goto` на несуществующую локацию; `background`/`portrait` нет в `assets.json` | error |
+| `qualities` | условие или эффект на необъявленное качество, в том числе в `rules.*`; `rules.start` указывает на несуществующую локацию | error |
+| `references` | `goto` выбора или перехвата на несуществующую локацию; `background`/`portrait` нет в `assets.json` | error |
 | `dead-ends` | локация без сторилетов (error); сторилет, у которого все choices условные (warning) | error / warning |
 | `reachability` | локация, недостижимая из `rules.start` по графу `goto` (условия игнорируются) | warning |
 | `report-slots` | слот отчёта без фрагментов или без фолбэка (фрагмента без условий) | error |
 | `layouts` | `layout: doors` не с тремя choices или дверь без `goto`; `layout: pledge` без `memories` в мире или без безусловного `endNight`-выбора | error |
 | `placeholders` | `{…}` в тексте сторилета, выбора, `outcome` или фрагмента, не являющийся объявленным качеством | error |
-| `memories` | пара воспоминаний с необъявленным флагом, одинаковыми или повторно использованными флагами, `returnWhen` на необъявленное качество | error |
+| `memories` | пара с повторным `id`, необъявленным, одинаковым или повторно использованным флагом, `returnWhen` на необъявленное качество; мир с парами без `pledged.*`, `returned.*`, `memories_returned` | error |
+| `planned` | условие на качество, которое ничего не ставит (ни эффект, ни правило, ни движок) и у которого default 0. Обычно контент будущих этажей | warning |
 
-Тупики по состоянию (нет подходящего сторилета, нет доступных выборов) ловит симуляция, а не статическое правило: условия вида `seen.x == 0` / `seen.x == 1` дополняют друг друга, и статически это не видно.
+Тупики по состоянию (нет подходящего сторилета, нет доступных выборов) ловит симуляция, а не статическое правило: условия вида `seen.x == 0` / `seen.x == 1` или набор `floor == 1..4` дополняют друг друга, и статически это не видно. Поэтому «все выборы условные» — warning, а `stuck` в симуляции — error.
+
+Ожидаемые предупреждения в срезе этажей 1–4: `planned` на качества этажей 5–13 (`has.ruby_record`, `has.medical_file`, `debt.ruby`, `has.signature_photo`, `seen.vault13`), `pledge_caught` в «never shown» (подозрение в срезе не доходит до 10), `stairs` с условными выборами.
 
 Каждое правило — функция `(world, assets) => Issue[]`, `Issue = { level, where, message }`.
 
@@ -38,15 +41,15 @@ description: Что проверяет validator, как добавить нов
 
 ```
 simulated 200 nights
-  ended by rule: 14, by endNight choice: 186, stuck: 0, errors: 0
-  turns per night: min 1, avg 4.8, max 16
-  storylets never shown (2): service_04_archive, ...
-  choices never taken (9): floor_04_doors#1, ...
+  ended by memory pledge: 120, by endNight choice: 80, stuck: 0, errors: 0
+  turns per night: min 1, avg 5.7, max 17
+  storylets never shown (6): lobby_late, pledge_caught, ...
+  choices never taken (15): lobby_hub#1, ...
 ```
 
 Как читать:
 - `stuck > 0` или `errors > 0` — состояние без доступных выборов или исключение движка. CLI выходит с кодом 1.
 - `never shown` / `never taken` — сторилет или выбор недостижим для случайного игрока. Либо условия слишком строгие, либо путь длинный. Решай по смыслу: случайный игрок часто уходит из башни рано.
-- `turns per night` — случайный игрок выбирает «уйти» так же охотно, как остальное, поэтому среднее ниже, чем у живого игрока. Смотри на `max` и на `ended by rule`.
+- `turns per night` — случайный игрок выбирает «уйти» так же охотно, как остальное, поэтому среднее ниже, чем у живого игрока. `max` может быть чуть больше лимита перехвата: выбор с собственным `turn += 1` плюс `onChoice` перескакивает через 16.
 
 Запуск с другими параметрами: `bun run packages/validator/src/cli.ts <world.json> <assets.json> --nights 1000 --seed 7`.
