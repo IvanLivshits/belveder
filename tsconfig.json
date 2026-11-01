@@ -1,0 +1,11 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/content-schema" },
+    { "path": "packages/engine" },
+    { "path": "packages/validator" },
+    { "path": "packages/ui-kit" },
+    { "path": "apps/miniapp" },
+    { "path": "apps/bot" }
+  ]
+}

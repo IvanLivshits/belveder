@@ -1,0 +1,21 @@
+{
+  "name": "@belvedere/miniapp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --cwd ../.. content:build && vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@belvedere/content-schema": "workspace:*",
+    "@belvedere/engine": "workspace:*",
+    "@belvedere/ui-kit": "workspace:*",
+    "preact": "^10.27.0"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.0",
+    "vite": "^7.1.0"
+  }
+}

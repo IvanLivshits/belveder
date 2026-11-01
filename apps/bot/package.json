@@ -1,0 +1,13 @@
+{
+  "name": "@belvedere/bot",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "set-webhook": "bun run src/set-webhook.ts"
+  },
+  "dependencies": {
+    "grammy": "^1.38.0"
+  }
+}

@@ -1,0 +1,94 @@
+id,category,aspect,width,description
+dolly,portraits,9:16,900,Долли — каноничный портрет у лифта
+dolly_suspicion,portraits,9:16,900,Долли — подозрение (прищур)
+dolly_trust,portraits,9:16,900,Долли — доверие (указывает на лифт)
+dolly_worry,portraits,9:16,900,Долли — тревога (смотрит на лифт со светом)
+gorman,portraits,9:16,900,Горман — каноничный портрет на лестнице
+gorman_threat,portraits,9:16,900,Горман — угроза
+gorman_smirk,portraits,9:16,900,Горман — насмешка
+vivian,portraits,9:16,900,Вивиан — каноничный портрет в дверях конторы
+vivian_tears,portraits,9:16,900,Вивиан — сдерживает слёзы (одна слеза)
+vivian_lie,portraits,9:16,900,Вивиан — холодная ложь (взгляд в сторону)
+vivian_recognize,portraits,9:16,900,Вивиан — узнаёт (губы приоткрыты)
+nick,portraits,9:16,900,Ник — каноничный портрет под фонарём (рука в кармане)
+eddie,portraits,9:16,900,Эдди — каноничный портрет в прачечной
+eddie_caught,portraits,9:16,900,Эдди — пойман (ухмылка)
+eddie_scared,portraits,9:16,900,Эдди — испуган (прижал цилиндр)
+pool,portraits,9:16,900,Миссис Пул — каноничный портрет у стола на двоих
+pool_recognize,portraits,9:16,900,Миссис Пул — узнаёт «Уолтера»
+sloan,portraits,9:16,900,Слоун — каноничный портрет (чернила на пальцах)
+sloan_caught,portraits,9:16,900,Слоун — пойман на лжи
+mei,portraits,9:16,900,Мэй Тан — каноничный монохромный портрет
+tony,portraits,9:16,900,Тони — каноничный портрет в зале
+tony_threat,portraits,9:16,900,Тони — угроза (сжатый кулак)
+ruby,portraits,9:16,900,Руби — каноничный портрет (розовый шарф)
+ruby_recognize,portraits,9:16,900,Руби — узнаёт (рука у горла)
+auerbach,portraits,9:16,900,Доктор Ауэрбах — каноничный портрет у раковины
+auerbach_shock,portraits,9:16,900,Доктор — бледнеет (полотенце падает)
+bennett,portraits,9:16,900,Беннет — голос без лица (тень на глазах)
+fenn,portraits,9:16,900,Фенн — каноничный портрет (ключ на красной ленте)
+cordelia,portraits,9:16,900,Корделия — каноничный портрет (пустое лицо)
+silas,portraits,9:16,900,Сайлас — каноничный портрет у топки
+proprietor,portraits,9:16,900,Владелец — без лица (цилиндр в пневмопочте)
+office_empty,backgrounds,9:16,900,Пустая контора Ника (зонт и деньги на столе)
+facade,backgrounds,9:16,900,Фасад Белведера (вид снизу в облака)
+lobby,backgrounds,9:16,900,Вестибюль (1-й этаж)
+lobby_dawn,backgrounds,9:16,900,Вестибюль на рассвете (полиция за стеклом)
+stairwell,backgrounds,9:16,900,Лестничная клетка (переходы между этажами)
+landing_02,backgrounds,9:16,900,Площадка 2 — пневмопочта и пар
+landing_03,backgrounds,9:16,900,Площадка 3 — ботинки и траурная лента
+landing_04,backgrounds,9:16,900,Площадка 4 — зелёный свет и новый замок
+landing_05,backgrounds,9:16,900,Площадка 5 — штатив и красная лампа
+landing_06,backgrounds,9:16,900,Площадка 6 — перчатки и лужа
+landing_07,backgrounds,9:16,900,Площадка 7 — розы и афиша
+landing_08,backgrounds,9:16,900,Площадка 8 — кадуцей и халат
+landing_09,backgrounds,9:16,900,Площадка 9 — кабели и громкоговоритель
+landing_10,backgrounds,9:16,900,Площадка 10 — часы и шестерни
+landing_11,backgrounds,9:16,900,Площадка 11 — решётка на лестнице и ковёр
+landing_12,backgrounds,9:16,900,Площадка 12 — дверь ломбарда и кирпичный тупик
+room_newtenant,backgrounds,9:16,900,3-й — комната для новых жильцов
+archive,backgrounds,9:16,900,4-й — архив копий Слоуна
+darkroom,backgrounds,9:16,900,5-й — фотолаборатория (снимок подписи)
+fire_escape,backgrounds,9:16,900,6-й — окно на пожарную лестницу
+clockworks,backgrounds,9:16,900,10-й — механизм башенных часов
+vault13,backgrounds,9:16,900,13-й — хранилище залогов
+ending_case_closed,endings,9:16,1080,Финал «Дело закрыто» (кольцо на ладони)
+ending_redemption,endings,9:16,1080,Финал «Выкуп» (кухня)
+ending_new_proprietor,endings,9:16,1080,Финал «Новый Владелец» (костюм Ника на стуле)
+ending_ashes,endings,9:16,1080,Финал «Пепел» (горит верх башни)
+ending_signature,endings,9:16,1080,Финал «Подпись» (вестибюль; кадрировать ближе)
+ev_ring,evidence,1:1,800,Улика — кольцо в щели пола
+ev_nick_hands,evidence,1:1,800,Улика — руки Ника (полоса от кольца и шрам)
+ev_pawn_ticket,evidence,1:1,800,Улика — половина квитанции Хейла
+ev_ledgers,evidence,1:1,800,Улика — две копии книги Слоуна
+ev_medical_file,evidence,1:1,800,Улика — медкарта Вивиан (рентген)
+ev_ruby_record,evidence,1:1,800,Улика — пластинка Руби с фото
+ev_owner_note,evidence,1:1,800,Улика — записка Владельца (сломанная печать)
+ev_darkroom_key,evidence,1:1,800,Предмет — ключ от фотолаборатории
+ev_clock_key,evidence,1:1,800,Предмет — часовой ключ Фенна
+ev_cordelia_pass,evidence,1:1,800,Предмет — пропуск Корделии
+ev_silas_matches,evidence,1:1,800,Предмет — спички Сайласа
+ev_facade_photo,evidence,1:1,800,Улика — фото верхушки дома с 13-м этажом
+env_sealed,envelopes,1:1,800,Закрытый конверт (общий)
+mem_dolly,envelopes,1:1,800,Воспоминание «Как забывают»
+mem_eddie,envelopes,1:1,800,Воспоминание «Отец в шляпе»
+mem_pool,envelopes,1:1,800,Воспоминание «Чёрный креп»
+mem_sloan,envelopes,1:1,800,Воспоминание «Одна ложь»
+mem_mei,envelopes,1:1,800,Воспоминание «Красное платье»
+mem_tony,envelopes,1:1,800,Воспоминание «Первый удар»
+mem_ruby,envelopes,1:1,800,Воспоминание «Синий фонарь 1941»
+mem_auerbach,envelopes,1:1,800,Воспоминание «Девочка на столе»
+mem_bennett,envelopes,1:1,800,Воспоминание «Голос без лица»
+mem_fenn,envelopes,1:1,800,Воспоминание «Вчера»
+mem_cordelia,envelopes,1:1,800,Воспоминание «Чего я хотела»
+mem_silas,envelopes,1:1,800,Воспоминание «Кто я был»
+mem_gorman,envelopes,1:1,800,Воспоминание «Страх»
+cover,ui,9:16,1080,Обложка с названием
+logo_avatar,ui,1:1,512,Аватар бота (гроздь шаров)
+logo_splash,ui,1:1,800,Логотип для заставки (шары на цепях)
+paper_light,ui,1:1,1024,Бумага светлая (бесшовная)
+paper_dark,ui,1:1,1024,Бумага тёмная (бесшовная)
+cover_art,ui,9:16,1080,Обложка без названия (исходник арта)
+landing_base,backgrounds,9:16,900,Базовая площадка без деталей
+stairwell_up,backgrounds,9:16,900,Лестница вверх в темноту (сцены подъёма)
+photo_facade_print,evidence,9:16,900,Фото фасада на верёвке (вариант без 13-го, для студии Мэй)

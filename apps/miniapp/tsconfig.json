@@ -1,0 +1,26 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": ".",
+    "outDir": "dist/types",
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "declaration": true,
+    "tsBuildInfoFile": "dist/.tsbuildinfo"
+  },
+  "include": [
+    "src"
+  ],
+  "references": [
+    {
+      "path": "../../packages/content-schema"
+    },
+    {
+      "path": "../../packages/engine"
+    },
+    {
+      "path": "../../packages/ui-kit"
+    }
+  ]
+}

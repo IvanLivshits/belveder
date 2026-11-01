@@ -1,0 +1,40 @@
+---
+name: telegram-miniapp
+description: Telegram WebApp API в apps/miniapp и apps/bot: тема, viewport, BackButton, CloudStorage, initData, запуск из бота, отладка через ngrok. Применять при любой работе с Telegram.
+---
+
+# Telegram Mini App
+
+Используем глобальный `window.Telegram.WebApp` через `<script src="https://telegram.org/js/telegram-web-app.js">` в `index.html`. SDK-пакет не подключаем. Вся работа с ним изолирована в `apps/miniapp/src/telegram.ts`; остальной код получает плоский объект-адаптер и не знает, Telegram это или браузер.
+
+## Адаптер (`telegram.ts`)
+
+- `isTelegram` — есть ли `WebApp.initData` (пустая строка в обычном браузере).
+- `ready()` + `expand()` при старте, `setHeaderColor`, `setBackgroundColor` под тему.
+- Тема: CSS-переменные `--tg-theme-*` Telegram ставит сам; в браузере задаём дефолты в `base.css`. Слушаем `themeChanged`.
+- Viewport: высота через `var(--tg-viewport-stable-height, 100vh)`. Слушаем `viewportChanged`. Не используем `100vh` напрямую: на iOS прыгает.
+- BackButton: показываем везде, кроме первого экрана; `onClick` → действие «назад» в приложении (в MVP — выход на титул с подтверждением, а не отмена хода: движок ходов назад не делает).
+- MainButton в MVP не используем: выборы — свои кнопки в нижней трети.
+- `HapticFeedback.impactOccurred('light')` на выбор, если доступно.
+
+## CloudStorage
+
+Лимиты: значение ≤ 4096 символов, ≤ 1024 ключа, ключи `A-Za-z0-9_-` длиной 1–128. Все операции callback-style, оборачиваем в Promise.
+Кодек (компактная сериализация, разбиение на чанки, версия схемы) живёт в `packages/engine/src/storage.ts` и тестируется без браузера. `apps/miniapp/src/storage.ts` только читает и пишет строки по ключам: CloudStorage в Telegram, localStorage в браузере.
+
+## initData
+
+В MVP сервера нет, initData не проверяем. Когда появится сервер: проверять HMAC-SHA256 подпись `initData` секретом `sha256(bot_token)` с ключом `WebAppData`, отбрасывать `auth_date` старше 24 часов. Никогда не доверять `initDataUnsafe` на сервере.
+
+## Бот
+
+grammY на вебхуке, polling не используем. `/start` отвечает кнопкой `web_app: { url: WEBAPP_URL }`. Вебхук ставится скриптом `bun run bot:webhook` с `secret_token`, сервер проверяет заголовок `X-Telegram-Bot-Api-Secret-Token`.
+Для кнопки меню: BotFather → Bot Settings → Menu Button → URL Mini App.
+
+## Локальная отладка
+
+1. `bun dev` → Vite на `http://localhost:5173`.
+2. `ngrok http 5173` → HTTPS-URL. Telegram открывает Mini App только по HTTPS.
+3. `WEBAPP_URL=<ngrok-url>` в `.env`, перезапустить бота, `/start`.
+4. Для бота на вебхуке — второй туннель на `PORT` и `bun run bot:webhook`.
+5. В desktop-клиенте Telegram: Settings → Advanced → Experimental → Enable webview inspecting, чтобы открыть DevTools.
