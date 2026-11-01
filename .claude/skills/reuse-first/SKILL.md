@@ -19,9 +19,12 @@ description: Алгоритм «перед тем как написать код
 | Применить эффект | `engine/effects.ts: applyEffects()` |
 | Выбрать сторилет для локации | `engine/select.ts: selectStorylet()` |
 | Детерминированный рандом | `engine/rng.ts` |
-| Собрать отчёт за ночь | `engine/report.ts` |
-| Сериализовать состояние / профиль | `engine/storage.ts` (кодек) + `apps/miniapp/src/storage.ts` (транспорт) |
-| Карточка сцены, список выборов, три двери, полоска качества, страница отчёта | `ui-kit` |
+| Собрать отчёт за ночь | `engine/report.ts: buildReport()`, для рендера `step.ts: currentReport()` |
+| Данные для экрана сцены | `engine/step.ts: currentScene()` |
+| Сериализовать состояние / профиль | `engine/storage.ts` (кодек, чанки) + `apps/miniapp/src/storage.ts` (транспорт KV) |
+| Загрузить контент из YAML | `validator/load.ts: loadWorldDir()` |
+| Фон с дождём, карточка сцены, список выборов, три двери, HUD качеств, страница отчёта, титул | `ui-kit` |
+| Telegram API | `apps/miniapp/src/telegram.ts` — единственное место |
 | Схема любой сущности контента | `content-schema` |
 
 ## Правило двух использований

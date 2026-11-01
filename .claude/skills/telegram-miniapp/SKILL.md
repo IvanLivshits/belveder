@@ -20,7 +20,9 @@ description: Telegram WebApp API в apps/miniapp и apps/bot: тема, viewport
 ## CloudStorage
 
 Лимиты: значение ≤ 4096 символов, ≤ 1024 ключа, ключи `A-Za-z0-9_-` длиной 1–128. Все операции callback-style, оборачиваем в Promise.
-Кодек (компактная сериализация, разбиение на чанки, версия схемы) живёт в `packages/engine/src/storage.ts` и тестируется без браузера. `apps/miniapp/src/storage.ts` только читает и пишет строки по ключам: CloudStorage в Telegram, localStorage в браузере.
+Кодек (компактная сериализация, разбиение на чанки, версия схемы) живёт в `packages/engine/src/storage.ts` и тестируется без браузера. `apps/miniapp/src/storage.ts` только читает и пишет строки по ключам `profile_N` / `run_N`: CloudStorage в Telegram, localStorage в браузере. После каждого выбора сохраняются оба документа (профиль меняется и посреди ночи), после отчёта run удаляется.
+
+Вне Telegram `isTelegram === false`: адаптер не трогает BackButton/haptic/цвета, иначе `telegram-web-app.js` засоряет консоль предупреждениями «not supported in version 6.0».
 
 ## initData
 
@@ -33,8 +35,9 @@ grammY на вебхуке, polling не используем. `/start` отве
 
 ## Локальная отладка
 
-1. `bun dev` → Vite на `http://localhost:5173`.
-2. `ngrok http 5173` → HTTPS-URL. Telegram открывает Mini App только по HTTPS.
+1. `bun dev` → Vite на `http://localhost:5173` (если порт занят, Vite возьмёт следующий — смотри вывод).
+2. `ngrok http 5173` → HTTPS-URL. Telegram открывает Mini App только по HTTPS. В `vite.config.ts` уже стоит `allowedHosts: true`.
 3. `WEBAPP_URL=<ngrok-url>` в `.env`, перезапустить бота, `/start`.
 4. Для бота на вебхуке — второй туннель на `PORT` и `bun run bot:webhook`.
 5. В desktop-клиенте Telegram: Settings → Advanced → Experimental → Enable webview inspecting, чтобы открыть DevTools.
+6. Без Telegram: открой Vite-URL в браузере, сохранения пойдут в localStorage (`blv_*`). Смоук без рук — headless Chrome через CDP (`--remote-debugging-port`), кликать `.title__actions button`, `.choices .choice`, `.door`.

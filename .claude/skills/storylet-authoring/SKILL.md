@@ -26,7 +26,7 @@ description: Формат сторилета и фрагмента отчёта,
     - dolly_trust < 3
   layout: scene                  # scene (по умолчанию) | doors
   background: lobby              # id из assets/assets.json
-  portrait: dolly_suspicion      # необязательно, id из assets.json
+  portrait: dolly_suspicion      # необязательно; портреты — полные сцены 9:16, портрет заменяет фон на экране
   title: Вестибюль
   text: |
     Долли смотрит на вас так, будто уже знает, зачем вы пришли.
@@ -55,11 +55,13 @@ description: Формат сторилета и фрагмента отчёта,
 
 ```yaml
 - id: client_vivian_default
-  slot: client          # client | entry | witnesses | finding | twist | price
+  slot: client          # id слота из world.yaml report.slots
   priority: 0
   when: [nights >= 1]
   text: Клиентка не назвала имени. Это уже кое-что.
 ```
+
+Слоты объявляются в `world.yaml`: `report.slots: [{ id: client, label: Клиентка }, …]`. Отчёт считается до сброса run, поэтому условия могут смотреть на run-качества (`clues`, `seen.*`).
 
 Для каждого слота в любой ситуации должен подходить хотя бы один фрагмент: делай фрагмент с `priority: -100` без условий.
 
