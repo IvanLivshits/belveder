@@ -1,6 +1,8 @@
 /** Save transport: a local store written first, synchronously from the caller's
  *  point of view, and an optional cloud store written asynchronously behind it.
- *  Cloud failures are swallowed; loading falls back to the local copy.
+ *  Cloud failures are swallowed. Every document carries a monotonic `rev`; on
+ *  load the copy with the higher rev wins (cloud on a tie) and the loser is
+ *  brought up to date, so an interrupted cloud write never resurrects old state.
  *  The codec (compact docs, chunks, versions) lives in @belvedere/engine/storage. */
 import {
   chunkCount, fromChunks, parseProfile, parseRun, serializeProfile, serializeRun, toChunks,
@@ -85,21 +87,40 @@ export async function removeDoc(store: KV, prefix: string, from = 0): Promise<vo
   await store.remove(stale);
 }
 
+// ---- envelope: rev + savedAt around the codec document ----
+
+export interface Envelope {
+  rev: number;
+  savedAt: number;
+  /** Codec document; empty string is a tombstone (document deleted). */
+  body: string;
+}
+
+const ENVELOPE_RE = /^rev=(\d+);at=(\d+)\|/;
+
+export function encodeEnvelope(e: Envelope): string {
+  return `rev=${e.rev};at=${e.savedAt}|${e.body}`;
+}
+
+/** Documents written before envelopes existed decode as rev 0. */
+export function decodeEnvelope(doc: string): Envelope {
+  const m = ENVELOPE_RE.exec(doc);
+  if (!m) return { rev: 0, savedAt: 0, body: doc };
+  return { rev: Number(m[1]), savedAt: Number(m[2]), body: doc.slice(m[0].length) };
+}
+
 // ---- write queue: latest doc per prefix wins, one write in flight ----
 
-type Pending = { doc: string | null };
-
 function makeQueue(store: KV) {
-  const latest = new Map<string, Pending>();
+  const latest = new Map<string, string>();
   const inflight = new Map<string, Promise<void>>();
   const drain = async (prefix: string): Promise<void> => {
     for (;;) {
       const next = latest.get(prefix);
-      if (!next) return;
+      if (next === undefined) return;
       latest.delete(prefix);
       try {
-        if (next.doc === null) await removeDoc(store, prefix);
-        else await saveDoc(store, prefix, next.doc);
+        await saveDoc(store, prefix, next);
       } catch {
         // Swallowed on purpose: the local copy is the fallback. Stop draining to avoid hammering the store.
         latest.delete(prefix);
@@ -108,8 +129,8 @@ function makeQueue(store: KV) {
     }
   };
   return {
-    push(prefix: string, doc: string | null): Promise<void> {
-      latest.set(prefix, { doc });
+    push(prefix: string, doc: string): Promise<void> {
+      latest.set(prefix, doc);
       if (!inflight.has(prefix)) {
         const p = drain(prefix).finally(() => inflight.delete(prefix));
         inflight.set(prefix, p);
@@ -126,36 +147,64 @@ export interface Saves {
   /** Fire-and-forget: local store immediately, cloud behind it. Never throws. */
   persistProfile(p: Profile): void;
   persistRun(s: GameState): void;
+  /** Writes a tombstone (rev+1, empty body) so a stale cloud run cannot come back. */
   clearRun(): void;
   loadProfile(): Promise<Profile | null>;
   loadRun(profile: Profile): Promise<GameState | null>;
-  /** Resolves when queued cloud writes have settled (tests, page hide). */
+  /** Resolves when queued writes have settled (tests, page hide). */
   flush(): Promise<void>;
 }
 
 const PROFILE = "profile";
 const RUN = "run";
 
-export function createSaves(local: KV, cloud?: KV): Saves {
+type Read = { ok: true; env: Envelope | null } | { ok: false };
+
+async function readEnvelope(store: KV, prefix: string): Promise<Read> {
+  try {
+    const doc = await loadDoc(store, prefix);
+    return { ok: true, env: doc === null ? null : decodeEnvelope(doc) };
+  } catch {
+    return { ok: false };
+  }
+}
+
+export function createSaves(local: KV, cloud?: KV, now: () => number = () => Date.now()): Saves {
   const localQ = makeQueue(local);
   const cloudQ = cloud ? makeQueue(cloud) : undefined;
-  const write = (prefix: string, doc: string | null) => {
+  /** Last known rev per document, seeded by load(). */
+  const revs = new Map<string, number>();
+
+  const write = (prefix: string, body: string) => {
+    const rev = (revs.get(prefix) ?? 0) + 1;
+    revs.set(prefix, rev);
+    const doc = encodeEnvelope({ rev, savedAt: now(), body });
     void localQ.push(prefix, doc);
     void cloudQ?.push(prefix, doc);
   };
+
+  /** Picks the copy with the higher rev (cloud on a tie), syncs the loser, returns the body or null. */
   const read = async (prefix: string): Promise<string | null> => {
-    if (cloud) {
-      try {
-        const doc = await loadDoc(cloud, prefix);
-        if (doc !== null) return doc;
-      } catch { /* fall back to local */ }
-    }
-    return loadDoc(local, prefix);
+    const [l, c] = await Promise.all([readEnvelope(local, prefix), cloud ? readEnvelope(cloud, prefix) : Promise.resolve<Read>({ ok: true, env: null })]);
+    const le = l.ok ? l.env : null;
+    const ce = c.ok ? c.env : null;
+    let winner: Envelope | null;
+    if (le && ce) winner = le.rev > ce.rev ? le : ce;
+    else winner = le ?? ce;
+    if (!winner) return null;
+    revs.set(prefix, Math.max(winner.rev, revs.get(prefix) ?? 0));
+    const doc = encodeEnvelope(winner);
+    // Bring the losing side up to date; only when that side was readable, so a blind write
+    // never clobbers a copy we could not inspect.
+    if (cloudQ && c.ok && winner !== ce) void cloudQ.push(prefix, doc);
+    if (l.ok && winner !== le) void localQ.push(prefix, doc);
+    return winner.body === "" ? null : winner.body;
   };
+
   return {
     persistProfile: (p) => write(PROFILE, serializeProfile(p)),
     persistRun: (s) => write(RUN, serializeRun(s)),
-    clearRun: () => write(RUN, null),
+    clearRun: () => write(RUN, ""),
     loadProfile: async () => { const d = await read(PROFILE); return d === null ? null : parseProfile(d); },
     loadRun: async (profile) => { const d = await read(RUN); return d === null ? null : parseRun(d, profile); },
     flush: () => Promise.all([localQ.idle(), cloudQ?.idle()]).then(() => undefined),
