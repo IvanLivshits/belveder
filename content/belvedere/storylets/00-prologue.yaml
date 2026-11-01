@@ -18,6 +18,10 @@
       when: [seen.office_smoke == 0, cigarettes >= 1]
       free: true
       effects: [seen.office_smoke = 1, cigarettes -= 1, clues += 1]
+      outcome: |
+        «Кольцо. Обручальное. Я его не закладывала, мистер, я его вообще не снимала».
+        Она показывает руку. На пальце полоса светлее кожи. Такая же, как у вас.
+        Сигарет осталось {cigarettes}. Улик — {clues}.
     - text: Отказаться. Потом передумать
       free: true
       effects: [suspicion += 1]

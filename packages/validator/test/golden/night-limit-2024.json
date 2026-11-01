@@ -1,5 +1,5 @@
 {
-  "digest": "d614d5c8dc280e1c63e05e05f9e8e66d3b49c34412c4cf71e9e859efa9ac53c2",
+  "digest": "f85e60622b5f91cfe1fe306d0d3496ea5a8f316648bd52d778352ad2ce6ccae8",
   "snapshot": {
     "location": "floor_04",
     "log": [
@@ -104,6 +104,7 @@
         "storylet": "floor_04_doors"
       }
     ],
+    "pendingChoice": null,
     "phase": "report",
     "profile": {
       "dolly_trust": 1,

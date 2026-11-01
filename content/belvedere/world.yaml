@@ -12,11 +12,12 @@ qualities:
   - { id: floor, scope: run, label: Этаж, min: 0, max: 13 }
   - { id: has.*, scope: run, label: Предметы }
   - { id: seen.*, scope: run, label: Увидено этой ночью }
+  - { id: night_pledged, scope: run, label: Ночь заложена, min: 0, max: 1 }
   - { id: nights, scope: profile, label: Ночей, min: 0 }
   - { id: dolly_trust, scope: profile, label: Доверие Долли, visible: true, min: 0, max: 5 }
-  - { id: memories_false, scope: profile, label: Ложные воспоминания, default: 3, min: 0 }
-  - { id: memories_true, scope: profile, label: Настоящие воспоминания, min: 0 }
-  - { id: pledges, scope: profile, label: Залогов отдано, min: 0 }
+  # Ложные воспоминания есть у Ника с самого начала (default 1); залог обнуляет флаг.
+  - { id: mem.false.*, scope: profile, label: Ложные воспоминания, default: 1, min: 0, max: 1 }
+  - { id: mem.true.*, scope: profile, label: Настоящие воспоминания, min: 0, max: 1 }
   - { id: visited.*, scope: profile, label: Визиты дверей }
   - { id: paths.*, scope: profile, label: Открытые пути }
 
@@ -34,7 +35,7 @@ locations:
   - { id: tenant_04, label: Кабинет Слоуна }
   - { id: service_03, label: Комната для новых жильцов }
   - { id: service_04, label: Архив копий }
-  - { id: exit, label: Хранилище залогов }
+  - { id: pledge, label: Залог у Долли }
 
 # Глобальные правила ночи. Движок исполняет их, не зная смысла.
 rules:
@@ -42,6 +43,29 @@ rules:
   onChoice: [turn += 1]
   nightEndWhen: [turn >= 16]
   onNightEnd: [nights += 1]
+
+# Пары воспоминаний: ложное закладывается на выходе, настоящее возвращается, если returnWhen выполнено.
+memories:
+  - false: mem.false.dolly
+    true: mem.true.dolly
+    label_false: Долли никогда не выходила из-за стойки
+    label_true: Как забывают
+    returnWhen: [dolly_trust >= 2]
+  - false: mem.false.eddie
+    true: mem.true.eddie
+    label_false: Отец никогда не носил шляпу
+    label_true: Отец в шляпе
+    returnWhen: [seen.eddie == 1, clues >= 2]
+  - false: mem.false.pool
+    true: mem.true.pool
+    label_false: Я никогда не был Уолтером
+    label_true: Чёрный креп
+    returnWhen: [seen.pool == 1, has.pool_key == 1]
+  - false: mem.false.sloan
+    true: mem.true.sloan
+    label_false: Я ни разу не солгал
+    label_true: Одна ложь
+    returnWhen: [clues >= 4]
 
 report:
   slots:

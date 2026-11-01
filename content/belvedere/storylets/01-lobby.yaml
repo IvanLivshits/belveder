@@ -55,4 +55,4 @@
       goto: floor_01
     - text: Наружу, в хранилище залогов
       free: true
-      goto: exit
+      goto: pledge

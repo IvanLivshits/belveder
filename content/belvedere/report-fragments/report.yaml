@@ -12,7 +12,7 @@
 - { id: witnesses_pool, slot: witnesses, priority: 1, when: [seen.pool == 1], text: "Миссис Пул ждёт Уолтера. Кажется, Уолтер — это я." }
 
 - { id: finding_default, slot: finding, priority: -100, text: "Ничего, что можно положить на стол." }
-- { id: finding_clues, slot: finding, when: [clues >= 3], text: "Две копии одной книги. Расхождение — в одной строке, и строка эта обо мне." }
+- { id: finding_clues, slot: finding, when: [clues >= 3], text: "Две копии одной книги. Расхождение — в одной строке, и строка эта обо мне. Улик собрано: {clues}." }
 - { id: finding_capsule, slot: finding, priority: 1, when: [has.pneumo_capsule == 1], text: "Цилиндр пневмопочты. Внутри — квитанция с половиной подписи." }
 
 - { id: twist_default, slot: twist, priority: -100, text: "Поворота не было. Или я его не запомнил." }
@@ -20,5 +20,9 @@
 - { id: twist_contract, slot: twist, priority: 1, when: [has.contract == 1], text: "Договор на новую комнату заполнен моим именем. Почерк тоже мой." }
 
 - { id: price_default, slot: price, priority: -100, text: "Заплатил воспоминанием. Каким — уже не помню." }
-- { id: price_true, slot: price, when: [memories_true >= 1], text: "Выкупил одно настоящее. Оно тяжелее, чем ложное, и не греет." }
-- { id: price_broke, slot: price, priority: 1, when: [memories_false == 0], text: "Ложных воспоминаний не осталось. Дальше придётся платить настоящими." }
+- { id: price_night, slot: price, priority: 2, when: [night_pledged == 1], text: "Заложил ночь целиком. Этот отчёт в дело не пойдёт: утром его не будет." }
+- { id: price_dolly_true, slot: price, priority: 1, when: [mem.true.dolly == 1], text: "Вернулось настоящее: как забывают. Долли учила этому за стойкой, и я был прилежным." }
+- { id: price_eddie_true, slot: price, priority: 1, when: [mem.true.eddie == 1], text: "Вернулось настоящее: отец в шляпе. Шляпа была Эдди, а отец — нет." }
+- { id: price_pool_true, slot: price, priority: 1, when: [mem.true.pool == 1], text: "Вернулось настоящее: чёрный креп. Уолтера хоронили без меня, потому что я и был Уолтером." }
+- { id: price_sloan_true, slot: price, priority: 1, when: [mem.true.sloan == 1], text: "Вернулось настоящее: одна ложь. Строка 41 была моей." }
+- { id: price_all_gone, slot: price, when: [mem.false.dolly == 0, mem.false.eddie == 0, mem.false.pool == 0, mem.false.sloan == 0], text: "Ложных воспоминаний не осталось. Дальше придётся платить настоящими." }

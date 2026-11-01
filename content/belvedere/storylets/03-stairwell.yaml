@@ -34,7 +34,7 @@
       goto: lobby
     - text: Уйти из башни
       free: true
-      goto: exit
+      goto: pledge
 
 - id: stairwell_2
   location: stairwell
@@ -51,7 +51,7 @@
       goto: floor_01
     - text: Уйти из башни
       free: true
-      goto: exit
+      goto: pledge
 
 - id: stairwell_3
   location: stairwell
@@ -68,7 +68,7 @@
       goto: floor_02
     - text: Уйти из башни
       free: true
-      goto: exit
+      goto: pledge
 
 - id: stairwell_4
   location: stairwell
@@ -80,10 +80,10 @@
     - text: Вверх, в темноту
       when: [paths.upper_floors == 1]
       effects: [floor = 5, suspicion += 2]
-      goto: exit
+      goto: pledge
     - text: Вниз, на третий
       effects: [floor = 3]
       goto: floor_03
     - text: Уйти из башни
       free: true
-      goto: exit
+      goto: pledge

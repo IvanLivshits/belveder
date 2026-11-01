@@ -1,6 +1,6 @@
 /** Plays N nights with random choices (seeded) and reports coverage and stuck states. */
 import type { World } from "@belvedere/content-schema";
-import { choose, currentScene, emptyProfile, newNight, nextInt, profileOf, seedRng, type Profile } from "@belvedere/engine";
+import { choose, continueOutcome, currentScene, emptyProfile, newNight, nextInt, pledge, profileOf, seedRng, type GameState, type Profile } from "@belvedere/engine";
 
 export interface SimulationReport {
   nights: number;
@@ -44,28 +44,35 @@ export function simulate(world: World, opts: SimulationOptions = {}): Simulation
     try {
       let s = newNight(profile, world, seed);
       let steps = 0;
-      while (s.phase === "scene" && steps++ < maxSteps) {
+      while (s.phase !== "report" && steps++ < maxSteps) {
+        if (s.phase === "outcome") { s = continueOutcome(s, world); if (s.phase === "report") r.endedByRule++; continue; }
         const scene = currentScene(s, world);
         shown.add(scene.storylet.id);
         const open = scene.choices.filter((c) => c.available);
-        if (open.length === 0) { r.stuck.push({ seed, storylet: scene.storylet.id }); break; }
-        const [i, next] = nextInt(rng, open.length);
+        const options = open.length + scene.memories.length;
+        if (options === 0) { r.stuck.push({ seed, storylet: scene.storylet.id }); break; }
+        const [i, next] = nextInt(rng, options);
         rng = next;
-        const pick = open[i]!;
-        taken.add(`${scene.storylet.id}#${pick.index}`);
-        const before = s;
-        s = choose(s, world, pick.index);
+        if (i < open.length) {
+          const pick = open[i]!;
+          taken.add(`${scene.storylet.id}#${pick.index}`);
+          s = choose(s, world, pick.index);
+          if (s.phase === "report") { if (pick.choice.endNight) r.endedByChoice++; else r.endedByRule++; }
+        } else {
+          const m = scene.memories[i - open.length]!;
+          taken.add(`${scene.storylet.id}#mem${m.index}`);
+          s = pledge(s, world, m.index);
+          r.endedByChoice++;
+        }
         if (s.phase === "report") {
-          if (pick.choice.endNight) r.endedByChoice++; else r.endedByRule++;
           const turns = turnQ ? (s.run[turnQ] ?? 0) : steps;
           turnsTotal += turns;
           r.turns.min = Math.min(r.turns.min, turns);
           r.turns.max = Math.max(r.turns.max, turns);
           profile = profileOf(s);
-          void before;
         }
       }
-      if (s.phase === "scene" && steps >= maxSteps) r.errors.push({ seed, message: `night did not end within ${maxSteps} steps` });
+      if ((s as GameState).phase === "scene" && steps >= maxSteps) r.errors.push({ seed, message: `night did not end within ${maxSteps} steps` });
     } catch (e) {
       r.errors.push({ seed, message: (e as Error).message });
     }

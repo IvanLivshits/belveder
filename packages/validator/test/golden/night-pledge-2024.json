@@ -1,7 +1,7 @@
 {
-  "digest": "f3d79e6dc7a95f171549b6b1d0d2d0bc8ea2ef9003de492f869d9b2d1de918e8",
+  "digest": "ada2fe80512818586311b0dce9e3f98228d8820f99dbf30f6a42fc533d2c60f1",
   "snapshot": {
-    "location": "exit",
+    "location": "pledge",
     "log": [
       {
         "choice": 1,
@@ -76,31 +76,34 @@
         "storylet": "stairwell_3"
       },
       {
-        "choice": 1,
-        "storylet": "exit_pledge"
+        "choice": -1,
+        "pair": 1,
+        "storylet": "pledge_dolly"
       }
     ],
+    "pendingChoice": null,
     "phase": "report",
     "profile": {
       "dolly_trust": 1,
-      "memories_true": 1,
+      "mem.false.eddie": 0,
+      "mem.true.eddie": 1,
       "nights": 1,
-      "pledges": 1,
       "visited.floor2.tenant": 1,
       "visited.floor3.service": 2,
       "visited.floor3.tenant": 1
     },
     "report": {
-      "client": "client_default",
+      "client": "client_known",
       "entry": "entry_default",
-      "finding": "finding_default",
-      "price": "price_true",
+      "finding": "finding_clues",
+      "price": "price_eddie_true",
       "twist": "twist_contract",
       "witnesses": "witnesses_pool"
     },
     "rng": 2024,
     "run": {
       "cigarettes": 2,
+      "clues": 3,
       "floor": 3,
       "has.contract": 1,
       "has.pool_key": 1,
@@ -113,7 +116,7 @@
       "turn": 10
     },
     "seed": 2024,
-    "storyletId": "exit_pledge",
+    "storyletId": "pledge_dolly",
     "v": 1
   }
 }
