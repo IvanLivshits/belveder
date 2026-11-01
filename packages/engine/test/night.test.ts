@@ -11,9 +11,9 @@ describe("mini world night", () => {
     expect(s.storyletId).toBe("hall_a");
     s = choose(s, miniWorld, 1); // wait, heat 1
     expect(s.run["heat"]).toBe(1);
-    expect(currentScene(s, miniWorld).choices.map((c) => c.index)).not.toContain(2); // hall_b/c have one choice
+    expect(currentScene(s, miniWorld).choices.length).toBe(1); // hall_b/c have one choice
     s = choose(s, miniWorld, 0); // to room
-    expect(currentScene(s, miniWorld).choices.length).toBe(2); // hidden choice visible with heat
+    expect(currentScene(s, miniWorld).choices.every((c) => c.available)).toBe(true); // hidden choice unlocked by heat
     s = choose(s, miniWorld, 1); // heat back to 0
     s = choose(s, miniWorld, 0); // turn 4 -> night ends
     expect(s.phase).toBe("report");

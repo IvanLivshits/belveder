@@ -4,7 +4,7 @@ import { applyEffects } from "./effects";
 import { resetRun } from "./qualities";
 import { buildReport } from "./report";
 import { seedRng } from "./rng";
-import { selectStorylet, visibleChoices } from "./select";
+import { choicesOf, selectStorylet } from "./select";
 import { EngineError, STATE_VERSION, findStorylet, type GameState, type Profile } from "./state";
 
 export type Action = { type: "choose"; index: number } | { type: "newNight"; seed: number };
@@ -41,8 +41,8 @@ function endNight(state: GameState, world: World): GameState {
 export function choose(state: GameState, world: World, index: number): GameState {
   if (state.phase !== "scene") throw new EngineError("cannot choose outside a scene");
   const storylet = findStorylet(world, state.storyletId);
-  const visible = visibleChoices(state, world, storylet);
-  if (!visible.some((v) => v.index === index)) throw new EngineError(`choice ${index} not available in ${storylet.id}`);
+  const entry = choicesOf(state, world, storylet)[index];
+  if (!entry?.available) throw new EngineError(`choice ${index} not available in ${storylet.id}`);
   const choice = storylet.choices[index]!;
 
   let next: GameState = { ...state, log: [...state.log, { storylet: storylet.id, choice: index }] };
@@ -61,11 +61,14 @@ export function step(state: GameState, world: World, action: Action): GameState 
   }
 }
 
-/** What the renderer needs for the current scene. */
+/** What the renderer needs for the current scene. Unavailable choices are
+ *  included so a doors layout can show them as locked. */
 export function currentScene(state: GameState, world: World) {
   const storylet = findStorylet(world, state.storyletId);
-  return { storylet, choices: visibleChoices(state, world, storylet) };
+  return { storylet, choices: choicesOf(state, world, storylet) };
 }
+export type SceneView = ReturnType<typeof currentScene>;
+export type ReportView = ReturnType<typeof currentReport>;
 
 /** Report page data: slot -> fragment text, in slot order. */
 export function currentReport(state: GameState, world: World) {

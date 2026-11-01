@@ -28,9 +28,11 @@ export function selectStorylet(
   return [pool[i], next];
 }
 
-/** Choices currently available, with their original index. */
-export function visibleChoices(state: Bags, world: World, storylet: Storylet) {
-  return storylet.choices
-    .map((choice, index) => ({ choice, index }))
-    .filter(({ choice }) => evaluateAll(state, world, choice.when));
+/** Every choice with its original index and whether its conditions hold. */
+export function choicesOf(state: Bags, world: World, storylet: Storylet) {
+  return storylet.choices.map((choice, index) => ({
+    choice,
+    index,
+    available: evaluateAll(state, world, choice.when),
+  }));
 }
