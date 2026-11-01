@@ -1,0 +1,25 @@
+# Выход из башни = залог. Каждый выбор здесь завершает ночь.
+- id: exit_pledge
+  location: exit
+  background: vault13
+  portrait: proprietor
+  title: Хранилище залогов
+  text: |
+    Окошко без лица. Пневмопочта принимает цилиндр и выдаёт квитанцию.
+    «Выход платный. Одно воспоминание. Выбирайте, какое вам не нужно».
+  choices:
+    - text: Отдать ложное воспоминание
+      when: [memories_false >= 1]
+      free: true
+      effects: [memories_false -= 1, pledges += 1]
+      endNight: true
+    - text: Выкупить настоящее за улики
+      when: [clues >= 3]
+      free: true
+      effects: [clues -= 3, memories_true += 1, pledges += 1]
+      endNight: true
+    - text: Отдать что осталось
+      when: [memories_false == 0]
+      free: true
+      effects: [pledges += 1, suspicion += 3]
+      endNight: true

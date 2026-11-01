@@ -1,0 +1,75 @@
+# Экраны трёх дверей. Порядок: дверь жильца, служебная дверь, лестница.
+- id: floor_01_doors
+  location: floor_01
+  layout: doors
+  background: landing_base
+  title: Площадка 1
+  text: Площадка первого этажа. Дверь консьержки, служебная дверь с табличкой «Лифт», лестница вверх.
+  choices:
+    - text: Дверь консьержки
+      effects: [visited.floor1.tenant += 1, floor = 1]
+      goto: lobby
+    - text: Грузовой лифт
+      when: [paths.freight_lift == 1]
+      effects: [visited.floor1.service += 1, floor = 3]
+      goto: floor_03
+    - text: Лестница
+      free: true
+      effects: [floor = 1]
+      goto: stairwell
+
+- id: floor_02_doors
+  location: floor_02
+  layout: doors
+  background: landing_02
+  title: Площадка 2
+  text: Пар из-под двери прачечной. Труба пневмопочты гудит. Служебная дверь приоткрыта.
+  choices:
+    - text: Прачечная Эдди
+      effects: [visited.floor2.tenant += 1, floor = 2]
+      goto: tenant_02
+    - text: Грузовой лифт вниз
+      when: [paths.freight_lift == 1]
+      effects: [visited.floor2.service += 1, floor = 1]
+      goto: lobby
+    - text: Лестница
+      free: true
+      effects: [floor = 2]
+      goto: stairwell
+
+- id: floor_03_doors
+  location: floor_03
+  layout: doors
+  background: landing_03
+  title: Площадка 3
+  text: Ботинки у двери, траурная лента на ручке. Служебная дверь без таблички. Лестница скрипит заранее.
+  choices:
+    - text: Квартира миссис Пул
+      effects: [visited.floor3.tenant += 1, floor = 3]
+      goto: tenant_03
+    - text: Служебная дверь
+      effects: [visited.floor3.service += 1, floor = 3]
+      goto: service_03
+    - text: Лестница
+      free: true
+      effects: [floor = 3]
+      goto: stairwell
+
+- id: floor_04_doors
+  location: floor_04
+  layout: doors
+  background: landing_04
+  title: Площадка 4
+  text: Зелёный свет из-под двери. Новый замок на служебной. Над лестницей темнота.
+  choices:
+    - text: Кабинет Слоуна
+      effects: [visited.floor4.tenant += 1, floor = 4]
+      goto: tenant_04
+    - text: Служебная дверь
+      when: [has.service_pass == 1]
+      effects: [visited.floor4.service += 1, floor = 4]
+      goto: service_04
+    - text: Лестница
+      free: true
+      effects: [floor = 4]
+      goto: stairwell

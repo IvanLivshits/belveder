@@ -1,0 +1,47 @@
+id: belvedere
+title: Ломбард на последнем этаже
+
+# Качества. scope run сбрасывается каждую ночь, profile живёт между ночами.
+# Namespace `x.*` объявляет семейство качеств (visited.floor2.tenant и т.п.).
+qualities:
+  - { id: turn, scope: run, label: Ход, visible: true, min: 0 }
+  - { id: suspicion, scope: run, label: Подозрение, visible: true, min: 0, max: 10 }
+  - { id: cigarettes, scope: run, label: Сигареты, visible: true, min: 0, default: 3 }
+  - { id: clues, scope: run, label: Улики, visible: true, min: 0 }
+  - { id: debts, scope: run, label: Должки, min: 0 }
+  - { id: floor, scope: run, label: Этаж, min: 0, max: 13 }
+  - { id: has.*, scope: run, label: Предметы }
+  - { id: seen.*, scope: run, label: Увидено этой ночью }
+  - { id: nights, scope: profile, label: Ночей, min: 0 }
+  - { id: dolly_trust, scope: profile, label: Доверие Долли, visible: true, min: 0, max: 5 }
+  - { id: memories_false, scope: profile, label: Ложные воспоминания, default: 3, min: 0 }
+  - { id: memories_true, scope: profile, label: Настоящие воспоминания, min: 0 }
+  - { id: pledges, scope: profile, label: Залогов отдано, min: 0 }
+  - { id: visited.*, scope: profile, label: Визиты дверей }
+  - { id: paths.*, scope: profile, label: Открытые пути }
+
+locations:
+  - { id: office, label: Контора Ника }
+  - { id: facade, label: Фасад Белведера }
+  - { id: lobby, label: Вестибюль }
+  - { id: stairwell, label: Лестница }
+  - { id: floor_01, label: Площадка 1 }
+  - { id: floor_02, label: Площадка 2 }
+  - { id: floor_03, label: Площадка 3 }
+  - { id: floor_04, label: Площадка 4 }
+  - { id: tenant_02, label: Прачечная Эдди }
+  - { id: tenant_03, label: Квартира миссис Пул }
+  - { id: tenant_04, label: Кабинет Слоуна }
+  - { id: service_03, label: Комната для новых жильцов }
+  - { id: service_04, label: Архив копий }
+  - { id: exit, label: Хранилище залогов }
+
+# Глобальные правила ночи. Движок исполняет их, не зная смысла.
+rules:
+  start: office
+  onChoice: [turn += 1]
+  nightEndWhen: [turn >= 16]
+  onNightEnd: [nights += 1]
+
+report:
+  slots: [client, entry, witnesses, finding, twist, price]

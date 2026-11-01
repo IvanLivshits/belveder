@@ -1,0 +1,89 @@
+# Лестница: вверх/вниз по качеству floor. Горман перехватывает при высоком подозрении.
+- id: stairwell_gorman
+  location: stairwell
+  priority: 5
+  when: [suspicion >= 5, seen.gorman == 0]
+  background: stairwell
+  portrait: gorman_threat
+  title: Лестница
+  text: |
+    Горман стоит на пролёт выше и не двигается. Ему не нужно двигаться.
+    «Жильцы жалуются. На шаги. На запах чужих сигарет».
+  choices:
+    - text: Показать удостоверение
+      effects: [seen.gorman = 1, suspicion -= 3]
+    - text: Предложить сигареты
+      when: [cigarettes >= 2]
+      effects: [seen.gorman = 1, cigarettes -= 2, suspicion -= 4, debts += 1]
+    - text: Спуститься в вестибюль
+      effects: [seen.gorman = 1, floor = 1, suspicion -= 1]
+      goto: lobby
+
+- id: stairwell_1
+  location: stairwell
+  when: [floor == 1]
+  background: stairwell_up
+  title: Лестница
+  text: Первый пролёт. Снизу вестибюль, сверху пар и гул.
+  choices:
+    - text: Вверх, на второй
+      effects: [floor = 2]
+      goto: floor_02
+    - text: Вниз, в вестибюль
+      effects: [floor = 1]
+      goto: lobby
+    - text: Уйти из башни
+      free: true
+      goto: exit
+
+- id: stairwell_2
+  location: stairwell
+  when: [floor == 2]
+  background: stairwell_up
+  title: Лестница
+  text: Второй пролёт. Выше кто-то оставил ботинки за дверью.
+  choices:
+    - text: Вверх, на третий
+      effects: [floor = 3]
+      goto: floor_03
+    - text: Вниз, на первый
+      effects: [floor = 1]
+      goto: floor_01
+    - text: Уйти из башни
+      free: true
+      goto: exit
+
+- id: stairwell_3
+  location: stairwell
+  when: [floor == 3]
+  background: stairwell_up
+  title: Лестница
+  text: Третий пролёт. Сверху зелёный свет и запах чернил.
+  choices:
+    - text: Вверх, на четвёртый
+      effects: [floor = 4]
+      goto: floor_04
+    - text: Вниз, на второй
+      effects: [floor = 2]
+      goto: floor_02
+    - text: Уйти из башни
+      free: true
+      goto: exit
+
+- id: stairwell_4
+  location: stairwell
+  when: [floor == 4]
+  background: stairwell_up
+  title: Лестница
+  text: Четвёртый пролёт. Выше ступени уходят в темноту, и темнота не кончается. Не сегодня.
+  choices:
+    - text: Вверх, в темноту
+      when: [paths.upper_floors == 1]
+      effects: [floor = 5, suspicion += 2]
+      goto: exit
+    - text: Вниз, на третий
+      effects: [floor = 3]
+      goto: floor_03
+    - text: Уйти из башни
+      free: true
+      goto: exit

@@ -1,0 +1,67 @@
+# Служебные комнаты 3–4.
+- id: service_03_room
+  location: service_03
+  when: [seen.service_03 == 0]
+  background: room_newtenant
+  title: Комната для новых жильцов
+  text: |
+    Кровать застелена. На тумбочке бланк договора без имени. Чей-то чемодан под кроватью, и он не пустой.
+  choices:
+    - text: Открыть чемодан
+      effects: [seen.service_03 = 1, clues += 1, suspicion += 2]
+      goto: floor_03
+    - text: Прочитать договор
+      effects: [seen.service_03 = 1, clues += 1]
+      goto: floor_03
+    - text: Выйти, пока никто не видел
+      free: true
+      effects: [seen.service_03 = 1]
+      goto: floor_03
+
+- id: service_03_again
+  location: service_03
+  priority: 1
+  when: [seen.service_03 == 1]
+  background: room_newtenant
+  title: Комната для новых жильцов
+  text: На бланке появилось имя. Ваше.
+  choices:
+    - text: Забрать бланк
+      effects: [has.contract = 1, clues += 1]
+      goto: floor_03
+    - text: Оставить всё как есть
+      effects: [suspicion += 1]
+      goto: floor_03
+
+- id: service_04_archive
+  location: service_04
+  when: [seen.service_04 == 0]
+  background: archive
+  title: Архив копий
+  text: |
+    Полки до потолка. Каждая книга в двух экземплярах. В углу люк жёлоба для белья и записка: «Не вниз».
+  choices:
+    - text: Сверить копии
+      effects: [seen.service_04 = 1, clues += 2]
+      goto: floor_04
+    - text: Спуститься по жёлобу
+      effects: [seen.service_04 = 1, paths.chute = 1, floor = 2]
+      goto: floor_02
+    - text: Поискать ключ наверх
+      effects: [seen.service_04 = 1, paths.upper_floors = 1, suspicion += 2]
+      goto: floor_04
+
+- id: service_04_again
+  location: service_04
+  priority: 1
+  when: [seen.service_04 == 1]
+  background: archive
+  title: Архив копий
+  text: Полки те же. Записка исчезла.
+  choices:
+    - text: Спуститься по жёлобу
+      effects: [floor = 2]
+      goto: floor_02
+    - text: Вернуться на площадку
+      free: true
+      goto: floor_04

@@ -1,0 +1,24 @@
+# Фрагменты отчёта за ночь. Для каждого слота есть фолбэк с priority -100.
+- { id: client_default, slot: client, priority: -100, text: "Клиентка не назвала имени. Это уже кое-что." }
+- { id: client_known, slot: client, when: [clues >= 2], text: "Клиентка говорит, что заложила не она. Книга Слоуна говорит иначе." }
+- { id: client_returning, slot: client, when: [nights >= 2], text: "Она приходила и вчера. Я записал это, потому что иначе не вспомню." }
+
+- { id: entry_default, slot: entry, priority: -100, text: "Вошёл через парадную. Долли сделала вид, что не заметила." }
+- { id: entry_trusted, slot: entry, when: [dolly_trust >= 2], text: "Долли показала на грузовой лифт. Она помогает, но не говорит, кому." }
+- { id: entry_fire_escape, slot: entry, priority: 1, when: [paths.fire_escape == 1, suspicion >= 3], text: "Пожарная лестница. Мокрая, и на ней уже были чьи-то следы." }
+
+- { id: witnesses_default, slot: witnesses, priority: -100, text: "Свидетелей нет. В этом доме их никогда нет." }
+- { id: witnesses_eddie, slot: witnesses, when: [seen.eddie == 1], text: "Эдди из прачечной. Знает больше, чем гладит." }
+- { id: witnesses_pool, slot: witnesses, priority: 1, when: [seen.pool == 1], text: "Миссис Пул ждёт Уолтера. Кажется, Уолтер — это я." }
+
+- { id: finding_default, slot: finding, priority: -100, text: "Ничего, что можно положить на стол." }
+- { id: finding_clues, slot: finding, when: [clues >= 3], text: "Две копии одной книги. Расхождение — в одной строке, и строка эта обо мне." }
+- { id: finding_capsule, slot: finding, priority: 1, when: [has.pneumo_capsule == 1], text: "Цилиндр пневмопочты. Внутри — квитанция с половиной подписи." }
+
+- { id: twist_default, slot: twist, priority: -100, text: "Поворота не было. Или я его не запомнил." }
+- { id: twist_suspicion, slot: twist, when: [suspicion >= 6], text: "Горман знает, что я здесь. Значит, знает и Владелец." }
+- { id: twist_contract, slot: twist, priority: 1, when: [has.contract == 1], text: "Договор на новую комнату заполнен моим именем. Почерк тоже мой." }
+
+- { id: price_default, slot: price, priority: -100, text: "Заплатил воспоминанием. Каким — уже не помню." }
+- { id: price_true, slot: price, when: [memories_true >= 1], text: "Выкупил одно настоящее. Оно тяжелее, чем ложное, и не греет." }
+- { id: price_broke, slot: price, priority: 1, when: [memories_false == 0], text: "Ложных воспоминаний не осталось. Дальше придётся платить настоящими." }

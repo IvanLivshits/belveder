@@ -1,0 +1,144 @@
+{
+  "digest": "d614d5c8dc280e1c63e05e05f9e8e66d3b49c34412c4cf71e9e859efa9ac53c2",
+  "snapshot": {
+    "location": "floor_04",
+    "log": [
+      {
+        "choice": 1,
+        "storylet": "office_first_night"
+      },
+      {
+        "choice": 0,
+        "storylet": "office_first_night"
+      },
+      {
+        "choice": 0,
+        "storylet": "facade_default"
+      },
+      {
+        "choice": 0,
+        "storylet": "lobby_dolly_wary"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_01_doors"
+      },
+      {
+        "choice": 0,
+        "storylet": "stairwell_1"
+      },
+      {
+        "choice": 0,
+        "storylet": "floor_02_doors"
+      },
+      {
+        "choice": 0,
+        "storylet": "eddie_first"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_02_doors"
+      },
+      {
+        "choice": 0,
+        "storylet": "stairwell_2"
+      },
+      {
+        "choice": 1,
+        "storylet": "floor_03_doors"
+      },
+      {
+        "choice": 2,
+        "storylet": "service_03_room"
+      },
+      {
+        "choice": 0,
+        "storylet": "floor_03_doors"
+      },
+      {
+        "choice": 2,
+        "storylet": "pool_first"
+      },
+      {
+        "choice": 1,
+        "storylet": "floor_03_doors"
+      },
+      {
+        "choice": 0,
+        "storylet": "service_03_again"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_03_doors"
+      },
+      {
+        "choice": 1,
+        "storylet": "stairwell_3"
+      },
+      {
+        "choice": 0,
+        "storylet": "floor_02_doors"
+      },
+      {
+        "choice": 0,
+        "storylet": "eddie_again"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_02_doors"
+      },
+      {
+        "choice": 0,
+        "storylet": "stairwell_2"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_03_doors"
+      },
+      {
+        "choice": 0,
+        "storylet": "stairwell_3"
+      },
+      {
+        "choice": 0,
+        "storylet": "floor_04_doors"
+      }
+    ],
+    "phase": "report",
+    "profile": {
+      "dolly_trust": 1,
+      "nights": 1,
+      "visited.floor2.tenant": 2,
+      "visited.floor3.service": 2,
+      "visited.floor3.tenant": 1,
+      "visited.floor4.tenant": 1
+    },
+    "report": {
+      "client": "client_known",
+      "entry": "entry_default",
+      "finding": "finding_capsule",
+      "price": "price_default",
+      "twist": "twist_contract",
+      "witnesses": "witnesses_pool"
+    },
+    "rng": 2024,
+    "run": {
+      "cigarettes": 2,
+      "clues": 4,
+      "floor": 4,
+      "has.contract": 1,
+      "has.pneumo_capsule": 1,
+      "has.pool_key": 1,
+      "seen.eddie": 1,
+      "seen.lobby": 1,
+      "seen.office_smoke": 1,
+      "seen.pool": 1,
+      "seen.service_03": 1,
+      "suspicion": 3,
+      "turn": 16
+    },
+    "seed": 2024,
+    "storyletId": "floor_04_doors",
+    "v": 1
+  }
+}

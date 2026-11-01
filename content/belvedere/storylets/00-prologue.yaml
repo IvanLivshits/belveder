@@ -1,0 +1,62 @@
+# Пролог: контора Ника и фасад. Выборы здесь не тратят ход (free).
+- id: office_first_night
+  location: office
+  priority: 1
+  when: [nights == 0]
+  background: office_empty
+  portrait: vivian
+  title: Контора
+  text: |
+    Дождь стучит в окно, как клиент, которому нечем платить. Она входит без стука.
+    Зонт оставляет у двери, деньги кладёт на стол. Называет адрес: Белведер, башня на холме.
+    «Там наверху есть ломбард. Он взял у меня то, что я не закладывала».
+  choices:
+    - text: Взять деньги и дело
+      free: true
+      goto: facade
+    - text: Закурить и спросить, что именно пропало
+      when: [seen.office_smoke == 0, cigarettes >= 1]
+      free: true
+      effects: [seen.office_smoke = 1, cigarettes -= 1, clues += 1]
+    - text: Отказаться. Потом передумать
+      free: true
+      effects: [suspicion += 1]
+      goto: facade
+
+- id: office_again
+  location: office
+  when: [nights >= 1]
+  background: office_empty
+  portrait: nick
+  title: Контора
+  text: |
+    Деньги на столе уже не её, а ваши. Зонт так и стоит у двери.
+    Ночь снова начинается с башни. Вы помните меньше, чем вчера, и это, кажется, нормально.
+  choices:
+    - text: Идти к Белведеру
+      free: true
+      goto: facade
+    - text: Проверить карманы
+      when: [seen.office_pockets == 0]
+      free: true
+      effects: [seen.office_pockets = 1, cigarettes += 1]
+
+- id: facade_default
+  location: facade
+  background: facade
+  title: Фасад
+  text: |
+    Белведер уходит в облака. Двенадцать этажей, если верить вывеске. Тринадцать, если верить фотографии в кармане.
+    Парадная освещена. Пожарная лестница сбоку темна.
+  choices:
+    - text: Войти через парадную
+      free: true
+      goto: lobby
+    - text: Подняться по пожарной лестнице
+      when: [paths.fire_escape == 1]
+      effects: [floor = 2, suspicion += 1]
+      goto: floor_02
+    - text: Постоять под дождём
+      when: [seen.facade_rain == 0]
+      free: true
+      effects: [seen.facade_rain = 1, suspicion -= 1]

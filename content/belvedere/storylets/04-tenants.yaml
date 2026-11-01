@@ -1,0 +1,130 @@
+# Комнаты жильцов 2–4.
+- id: eddie_first
+  location: tenant_02
+  when: [seen.eddie == 0]
+  background: landing_02
+  portrait: eddie
+  title: Прачечная
+  text: |
+    Эдди гладит рубашку, которая ему не по размеру. Цилиндр пневмопочты лежит рядом, как домашнее животное.
+    «Вы не жилец. Жильцы не стучат».
+  choices:
+    - text: Спросить про хозяина ломбарда
+      effects: [seen.eddie = 1, clues += 1, suspicion += 1]
+      goto: floor_02
+    - text: Купить сигарет в долг
+      effects: [seen.eddie = 1, cigarettes += 2, debts += 1]
+      goto: floor_02
+    - text: Извиниться и выйти
+      free: true
+      effects: [seen.eddie = 1]
+      goto: floor_02
+
+- id: eddie_again
+  location: tenant_02
+  priority: 1
+  when: [seen.eddie == 1]
+  background: landing_02
+  portrait: eddie_caught
+  title: Прачечная
+  text: |
+    Эдди ухмыляется, пряча цилиндр за спину. В цилиндре что-то звякнуло.
+  choices:
+    - text: Забрать цилиндр
+      effects: [has.pneumo_capsule = 1, clues += 1, suspicion += 2]
+      goto: floor_02
+    - text: Оставить его в покое
+      goto: floor_02
+
+- id: eddie_remembers
+  location: tenant_02
+  priority: 2
+  when: [seen.eddie == 0, visited.floor2.tenant >= 3]
+  background: landing_02
+  portrait: eddie_scared
+  title: Прачечная
+  text: |
+    Эдди прижимает цилиндр к груди. «Вы опять. Вы каждую ночь опять, и каждую ночь не помните».
+  choices:
+    - text: Спросить, что он помнит
+      effects: [seen.eddie = 1, clues += 2]
+      goto: floor_02
+    - text: Уйти молча
+      free: true
+      effects: [seen.eddie = 1]
+      goto: floor_02
+
+- id: pool_first
+  location: tenant_03
+  when: [seen.pool == 0]
+  background: landing_03
+  portrait: pool
+  title: Квартира миссис Пул
+  text: |
+    Стол накрыт на двоих. Миссис Пул наливает чай в обе чашки и садится напротив пустого стула.
+    «Уолтер задерживается. Вы его видели на лестнице?»
+  choices:
+    - text: Назваться Уолтером
+      effects: [seen.pool = 1, clues += 1, suspicion -= 1]
+      goto: floor_03
+    - text: Сказать правду
+      effects: [seen.pool = 1, suspicion += 1]
+      goto: floor_03
+    - text: Выпить чай и промолчать
+      effects: [seen.pool = 1, has.pool_key = 1]
+      goto: floor_03
+
+- id: pool_recognizes
+  location: tenant_03
+  priority: 1
+  when: [seen.pool == 1]
+  background: landing_03
+  portrait: pool_recognize
+  title: Квартира миссис Пул
+  text: |
+    Она смотрит на вас дольше, чем нужно. «У Уолтера была такая же полоса от кольца».
+  choices:
+    - text: Спрятать руку в карман
+      effects: [suspicion += 1]
+      goto: floor_03
+    - text: Показать руку
+      effects: [clues += 1]
+      goto: floor_03
+
+- id: sloan_first
+  location: tenant_04
+  when: [seen.sloan == 0]
+  background: landing_04
+  portrait: sloan
+  title: Кабинет Слоуна
+  text: |
+    Слоун переписывает книгу учёта. Пальцы в чернилах по вторую фалангу.
+    «Я веду две копии. Одна для Владельца, одна для правды. Какая вам?»
+  choices:
+    - text: Поймать его на расхождении
+      when: [clues >= 2]
+      effects: [seen.sloan = 1, clues += 2, has.service_pass = 1]
+      goto: floor_04
+    - text: Попросить копию для Владельца
+      effects: [seen.sloan = 1, clues += 1, suspicion += 2]
+      goto: floor_04
+    - text: Спросить про пожарную лестницу
+      effects: [seen.sloan = 1, paths.fire_escape = 1]
+      goto: floor_04
+
+- id: sloan_caught
+  location: tenant_04
+  priority: 1
+  when: [seen.sloan == 1]
+  background: landing_04
+  portrait: sloan_caught
+  title: Кабинет Слоуна
+  text: |
+    Слоун закрывает обе книги. «Вы уже спрашивали. В прошлый раз тоже не помнили, что спрашивали».
+  choices:
+    - text: Уйти
+      free: true
+      goto: floor_04
+    - text: Спросить, сколько раз
+      effects: [clues += 1, suspicion += 1]
+      goto: floor_04
