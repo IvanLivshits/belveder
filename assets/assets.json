@@ -1,0 +1,467 @@
+{
+  "dolly": {
+    "src": "portraits/dolly.5df9b350.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "dolly_suspicion": {
+    "src": "portraits/dolly_suspicion.dc28b709.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "dolly_trust": {
+    "src": "portraits/dolly_trust.96c0f36c.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "dolly_worry": {
+    "src": "portraits/dolly_worry.2d622b9f.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "gorman": {
+    "src": "portraits/gorman.0fa7d664.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "gorman_threat": {
+    "src": "portraits/gorman_threat.637659d6.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "gorman_smirk": {
+    "src": "portraits/gorman_smirk.081274ac.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "vivian": {
+    "src": "portraits/vivian.2855d6c2.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "vivian_tears": {
+    "src": "portraits/vivian_tears.7e90cdb7.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "vivian_lie": {
+    "src": "portraits/vivian_lie.4a0d327d.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "vivian_recognize": {
+    "src": "portraits/vivian_recognize.cfa1abb9.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "nick": {
+    "src": "portraits/nick.7db251fc.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "eddie": {
+    "src": "portraits/eddie.58f0bd0c.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "eddie_caught": {
+    "src": "portraits/eddie_caught.c170cb41.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "eddie_scared": {
+    "src": "portraits/eddie_scared.bfa54cb9.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "pool": {
+    "src": "portraits/pool.dff439b6.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "pool_recognize": {
+    "src": "portraits/pool_recognize.76c8c2d4.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "sloan": {
+    "src": "portraits/sloan.9365a37b.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "sloan_caught": {
+    "src": "portraits/sloan_caught.71dd187e.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "mei": {
+    "src": "portraits/mei.5e1c7722.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "tony": {
+    "src": "portraits/tony.2fb481e8.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "tony_threat": {
+    "src": "portraits/tony_threat.83162fc5.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "ruby": {
+    "src": "portraits/ruby.15916271.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "ruby_recognize": {
+    "src": "portraits/ruby_recognize.3871f140.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "auerbach": {
+    "src": "portraits/auerbach.6199b065.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "auerbach_shock": {
+    "src": "portraits/auerbach_shock.50c0e665.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "bennett": {
+    "src": "portraits/bennett.f80d30f9.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "fenn": {
+    "src": "portraits/fenn.699e92f4.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "cordelia": {
+    "src": "portraits/cordelia.79e7be38.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "silas": {
+    "src": "portraits/silas.f5f4ac3b.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "proprietor": {
+    "src": "portraits/proprietor.1b524817.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "office_empty": {
+    "src": "backgrounds/office_empty.7261f798.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "facade": {
+    "src": "backgrounds/facade.a0cb254f.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "lobby": {
+    "src": "backgrounds/lobby.a8a4bb8c.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "lobby_dawn": {
+    "src": "backgrounds/lobby_dawn.5c01db22.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "stairwell": {
+    "src": "backgrounds/stairwell.3db3e446.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "landing_02": {
+    "src": "backgrounds/landing_02.a8563f6c.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "landing_03": {
+    "src": "backgrounds/landing_03.6d171e51.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "landing_04": {
+    "src": "backgrounds/landing_04.961322f1.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "landing_05": {
+    "src": "backgrounds/landing_05.80fdc8c7.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "landing_06": {
+    "src": "backgrounds/landing_06.88dafc17.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "landing_07": {
+    "src": "backgrounds/landing_07.2875dbb8.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "landing_08": {
+    "src": "backgrounds/landing_08.fc451928.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "landing_09": {
+    "src": "backgrounds/landing_09.a1f2c454.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "landing_10": {
+    "src": "backgrounds/landing_10.07e04e7d.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "landing_11": {
+    "src": "backgrounds/landing_11.49f2b0a7.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "landing_12": {
+    "src": "backgrounds/landing_12.6be80efc.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "room_newtenant": {
+    "src": "backgrounds/room_newtenant.e97e664b.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "archive": {
+    "src": "backgrounds/archive.99338822.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "darkroom": {
+    "src": "backgrounds/darkroom.57678437.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "fire_escape": {
+    "src": "backgrounds/fire_escape.debcf0b6.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "clockworks": {
+    "src": "backgrounds/clockworks.929e4367.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "vault13": {
+    "src": "backgrounds/vault13.9e0c6eb7.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "ending_case_closed": {
+    "src": "endings/ending_case_closed.6f15fa4f.webp",
+    "w": 1080,
+    "h": 1920
+  },
+  "ending_redemption": {
+    "src": "endings/ending_redemption.19cb25eb.webp",
+    "w": 1080,
+    "h": 1920
+  },
+  "ending_new_proprietor": {
+    "src": "endings/ending_new_proprietor.c5f5ce1d.webp",
+    "w": 1080,
+    "h": 1920
+  },
+  "ending_ashes": {
+    "src": "endings/ending_ashes.b57e45e2.webp",
+    "w": 1080,
+    "h": 1920
+  },
+  "ending_signature": {
+    "src": "endings/ending_signature.f07db2bc.webp",
+    "w": 1080,
+    "h": 1920
+  },
+  "ev_ring": {
+    "src": "evidence/ev_ring.84f75241.webp",
+    "w": 800,
+    "h": 800
+  },
+  "ev_nick_hands": {
+    "src": "evidence/ev_nick_hands.aeedaa55.webp",
+    "w": 800,
+    "h": 800
+  },
+  "ev_pawn_ticket": {
+    "src": "evidence/ev_pawn_ticket.f670ac66.webp",
+    "w": 800,
+    "h": 800
+  },
+  "ev_ledgers": {
+    "src": "evidence/ev_ledgers.3440e1c0.webp",
+    "w": 800,
+    "h": 800
+  },
+  "ev_medical_file": {
+    "src": "evidence/ev_medical_file.f809a7d5.webp",
+    "w": 800,
+    "h": 800
+  },
+  "ev_ruby_record": {
+    "src": "evidence/ev_ruby_record.bb56d687.webp",
+    "w": 800,
+    "h": 800
+  },
+  "ev_owner_note": {
+    "src": "evidence/ev_owner_note.bb7d7d46.webp",
+    "w": 800,
+    "h": 800
+  },
+  "ev_darkroom_key": {
+    "src": "evidence/ev_darkroom_key.647d3244.webp",
+    "w": 800,
+    "h": 800
+  },
+  "ev_clock_key": {
+    "src": "evidence/ev_clock_key.96c0bb17.webp",
+    "w": 800,
+    "h": 800
+  },
+  "ev_cordelia_pass": {
+    "src": "evidence/ev_cordelia_pass.5999625c.webp",
+    "w": 800,
+    "h": 800
+  },
+  "ev_silas_matches": {
+    "src": "evidence/ev_silas_matches.79c80e11.webp",
+    "w": 800,
+    "h": 800
+  },
+  "ev_facade_photo": {
+    "src": "evidence/ev_facade_photo.940a2d75.webp",
+    "w": 800,
+    "h": 800
+  },
+  "env_sealed": {
+    "src": "envelopes/env_sealed.19b93f02.webp",
+    "w": 800,
+    "h": 800
+  },
+  "mem_dolly": {
+    "src": "envelopes/mem_dolly.f40774ff.webp",
+    "w": 800,
+    "h": 800
+  },
+  "mem_eddie": {
+    "src": "envelopes/mem_eddie.cc76c46b.webp",
+    "w": 800,
+    "h": 800
+  },
+  "mem_pool": {
+    "src": "envelopes/mem_pool.44a6d791.webp",
+    "w": 800,
+    "h": 800
+  },
+  "mem_sloan": {
+    "src": "envelopes/mem_sloan.8a4b4cef.webp",
+    "w": 800,
+    "h": 800
+  },
+  "mem_mei": {
+    "src": "envelopes/mem_mei.7cb96e3a.webp",
+    "w": 800,
+    "h": 800
+  },
+  "mem_tony": {
+    "src": "envelopes/mem_tony.87baf92a.webp",
+    "w": 800,
+    "h": 800
+  },
+  "mem_ruby": {
+    "src": "envelopes/mem_ruby.006ebdf0.webp",
+    "w": 800,
+    "h": 800
+  },
+  "mem_auerbach": {
+    "src": "envelopes/mem_auerbach.fff2fe3a.webp",
+    "w": 800,
+    "h": 800
+  },
+  "mem_bennett": {
+    "src": "envelopes/mem_bennett.e9d210c1.webp",
+    "w": 800,
+    "h": 800
+  },
+  "mem_fenn": {
+    "src": "envelopes/mem_fenn.cae918f9.webp",
+    "w": 800,
+    "h": 800
+  },
+  "mem_cordelia": {
+    "src": "envelopes/mem_cordelia.92a694f8.webp",
+    "w": 800,
+    "h": 800
+  },
+  "mem_silas": {
+    "src": "envelopes/mem_silas.5b079056.webp",
+    "w": 800,
+    "h": 800
+  },
+  "mem_gorman": {
+    "src": "envelopes/mem_gorman.429bd335.webp",
+    "w": 800,
+    "h": 800
+  },
+  "cover": {
+    "src": "ui/cover.02ec312a.webp",
+    "w": 1080,
+    "h": 1920
+  },
+  "logo_avatar": {
+    "src": "ui/logo_avatar.15d8a81d.webp",
+    "w": 512,
+    "h": 512
+  },
+  "logo_splash": {
+    "src": "ui/logo_splash.b5fcf11e.webp",
+    "w": 800,
+    "h": 800
+  },
+  "paper_light": {
+    "src": "ui/paper_light.webp",
+    "w": 1024,
+    "h": 1024
+  },
+  "paper_dark": {
+    "src": "ui/paper_dark.webp",
+    "w": 1024,
+    "h": 1024
+  },
+  "cover_art": {
+    "src": "ui/cover_art.ea1d74a7.webp",
+    "w": 1080,
+    "h": 1920
+  },
+  "landing_base": {
+    "src": "backgrounds/landing_base.b8835115.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "stairwell_up": {
+    "src": "backgrounds/stairwell_up.1b7ac2c7.webp",
+    "w": 900,
+    "h": 1600
+  },
+  "photo_facade_print": {
+    "src": "evidence/photo_facade_print.1d5f8e62.webp",
+    "w": 900,
+    "h": 1600
+  }
+}
