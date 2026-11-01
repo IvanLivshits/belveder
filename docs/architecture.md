@@ -19,18 +19,24 @@ assets/            (WebP + assets.json, картинки только по id)
 Чистые функции над неизменяемым состоянием. Ни I/O, ни DOM, ни Telegram, ни знания о мире.
 
 ```
-GameState { seed, rng, phase: scene|report, location, storyletId, run{}, profile{}, log[], report{} }
+GameState { seed, rng, phase: scene|outcome|report, location, storyletId, pendingChoice, run{}, profile{}, log[], report{} }
 
 newNight(profile, world, seed)  → state   # run сброшен, выбран первый сторилет в rules.start
 choose(state, world, index)     → state   # эффекты выбора → rules.onChoice (если не free)
-                                          # → nightEndWhen или endNight ? отчёт : выбор сторилета в goto
-currentScene(state, world)      → { storylet, choices[{index, available}] }
-currentReport(state, world)     → [{ slot, label, fragment }]
+                                          # → есть outcome ? фаза outcome : resolve
+continueOutcome(state, world)   → state   # resolve: nightEndWhen или endNight ? отчёт : выбор сторилета в goto
+pledge(state, world, pair)      → state   # false-флаг пары = 0; returnWhen ? true-флаг = 1; отчёт
+currentScene(state, world)      → { storylet, text, choices[{index, text, available}], memories[{index, label}] }
+currentOutcome(state, world)    → { storylet, text }
+currentReport(state, world)     → [{ slot, label, fragment, text }]
 ```
+
+Тексты проходят через `renderText`: `{quality_id}` заменяется значением из состояния.
 
 - **Качества** — целые числа в двух мешках: `run` (сбрасывается каждую ночь) и `profile` (живёт между ночами). Флаги и множества — тоже качества 0/1 с составным id (`visited.floor2.tenant`), объявленные через namespace `visited.*`. Значение, равное default, не хранится.
 - **Выбор сторилета**: все сторилеты локации с истинными `when`, берутся с максимальным `priority`, ничья решается seed-RNG (mulberry32, состояние в `state.rng`).
 - **Глобальные правила** из `world.rules`: `onChoice` (эффекты на каждый выбор, например `turn += 1`), `nightEndWhen` (условие конца ночи), `onNightEnd` (эффекты на профиль). Движок исполняет их, не зная смысла.
+- **Воспоминания**: `world.memories` — список пар флагов `false`/`true` с `returnWhen`. Для движка это непрозрачные id качеств. Сторилет `layout: pledge` показывает ложные воспоминания со значением 1; залог ночи целиком — обычный выбор с эффектом из контента.
 - **Отчёт**: для каждого слота берётся фрагмент с истинными `when` и максимальным приоритетом; ничья через RNG. Считается до сброса run, поэтому может ссылаться на run-качества.
 - **Детерминизм**: одинаковый seed + действия → байт-в-байт одинаковое состояние. Проверяется golden digest = sha256 от канонического JSON.
 
