@@ -1,11 +1,6 @@
 /** The only file that touches window.Telegram.WebApp. Everything else uses this adapter. */
 
-interface CloudStorageApi {
-  setItem(key: string, value: string, cb?: (err: string | null, ok?: boolean) => void): void;
-  getItems(keys: string[], cb: (err: string | null, values?: Record<string, string>) => void): void;
-  removeItems(keys: string[], cb?: (err: string | null, ok?: boolean) => void): void;
-  getKeys(cb: (err: string | null, keys?: string[]) => void): void;
-}
+import type { CloudStorageApi } from "./storage";
 
 interface BackButtonApi {
   show(): void;

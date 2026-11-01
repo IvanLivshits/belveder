@@ -2,7 +2,7 @@ import { choose, currentReport, currentScene, emptyProfile, getQuality, newNight
 import { Backdrop, ChoiceList, DoorPicker, QualityBar, ReportPage, SceneCard, TitleScreen } from "@belvedere/ui-kit";
 import { useEffect, useState } from "preact/hooks";
 import { loadContent, type Content } from "./content";
-import { clearRun, loadProfile, loadRun, saveProfile, saveRun } from "./storage";
+import { saves } from "./saves";
 import { haptic, setBackButton } from "./telegram";
 
 type Screen = { kind: "loading" } | { kind: "error"; message: string } | { kind: "title" } | { kind: "night" };
@@ -21,8 +21,8 @@ export function App() {
     (async () => {
       try {
         const c = await loadContent();
-        const p = (await loadProfile()) ?? emptyProfile();
-        const run = await loadRun(p);
+        const p = (await saves.loadProfile()) ?? emptyProfile();
+        const run = await saves.loadRun(p);
         setContent(c);
         setProfile(p);
         setState(run);
@@ -40,11 +40,11 @@ export function App() {
   if (screen.kind === "error" || !content) return <div class="screen"><p class="scene__text" style="padding:24px">Ошибка: {screen.kind === "error" ? screen.message : "нет контента"}</p></div>;
   const { world, src } = content;
 
-  const startNight = async () => {
+  const startNight = () => {
     const s = newNight(profile, world, randomSeed());
     setState(s);
     setScreen({ kind: "night" });
-    await saveRun(s);
+    saves.persistRun(s);
   };
 
   if (screen.kind === "title" || !state) {
@@ -63,13 +63,13 @@ export function App() {
 
   if (state.phase === "report") {
     const entries = currentReport(state, world).map((r) => ({ slot: r.slot, label: r.label, text: r.fragment.text }));
-    const finish = async () => {
+    const finish = () => {
       const p = profileOf(state);
       setProfile(p);
       setState(null);
       setScreen({ kind: "title" });
-      await clearRun();
-      await saveProfile(p);
+      saves.clearRun();
+      saves.persistProfile(p);
     };
     const paper = src("paper_dark");
     return (
@@ -81,13 +81,14 @@ export function App() {
 
   const scene = currentScene(state, world);
   const items = scene.choices.map((c) => ({ index: c.index, text: c.choice.text, available: c.available }));
-  const onChoose = async (index: number) => {
+  const onChoose = (index: number) => {
     haptic();
     const next = choose(state, world, index);
     setState(next);
     // Profile qualities can change mid-night (trust, visits), so both docs are saved every choice.
-    await saveRun(next);
-    await saveProfile(profileOf(next));
+    // Writes are fire-and-forget: local first, cloud queued behind; the UI never waits on them.
+    saves.persistRun(next);
+    saves.persistProfile(profileOf(next));
   };
   const hud = world.qualities
     .filter((q) => q.visible)
