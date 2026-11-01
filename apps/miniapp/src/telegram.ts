@@ -37,7 +37,7 @@ const webApp = typeof window !== "undefined" ? window.Telegram?.WebApp : undefin
 export const isTelegram = Boolean(webApp && webApp.initData);
 
 export function initTelegram(): void {
-  if (!webApp) return;
+  if (!webApp || !isTelegram) return;
   webApp.ready();
   webApp.expand();
   const bg = "#0b0d12";
@@ -46,13 +46,14 @@ export function initTelegram(): void {
 }
 
 export function setBackButton(visible: boolean, onClick: () => void): () => void {
-  const bb = webApp?.BackButton;
+  const bb = isTelegram ? webApp?.BackButton : undefined;
   if (!bb) return () => {};
   if (visible) { bb.onClick(onClick); bb.show(); } else bb.hide();
   return () => { bb.offClick(onClick); bb.hide(); };
 }
 
 export function haptic(): void {
+  if (!isTelegram) return;
   try { webApp?.HapticFeedback?.impactOccurred("light"); } catch { /* older clients */ }
 }
 

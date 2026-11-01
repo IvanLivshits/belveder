@@ -54,8 +54,6 @@ button { font: inherit; }
 .scene__title { margin: 0 0 6px; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--hint); }
 .scene__text { margin: 0; font-size: 17px; line-height: 1.45; white-space: pre-line; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
 
-.portrait { position: absolute; right: 0; bottom: 30%; height: 62%; max-width: 70%; object-fit: contain; object-position: right bottom; pointer-events: none;
-  -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent 100%); mask-image: linear-gradient(180deg, #000 70%, transparent 100%); }
 
 .choices { display: flex; flex-direction: column; gap: 8px; }
 .choice {

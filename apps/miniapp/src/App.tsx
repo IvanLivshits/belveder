@@ -85,18 +85,20 @@ export function App() {
     haptic();
     const next = choose(state, world, index);
     setState(next);
+    // Profile qualities can change mid-night (trust, visits), so both docs are saved every choice.
     await saveRun(next);
-    if (next.phase === "report") await saveProfile(profileOf(next));
+    await saveProfile(profileOf(next));
   };
   const hud = world.qualities
     .filter((q) => q.visible)
     .map((q) => ({ label: q.label ?? q.id, value: getQuality(state, world, q.id), max: q.max }));
 
+  // Portraits are full 9:16 scenes with the character in them, so one replaces the background.
   return (
     <div class="screen">
-      <Backdrop src={src(scene.storylet.background)}>
+      <Backdrop src={src(scene.storylet.portrait ?? scene.storylet.background)}>
         <QualityBar items={hud} />
-        <SceneCard title={scene.storylet.title} text={scene.storylet.text} portraitSrc={src(scene.storylet.portrait)}>
+        <SceneCard title={scene.storylet.title} text={scene.storylet.text}>
           {scene.storylet.layout === "doors"
             ? <DoorPicker doors={items} onChoose={onChoose} />
             : <ChoiceList choices={items} onChoose={onChoose} />}
