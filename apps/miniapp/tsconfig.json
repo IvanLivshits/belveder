@@ -7,10 +7,16 @@
     "emitDeclarationOnly": true,
     "noEmit": false,
     "declaration": true,
-    "tsBuildInfoFile": "dist/.tsbuildinfo"
+    "tsBuildInfoFile": "dist/.tsbuildinfo",
+    "resolveJsonModule": true,
+    "types": [
+      "@types/bun",
+      "vite/client"
+    ]
   },
   "include": [
-    "src"
+    "src",
+    "vite.config.ts"
   ],
   "references": [
     {
