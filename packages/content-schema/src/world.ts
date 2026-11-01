@@ -77,7 +77,7 @@ export const WorldSchema = z.object({
   qualities: z.array(QualityDefSchema),
   locations: z.array(LocationSchema),
   rules: RulesSchema,
-  report: z.object({ slots: z.array(Id).min(1) }),
+  report: z.object({ slots: z.array(z.object({ id: Id, label: z.string().optional() })).min(1) }),
   storylets: z.array(StoryletSchema),
   fragments: z.array(ReportFragmentSchema),
 });

@@ -13,7 +13,7 @@ export function buildReport(
 ): [report: Record<string, string>, rng: RngState] {
   const report: Record<string, string> = {};
   let r = rng;
-  for (const slot of world.report.slots) {
+  for (const { id: slot } of world.report.slots) {
     const eligible = world.fragments.filter((f) => f.slot === slot && evaluateAll(state, world, f.when));
     if (eligible.length === 0) throw new EngineError(`no report fragment for slot: ${slot}`);
     const top = Math.max(...eligible.map((f) => f.priority));

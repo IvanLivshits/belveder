@@ -13,7 +13,7 @@ export const miniWorld: World = WorldSchema.parse({
   ],
   locations: [{ id: "hall" }, { id: "room" }],
   rules: { start: "hall", onChoice: ["turn += 1"], nightEndWhen: ["turn >= 4"], onNightEnd: ["nights += 1"] },
-  report: { slots: ["summary"] },
+  report: { slots: [{ id: "summary", label: "Summary" }] },
   storylets: [
     {
       id: "hall_a", location: "hall", priority: 1, when: ["seen.hall_a == 0"], background: "bg",

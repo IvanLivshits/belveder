@@ -29,7 +29,7 @@ describe("belvedere full night", () => {
     expect(s.profile["dolly_trust"]).toBe(1);
     expect(s.profile["visited.floor3.service"]).toBe(2);
     const report = currentReport(s, world);
-    expect(report.map((r) => r.slot)).toEqual(world.report.slots);
+    expect(report.map((r) => r.slot)).toEqual(world.report.slots.map((s) => s.id));
     expect(report.find((r) => r.slot === "twist")?.fragment.id).toBe("twist_contract");
     await expectGolden(DIR, "night-pledge-2024", s);
   });

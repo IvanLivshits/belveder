@@ -16,7 +16,7 @@ export const check: Rule = (world, assets) => {
     });
   }
   const fids = new Set<string>();
-  const slots = new Set(world.report.slots);
+  const slots = new Set(world.report.slots.map((s) => s.id));
   for (const f of world.fragments) {
     if (fids.has(f.id)) issues.push(error(`fragment ${f.id}`, "duplicate fragment id"));
     fids.add(f.id);

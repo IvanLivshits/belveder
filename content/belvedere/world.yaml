@@ -44,4 +44,10 @@ rules:
   onNightEnd: [nights += 1]
 
 report:
-  slots: [client, entry, witnesses, finding, twist, price]
+  slots:
+    - { id: client, label: Клиентка }
+    - { id: entry, label: Вход }
+    - { id: witnesses, label: Свидетели }
+    - { id: finding, label: Находка }
+    - { id: twist, label: Поворот }
+    - { id: price, label: Цена }

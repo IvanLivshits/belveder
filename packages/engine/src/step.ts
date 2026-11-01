@@ -72,11 +72,11 @@ export type ReportView = ReturnType<typeof currentReport>;
 
 /** Report page data: slot -> fragment text, in slot order. */
 export function currentReport(state: GameState, world: World) {
-  return world.report.slots.map((slot) => {
+  return world.report.slots.map(({ id: slot, label }) => {
     const id = state.report[slot];
     const fragment = world.fragments.find((f) => f.id === id);
     if (!fragment) throw new EngineError(`report slot ${slot} has no fragment in state`);
-    return { slot, fragment };
+    return { slot, label: label ?? slot, fragment };
   });
 }
 
