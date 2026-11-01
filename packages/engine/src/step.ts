@@ -1,4 +1,4 @@
-import type { World } from "@belvedere/content-schema";
+import { RESERVED_QUALITIES, type World } from "@belvedere/content-schema";
 import { evaluateAll } from "./conditions";
 import { applyEffects } from "./effects";
 import { resetRun } from "./qualities";
@@ -12,7 +12,7 @@ import { getQuality, setQuality } from "./qualities";
 export type Action =
   | { type: "choose"; index: number }
   | { type: "continue" }
-  | { type: "pledge"; pair: number }
+  | { type: "pledge"; pair: string }
   | { type: "newNight"; seed: number };
 
 function enterLocation(state: GameState, world: World, location: string): GameState {
@@ -68,32 +68,38 @@ export function continueOutcome(state: GameState, world: World): GameState {
   return resolveChoice({ ...state, phase: "scene", pendingChoice: null }, world, state.pendingChoice);
 }
 
+/** endNight wins; otherwise the first matching interrupt redirects; otherwise the choice's goto. */
 function resolveChoice(state: GameState, world: World, index: number): GameState {
   const choice = findStorylet(world, state.storyletId).choices[index]!;
-  const ends = choice.endNight || (world.rules.nightEndWhen.length > 0 && evaluateAll(state, world, world.rules.nightEndWhen));
-  if (ends) return endNight(state, world);
-  return enterLocation(state, world, choice.goto ?? state.location);
+  if (choice.endNight) return endNight(state, world);
+  const interrupt = world.rules.interrupts.find((i) => evaluateAll(state, world, i.when));
+  return enterLocation(state, world, interrupt?.goto ?? choice.goto ?? state.location);
 }
 
-/** Memory pairs whose false flag is currently 1, i.e. still available to pawn. */
+/** Memory pairs whose fake flag is currently 1, i.e. still available to pawn. */
 export function pawnableMemories(state: GameState, world: World) {
-  return world.memories
-    .map((pair, index) => ({ pair, index }))
-    .filter(({ pair }) => getQuality(state, world, pair.false) === 1);
+  return world.memories.filter((pair) => getQuality(state, world, pair.fake) === 1);
 }
 
-/** Pawns a false memory: its flag goes to 0, the true flag goes to 1 if returnWhen holds,
- *  and the night ends. Only valid on a pledge-layout storylet. */
-export function pledge(state: GameState, world: World, pairIndex: number): GameState {
+/** Pawns a fake memory by pair id: fake flag -> 0, `pledged.<id>` -> 1; if returnWhen holds,
+ *  real flag -> 1, `returned.<id>` -> 1 and `memories_returned` += 1. Then the night ends,
+ *  with the report built while these run flags are still set. Only on a pledge-layout storylet. */
+export function pledge(state: GameState, world: World, pairId: string): GameState {
   if (state.phase !== "scene") throw new EngineError("cannot pledge outside a scene");
   const storylet = findStorylet(world, state.storyletId);
   if (storylet.layout !== "pledge") throw new EngineError(`storylet ${storylet.id} is not a pledge screen`);
-  const entry = pawnableMemories(state, world).find((m) => m.index === pairIndex);
-  if (!entry) throw new EngineError(`memory pair ${pairIndex} not available to pawn`);
+  const pair = pawnableMemories(state, world).find((m) => m.id === pairId);
+  if (!pair) throw new EngineError(`memory pair ${pairId} not available to pawn`);
 
-  let next: GameState = { ...state, log: [...state.log, { storylet: storylet.id, choice: -1, pair: pairIndex }] };
-  next = setQuality(next, world, entry.pair.false, 0);
-  if (evaluateAll(next, world, entry.pair.returnWhen)) next = setQuality(next, world, entry.pair.true, 1);
+  const { pledgedPrefix, returnedPrefix, memoriesReturned } = RESERVED_QUALITIES;
+  let next: GameState = { ...state, log: [...state.log, { storylet: storylet.id, choice: -1, pair: pairId }] };
+  next = setQuality(next, world, pair.fake, 0);
+  next = setQuality(next, world, pledgedPrefix + pair.id, 1);
+  if (evaluateAll(next, world, pair.returnWhen)) {
+    next = setQuality(next, world, pair.real, 1);
+    next = setQuality(next, world, returnedPrefix + pair.id, 1);
+    next = setQuality(next, world, memoriesReturned, getQuality(next, world, memoriesReturned) + 1);
+  }
   return endNight(next, world);
 }
 
@@ -115,7 +121,7 @@ export function currentScene(state: GameState, world: World) {
     text: renderText(storylet.text, state, world),
     choices: choicesOf(state, world, storylet).map((c) => ({ ...c, text: renderText(c.choice.text, state, world) })),
     memories: storylet.layout === "pledge"
-      ? pawnableMemories(state, world).map((m) => ({ index: m.index, label: m.pair.label_false }))
+      ? pawnableMemories(state, world).map((m) => ({ id: m.id, label: m.label_fake }))
       : [],
   };
 }

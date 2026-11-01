@@ -47,8 +47,8 @@ describe("storage codec", () => {
     expect(s.phase).toBe("outcome");
     expect(parseRun(serializeRun(s), profileOf(s))).toEqual(s);
     s = continueOutcome(s, miniWorld);
-    s = pledge(s, miniWorld, 0);
-    expect(s.log.at(-1)).toEqual({ storylet: "vault_pledge", choice: -1, pair: 0 });
+    s = pledge(s, miniWorld, "a");
+    expect(s.log.at(-1)).toEqual({ storylet: "vault_pledge", choice: -1, pair: "a" });
     expect(parseRun(serializeRun(s), profileOf(s))).toEqual(s);
   });
 

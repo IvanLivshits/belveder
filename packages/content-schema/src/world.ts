@@ -63,28 +63,45 @@ export const ReportFragmentSchema = z.object({
 });
 export type ReportFragment = z.infer<typeof ReportFragmentSchema>;
 
+/** Checked after every choice (after effects and onChoice); the first whose conditions
+ *  hold sends the player to `goto` instead of the choice's own goto. */
+export const InterruptSchema = z.object({
+  when: z.array(ConditionSchema).min(1),
+  goto: Id,
+});
+export type Interrupt = z.infer<typeof InterruptSchema>;
+
 export const RulesSchema = z.object({
   /** Location of the first scene of every night. */
   start: Id,
   /** Applied after every non-free choice, e.g. `turn += 1`. */
   onChoice: z.array(EffectSchema).default([]),
-  /** All must hold; checked after every choice. */
-  nightEndWhen: z.array(ConditionSchema).default([]),
+  interrupts: z.array(InterruptSchema).default([]),
   /** Applied to profile when a night ends, e.g. `nights += 1`. */
   onNightEnd: z.array(EffectSchema).default([]),
 });
 export type Rules = z.infer<typeof RulesSchema>;
 
-/** A false memory the player can pawn and the true one that may come back in its place.
- *  Both are quality ids (profile flags); the engine treats them as opaque. */
+/** A fake memory the player can pawn and the real one that may come back in its place.
+ *  Both are quality ids (profile flags); the engine treats them as opaque.
+ *  On a pledge the engine also sets run flags `pledged.<id>` and, on return,
+ *  `returned.<id>` and `memories_returned += 1` (see RESERVED_QUALITIES). */
 export const MemoryPairSchema = z.object({
-  false: QualityIdSchema,
-  true: QualityIdSchema,
-  label_false: z.string().min(1),
-  label_true: z.string().min(1),
-  /** If all hold when the false memory is pawned, the true flag is set to 1. */
+  id: Id,
+  fake: QualityIdSchema,
+  real: QualityIdSchema,
+  label_fake: z.string().min(1),
+  label_real: z.string().min(1),
+  /** If all hold when the fake memory is pawned, the real flag is set to 1. */
   returnWhen: z.array(ConditionSchema).default([]),
 });
+
+/** Quality ids the engine writes on its own; a world with memories must declare them. */
+export const RESERVED_QUALITIES = {
+  pledgedPrefix: "pledged.",
+  returnedPrefix: "returned.",
+  memoriesReturned: "memories_returned",
+} as const;
 export type MemoryPair = z.infer<typeof MemoryPairSchema>;
 
 export const WorldSchema = z.object({

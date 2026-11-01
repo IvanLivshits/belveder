@@ -6,7 +6,7 @@ import { miniWorld } from "./mini-world";
 const DIR = import.meta.dir;
 
 describe("mini world night", () => {
-  test("full night is deterministic and ends by rule", async () => {
+  test("full night is deterministic; turn 4 interrupt sends to the vault, pledge ends it", async () => {
     let s = newNight(emptyProfile(), miniWorld, 42);
     expect(s.storyletId).toBe("hall_a");
     s = choose(s, miniWorld, 1); // wait, heat 1
@@ -15,7 +15,11 @@ describe("mini world night", () => {
     s = choose(s, miniWorld, 0); // to room
     expect(currentScene(s, miniWorld).choices.every((c) => c.available)).toBe(true); // hidden choice unlocked by heat
     s = choose(s, miniWorld, 1); // heat back to 0
-    s = choose(s, miniWorld, 0); // turn 4 -> night ends
+    s = choose(s, miniWorld, 0); // turn 4 -> interrupt overrides goto hall
+    expect(s.phase).toBe("scene");
+    expect(s.location).toBe("vault");
+    expect(s.storyletId).toBe("vault_pledge");
+    s = choose(s, miniWorld, 0); // pledge the night
     expect(s.phase).toBe("report");
     expect(s.profile["nights"]).toBe(1);
     expect(s.report["summary"]).toBe("sum_default");
@@ -54,6 +58,12 @@ describe("mini world night", () => {
     expect(s.report["summary"]).toBe("sum_trust");
   });
 
+  test("a choice's own goto is used when no interrupt matches", () => {
+    let s = newNight(emptyProfile(), miniWorld, 1);
+    s = choose(s, miniWorld, 0);
+    expect(s.location).toBe("room");
+  });
+
   test("outcome pauses the move, applies effects first, then goto", () => {
     let s = newNight(emptyProfile(), miniWorld, 3);
     s = choose(s, miniWorld, 0); // to room
@@ -71,20 +81,18 @@ describe("mini world night", () => {
     expect(s.pendingChoice).toBeNull();
   });
 
-  test("night end rule is checked after the outcome screen", () => {
-    let s = newNight(emptyProfile(), miniWorld, 3);
-    s = choose(s, miniWorld, 1); // turn 1
-    s = choose(s, miniWorld, 0); // turn 2, room
-    s = choose(s, miniWorld, 0); // turn 3, hall
-    s = choose(s, miniWorld, 0); // turn 4 -> ends immediately (no outcome)
-    expect(s.phase).toBe("report");
+  test("interrupts are checked after the outcome screen and on free choices too", () => {
     let t = newNight(emptyProfile(), miniWorld, 3);
     t = choose(t, miniWorld, 0); // turn 1, room
     t = choose(t, miniWorld, 0); // turn 2, hall
     t = choose(t, miniWorld, 0); // turn 3, room
-    t = choose(t, miniWorld, 2); // turn 4 with outcome: night ends only after continue
+    t = choose(t, miniWorld, 2); // turn 4 with outcome: interrupt fires only after continue
     expect(t.phase).toBe("outcome");
+    expect(t.location).toBe("room");
     t = continueOutcome(t, miniWorld);
+    expect(t.location).toBe("vault");
+    // endNight beats interrupts: the vault's night pledge still ends the night at turn >= 4
+    t = choose(t, miniWorld, 0);
     expect(t.phase).toBe("report");
   });
 
@@ -96,20 +104,29 @@ describe("mini world night", () => {
     s = continueOutcome(s, miniWorld);
     expect(s.storyletId).toBe("vault_pledge");
     const scene = currentScene(s, miniWorld);
-    expect(scene.memories).toEqual([{ index: 0, label: "False A" }, { index: 1, label: "False B" }]);
-    s = pledge(s, miniWorld, 0);
+    expect(scene.memories).toEqual([{ id: "a", label: "False A" }, { id: "b", label: "False B" }]);
+    s = pledge(s, miniWorld, "a");
     expect(s.phase).toBe("report");
     expect(s.profile["mem.false.a"]).toBe(0);
     expect(s.profile["mem.true.a"]).toBe(1);
+    expect(s.run["pledged.a"]).toBe(1);
+    expect(s.run["returned.a"]).toBe(1);
+    expect(s.profile["memories_returned"]).toBe(1);
     expect(s.run["night_pledged"]).toBeUndefined();
+    expect(s.report["summary"]).toBe("sum_returned"); // report sees this night's run flags
+    expect(s.log.at(-1)).toEqual({ storylet: "vault_pledge", choice: -1, pair: "a" });
     // next night: a is gone, b still pawnable; pawning b does not return (heat < 9)
     let n = newNight(profileOf(s), miniWorld, 4);
+    expect(n.run["pledged.a"]).toBeUndefined(); // run flags reset
     n = choose(n, miniWorld, 0); n = choose(n, miniWorld, 2); n = continueOutcome(n, miniWorld);
-    expect(currentScene(n, miniWorld).memories).toEqual([{ index: 1, label: "False B" }]);
-    expect(() => pledge(n, miniWorld, 0)).toThrow(/not available/);
-    n = pledge(n, miniWorld, 1);
+    expect(currentScene(n, miniWorld).memories).toEqual([{ id: "b", label: "False B" }]);
+    expect(() => pledge(n, miniWorld, "a")).toThrow(/not available/);
+    n = pledge(n, miniWorld, "b");
     expect(n.profile["mem.false.b"]).toBe(0);
     expect(n.profile["mem.true.b"]).toBeUndefined();
+    expect(n.run["pledged.b"]).toBe(1);
+    expect(n.run["returned.b"]).toBeUndefined();
+    expect(n.profile["memories_returned"]).toBe(1);
   });
 
   test("pledge the night is a plain choice; memories untouched", () => {
@@ -123,7 +140,7 @@ describe("mini world night", () => {
 
   test("pledge outside a pledge screen throws", () => {
     const s = newNight(emptyProfile(), miniWorld, 3);
-    expect(() => pledge(s, miniWorld, 0)).toThrow(/not a pledge screen/);
+    expect(() => pledge(s, miniWorld, "a")).toThrow(/not a pledge screen/);
   });
 
   test("renderText substitutes declared qualities and leaves the rest", () => {

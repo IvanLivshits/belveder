@@ -9,8 +9,8 @@ export interface LogEntry {
   storylet: string;
   /** Index into storylet.choices (original, not filtered); -1 for a memory pledge. */
   choice: number;
-  /** Index into world.memories when the entry is a pledge. */
-  pair?: number;
+  /** Memory pair id when the entry is a pledge. */
+  pair?: string;
 }
 
 /** scene: waiting for a choice. outcome: showing a choice's outcome text. report: night over. */

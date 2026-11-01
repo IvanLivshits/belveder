@@ -95,7 +95,7 @@ export function parseRun(doc: string, profile: Profile): GameState {
     const i = e.lastIndexOf(":");
     const tail = e.slice(i + 1);
     return tail.startsWith("p")
-      ? { storylet: e.slice(0, i), choice: -1, pair: Number(tail.slice(1)) }
+      ? { storylet: e.slice(0, i), choice: -1, pair: tail.slice(1) }
       : { storylet: e.slice(0, i), choice: Number(tail) };
   });
   const pc = need("pc");

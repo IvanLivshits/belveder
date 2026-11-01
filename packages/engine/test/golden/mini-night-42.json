@@ -1,7 +1,7 @@
 {
-  "digest": "d5c1fec81fbf4eebb2535dd24620607d12229a47d923837dfb08911f9342bb63",
+  "digest": "f02d7fcc9cf3e5aa674d746e1a2a54a4d263d0383ad82ebecc1909feb48a2ad1",
   "snapshot": {
-    "location": "hall",
+    "location": "vault",
     "log": [
       {
         "choice": 1,
@@ -18,6 +18,10 @@
       {
         "choice": 0,
         "storylet": "hall_b"
+      },
+      {
+        "choice": 0,
+        "storylet": "vault_pledge"
       }
     ],
     "pendingChoice": null,
@@ -30,11 +34,12 @@
     },
     "rng": 3663131668,
     "run": {
+      "night_pledged": 1,
       "seen.hall_a": 1,
       "turn": 4
     },
     "seed": 42,
-    "storyletId": "hall_b",
+    "storyletId": "vault_pledge",
     "v": 1
   }
 }

@@ -13,13 +13,17 @@ export const miniWorld: World = WorldSchema.parse({
     { id: "mem.false.*", scope: "profile", default: 1 },
     { id: "mem.true.*", scope: "profile" },
     { id: "night_pledged", scope: "run" },
+    { id: "pledged.*", scope: "run" },
+    { id: "returned.*", scope: "run" },
+    { id: "memories_returned", scope: "profile" },
   ],
   locations: [{ id: "hall" }, { id: "room" }, { id: "vault" }],
   memories: [
-    { false: "mem.false.a", true: "mem.true.a", label_false: "False A", label_true: "True A", returnWhen: ["trust >= 1"] },
-    { false: "mem.false.b", true: "mem.true.b", label_false: "False B", label_true: "True B", returnWhen: ["heat >= 9"] },
+    { id: "a", fake: "mem.false.a", real: "mem.true.a", label_fake: "False A", label_real: "True A", returnWhen: ["trust >= 1"] },
+    { id: "b", fake: "mem.false.b", real: "mem.true.b", label_fake: "False B", label_real: "True B", returnWhen: ["heat >= 9"] },
   ],
-  rules: { start: "hall", onChoice: ["turn += 1"], nightEndWhen: ["turn >= 4"], onNightEnd: ["nights += 1"] },
+  // Turn 4 sends the player to the vault (pledge screen); the night only ends there.
+  rules: { start: "hall", onChoice: ["turn += 1"], interrupts: [{ when: ["turn >= 4"], goto: "vault" }], onNightEnd: ["nights += 1"] },
   report: { slots: [{ id: "summary", label: "Summary" }] },
   storylets: [
     {
@@ -48,5 +52,6 @@ export const miniWorld: World = WorldSchema.parse({
   fragments: [
     { id: "sum_default", slot: "summary", priority: -100, text: "nothing" },
     { id: "sum_trust", slot: "summary", when: ["trust >= 1"], text: "trusted" },
+    { id: "sum_returned", slot: "summary", priority: 1, when: ["returned.a == 1"], text: "a came back" },
   ],
 });
