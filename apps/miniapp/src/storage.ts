@@ -146,34 +146,40 @@ function makeQueue(store: KV) {
 export interface UiMeta {
   hintsShown: string[];
   pagesRead: string[];
+  /** Bumped by a progress reset: a copy with a higher epoch replaces, not merges, an older one.
+   *  That is the one way a grow-only set can shrink across devices. */
+  epoch: number;
 }
 
 const UI_VERSION = 1;
 const UI_ID_RE = /^[a-z][a-z0-9_.]*$/;
 
 export function serializeUi(ui: UiMeta): string {
-  return `u${UI_VERSION};h=${ui.hintsShown.join(",")};p=${ui.pagesRead.join(",")}`;
+  return `u${UI_VERSION};e=${ui.epoch};h=${ui.hintsShown.join(",")};p=${ui.pagesRead.join(",")}`;
 }
 
 /** Grow-only sets: the union keeps every device's reads (G-Set); order is first-seen. */
 export function unionUi(a: UiMeta, b: UiMeta): UiMeta {
+  if (a.epoch !== b.epoch) return a.epoch > b.epoch ? { ...a } : { ...b };
   const u = (x: string[], y: string[]) => [...new Set([...x, ...y])];
-  return { hintsShown: u(a.hintsShown, b.hintsShown), pagesRead: u(a.pagesRead, b.pagesRead) };
+  return { epoch: a.epoch, hintsShown: u(a.hintsShown, b.hintsShown), pagesRead: u(a.pagesRead, b.pagesRead) };
 }
 
 function sameUi(a: UiMeta, b: UiMeta): boolean {
   const same = (x: string[], y: string[]) => x.length === y.length && x.every((id) => y.includes(id));
-  return same(a.hintsShown, b.hintsShown) && same(a.pagesRead, b.pagesRead);
+  return a.epoch === b.epoch && same(a.hintsShown, b.hintsShown) && same(a.pagesRead, b.pagesRead);
 }
 
-const EMPTY_UI: UiMeta = { hintsShown: [], pagesRead: [] };
+export const EMPTY_UI: UiMeta = { hintsShown: [], pagesRead: [], epoch: 0 };
 
 /** Unknown version or garbage decodes as empty: the worst case is a hint shown twice. */
 export function parseUi(doc: string): UiMeta {
   const [ver, ...fields] = doc.split(";");
   if (ver !== `u${UI_VERSION}`) return EMPTY_UI;
-  const list = (key: string) => fields.find((f) => f.startsWith(`${key}=`))?.slice(2).split(",").filter((id) => UI_ID_RE.test(id)) ?? [];
-  return { hintsShown: list("h"), pagesRead: list("p") };
+  const field = (key: string) => fields.find((f) => f.startsWith(`${key}=`))?.slice(2) ?? "";
+  const list = (key: string) => field(key).split(",").filter((id) => UI_ID_RE.test(id));
+  const epoch = Number(field("e"));
+  return { hintsShown: list("h"), pagesRead: list("p"), epoch: Number.isInteger(epoch) && epoch >= 0 ? epoch : 0 };
 }
 
 // ---- public API ----
@@ -188,6 +194,9 @@ export interface Saves {
   loadRun(profile: Profile): Promise<GameState | null>;
   persistUi(ui: UiMeta): void;
   loadUi(): Promise<UiMeta>;
+  /** Wipes progress on every device: tombstones for profile and run, a fresh ui doc with a higher epoch.
+   *  Returns the ui meta to continue with. */
+  resetAll(): UiMeta;
   /** Resolves when queued writes have settled (tests, page hide). */
   flush(): Promise<void>;
 }
@@ -242,6 +251,7 @@ export function createSaves(local: KV, cloud?: KV, now: () => number = () => Dat
   /** The ui document holds grow-only sets, so the two copies are merged, not ranked: picking the
    *  higher rev would drop pages read on the other device. When both sides were readable and
    *  differ, the union (rev = max + 1) goes back to every side that lacks something. */
+  let uiEpoch = 0;
   const readUi = async (): Promise<UiMeta> => {
     const [l, c] = await Promise.all([readEnvelope(local, UI), cloud ? readEnvelope(cloud, UI) : Promise.resolve<Read>({ ok: true, env: null })]);
     const meta = (r: Read) => (r.ok && r.env && r.env.body !== "" ? parseUi(r.env.body) : EMPTY_UI);
@@ -255,6 +265,7 @@ export function createSaves(local: KV, cloud?: KV, now: () => number = () => Dat
       if (!sameUi(lm, merged)) void localQ.push(UI, doc);
       if (!sameUi(cm, merged)) void cloudQ?.push(UI, doc);
     }
+    uiEpoch = merged.epoch;
     return merged;
   };
 
@@ -264,7 +275,15 @@ export function createSaves(local: KV, cloud?: KV, now: () => number = () => Dat
     clearRun: () => write(RUN, ""),
     loadProfile: async () => { const d = await read(PROFILE); return d === null ? null : parseProfile(d); },
     loadRun: async (profile) => { const d = await read(RUN); return d === null ? null : parseRun(d, profile); },
-    persistUi: (ui) => write(UI, serializeUi(ui)),
+    persistUi: (ui) => { uiEpoch = Math.max(uiEpoch, ui.epoch); write(UI, serializeUi(ui)); },
+    resetAll: () => {
+      write(PROFILE, "");
+      write(RUN, "");
+      const fresh: UiMeta = { ...EMPTY_UI, epoch: uiEpoch + 1 };
+      uiEpoch = fresh.epoch;
+      write(UI, serializeUi(fresh));
+      return fresh;
+    },
     loadUi: readUi,
     flush: () => Promise.all([localQ.idle(), cloudQ?.idle()]).then(() => undefined),
   };

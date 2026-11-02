@@ -20,6 +20,7 @@ interface WebAppApi {
   BackButton: BackButtonApi;
   CloudStorage: CloudStorageApi;
   HapticFeedback?: { impactOccurred(style: "light" | "medium" | "heavy"): void };
+  showConfirm?(message: string, cb: (ok: boolean) => void): void;
 }
 
 declare global {
@@ -50,6 +51,16 @@ export function setBackButton(visible: boolean, onClick: () => void): () => void
 export function haptic(): void {
   if (!isTelegram) return;
   try { webApp?.HapticFeedback?.impactOccurred("light"); } catch { /* older clients */ }
+}
+
+/** Native confirm dialog inside Telegram, window.confirm in a plain browser. */
+export function confirmDialog(message: string): Promise<boolean> {
+  if (isTelegram && webApp?.showConfirm) {
+    return new Promise((res) => {
+      try { webApp.showConfirm!(message, res); } catch { res(window.confirm(message)); }
+    });
+  }
+  return Promise.resolve(window.confirm(message));
 }
 
 export const cloudStorage: CloudStorageApi | undefined = isTelegram ? webApp?.CloudStorage : undefined;

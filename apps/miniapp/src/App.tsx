@@ -6,8 +6,8 @@ import { Backdrop, ChoiceList, DoorPicker, Hint, NotebookPage, PledgePicker, Qua
 import { useCallback, useEffect, useState } from "preact/hooks";
 import { loadContent, type Content } from "./content";
 import { saves } from "./saves";
-import type { UiMeta } from "./storage";
-import { haptic, setBackButton } from "./telegram";
+import { EMPTY_UI, type UiMeta } from "./storage";
+import { confirmDialog, haptic, setBackButton } from "./telegram";
 
 type Screen = { kind: "loading" } | { kind: "error"; message: string } | { kind: "title" } | { kind: "night" } | { kind: "notebook" };
 
@@ -28,7 +28,7 @@ export function App() {
   const [profile, setProfile] = useState<Profile>(emptyProfile());
   const [state, setState] = useState<GameState | null>(null);
   const [screen, setScreen] = useState<Screen>({ kind: "loading" });
-  const [ui, setUi] = useState<UiMeta>({ hintsShown: [], pagesRead: [] });
+  const [ui, setUi] = useState<UiMeta>(EMPTY_UI);
   /** Tutorial hints waiting to be shown, first on screen. */
   const [hints, setHints] = useState<string[]>([]);
 
@@ -77,14 +77,27 @@ export function App() {
   };
 
   if (screen.kind === "title" || !state) {
+    const nights = getQuality({ run: {}, profile: profile.profile }, world, "nights");
+    const hasProgress = state !== null || nights > 0 || ui.hintsShown.length > 0;
+    // Wipes every device: tombstones go to the cloud, other clients pick them up on their next load.
+    const reset = async () => {
+      if (!(await confirmDialog("Стереть весь прогресс на всех устройствах? Ночи, воспоминания и блокнот начнутся заново."))) return;
+      const fresh = saves.resetAll();
+      setProfile(emptyProfile());
+      setState(null);
+      setUi(fresh);
+      setHints([]);
+    };
     return (
       <div class="screen">
         <TitleScreen
           coverSrc={src("cover")}
           canContinue={state !== null}
-          nights={getQuality({ run: {}, profile: profile.profile }, world, "nights")}
+          nights={nights}
           onContinue={() => setScreen({ kind: "night" })}
           onNewNight={startNight}
+          resetLabel={hasProgress ? "Сбросить прогресс" : undefined}
+          onReset={hasProgress ? reset : undefined}
         />
       </div>
     );
