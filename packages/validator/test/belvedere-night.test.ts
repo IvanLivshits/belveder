@@ -296,6 +296,18 @@ describe("belvedere: deep run", () => {
     expect(currentScene(n, world).storylet.id).toBe("stairs_eddie_again");
   });
 
+  test("Gorman at the car, then suspicion 4 on the stairs: stairs_gorman_again instead of a second introduction", () => {
+    const toLanding = (car: boolean) => route(newNight(RING(), world, 7), ["Взять деньги и дело", ...(car ? ["Подойти к машине у фонаря"] : []), "Войти через парадную", "Молча пойти к лестнице"]);
+    let withCar = toLanding(true);
+    expect(q(withCar, "seen.facade_car")).toBe(1);
+    expect(q(withCar, "met.gorman")).toBe(1);
+    withCar = pick({ ...withCar, run: { ...withCar.run, suspicion: 4 } }, "Лестница");
+    expect(withCar.storyletId).toBe("stairs_gorman_again");
+    let noCar = toLanding(false);
+    noCar = pick({ ...noCar, run: { ...noCar.run, suspicion: 4 } }, "Лестница");
+    expect(noCar.storyletId).toBe("stairs_gorman");
+  });
+
   test("office_cashbox opens once after the cashbox memory returns", () => {
     // polite Sloan: a cigarette buys the story of the missing money and the pawn ticket
     let s = route(newNight(emptyProfile(), world, 3), [...TO_FLOOR_4, "Кабинет аудитора", "Сесть без приглашения", "Угостить сигаретой", "Спросить, что связывает его с Хейлом"]);
