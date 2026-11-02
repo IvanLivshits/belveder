@@ -104,7 +104,8 @@ describe("mini world night", () => {
     s = continueOutcome(s, miniWorld);
     expect(s.storyletId).toBe("vault_pledge");
     const scene = currentScene(s, miniWorld);
-    expect(scene.memories).toEqual([{ id: "a", label: "False A" }, { id: "b", label: "False B" }]);
+    // trust 1 satisfies a's returnWhen, heat < 9 does not satisfy b's
+    expect(scene.memories).toEqual([{ id: "a", label: "False A", canReturn: true }, { id: "b", label: "False B", canReturn: false }]);
     s = pledge(s, miniWorld, "a");
     expect(s.phase).toBe("report");
     expect(s.profile["mem.false.a"]).toBe(0);
@@ -119,7 +120,7 @@ describe("mini world night", () => {
     let n = newNight(profileOf(s), miniWorld, 4);
     expect(n.run["pledged.a"]).toBeUndefined(); // run flags reset
     n = choose(n, miniWorld, 0); n = choose(n, miniWorld, 2); n = continueOutcome(n, miniWorld);
-    expect(currentScene(n, miniWorld).memories).toEqual([{ id: "b", label: "False B" }]);
+    expect(currentScene(n, miniWorld).memories).toEqual([{ id: "b", label: "False B", canReturn: false }]);
     expect(() => pledge(n, miniWorld, "a")).toThrow(/not available/);
     n = pledge(n, miniWorld, "b");
     expect(n.profile["mem.false.b"]).toBe(0);

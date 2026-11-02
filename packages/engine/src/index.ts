@@ -9,3 +9,6 @@ export * from "./step";
 export * from "./text";
 export * from "./digest";
 export * from "./storage";
+export * from "./cost";
+export * from "./hints";
+export * from "./notebook";

@@ -16,6 +16,8 @@ export const QualityDefSchema = z.object({
   max: z.number().int().optional(),
   /** Shown in the HUD bar. */
   visible: z.boolean().default(false),
+  /** One line the UI shows the first time this quality changes value (tracked by the app, not the world). */
+  hint: z.string().min(1).optional(),
 });
 export type QualityDef = z.infer<typeof QualityDefSchema>;
 
@@ -64,6 +66,41 @@ export const ReportFragmentSchema = z.object({
 });
 export type ReportFragment = z.infer<typeof ReportFragmentSchema>;
 
+/** Small print above the report page; every note whose conditions hold is shown. */
+export const ReportNoteSchema = z.object({
+  when: z.array(ConditionSchema).default([]),
+  text: z.string().min(1),
+});
+export type ReportNote = z.infer<typeof ReportNoteSchema>;
+
+/** Nick's notebook: reference pages that unlock on profile qualities, plus the
+ *  "what I know about myself" page assembled from memory pairs. */
+export const NotebookPageSchema = z.object({
+  id: Id,
+  title: z.string().min(1),
+  /** Nick's voice. */
+  text: z.string().min(1),
+  /** Plain explanation of the mechanic. */
+  rule: z.string().min(1),
+  /** Profile-only conditions (validator enforces), so a page never closes on the next night. */
+  when: z.array(ConditionSchema).default([]),
+});
+export type NotebookPage = z.infer<typeof NotebookPageSchema>;
+
+/** Templates may use `{label_fake}` and `{label_real}` of the pair. */
+export const LIFE_PLACEHOLDERS = ["label_fake", "label_real"] as const;
+export const NotebookSchema = z.object({
+  life: z.object({
+    title: z.string().min(1),
+    intro: z.string().min(1),
+    /** fake: still on the shelf; empty: pawned, nothing came back; real: the real memory returned. */
+    states: z.object({ fake: z.string().min(1), empty: z.string().min(1), real: z.string().min(1) }),
+    footer: z.string().min(1),
+  }),
+  pages: z.array(NotebookPageSchema),
+});
+export type Notebook = z.infer<typeof NotebookSchema>;
+
 /** Checked after every choice (after effects and onChoice); the first whose conditions
  *  hold sends the player to `goto` instead of the choice's own goto. */
 export const InterruptSchema = z.object({
@@ -111,10 +148,14 @@ export const WorldSchema = z.object({
   qualities: z.array(QualityDefSchema),
   locations: z.array(LocationSchema),
   rules: RulesSchema,
-  report: z.object({ slots: z.array(z.object({ id: Id, label: z.string().optional() })).min(1) }),
+  report: z.object({
+    slots: z.array(z.object({ id: Id, label: z.string().optional() })).min(1),
+    notes: z.array(ReportNoteSchema).default([]),
+  }),
   memories: z.array(MemoryPairSchema).default([]),
   storylets: z.array(StoryletSchema),
   fragments: z.array(ReportFragmentSchema),
+  notebook: NotebookSchema.optional(),
 });
 export type World = z.infer<typeof WorldSchema>;
 /** Shape accepted by `WorldSchema.parse` (defaults optional). */

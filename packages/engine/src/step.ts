@@ -81,6 +81,16 @@ export function pawnableMemories(state: GameState, world: World) {
   return world.memories.filter((pair) => getQuality(state, world, pair.fake) === 1);
 }
 
+/** Pawnable pairs with `canReturn`: whether pledging right now would bring the real memory back.
+ *  The UI may highlight such an envelope without saying what returns. */
+export function pledgeOptions(state: GameState, world: World) {
+  return pawnableMemories(state, world).map((pair) => ({
+    id: pair.id,
+    label: pair.label_fake,
+    canReturn: evaluateAll(state, world, pair.returnWhen),
+  }));
+}
+
 /** Pawns a fake memory by pair id: fake flag -> 0, `pledged.<id>` -> 1; if returnWhen holds,
  *  real flag -> 1, `returned.<id>` -> 1 and `memories_returned` += 1. Then the night ends,
  *  with the report built while these run flags are still set. Only on a pledge-layout storylet. */
@@ -120,9 +130,7 @@ export function currentScene(state: GameState, world: World) {
     storylet,
     text: renderText(storylet.text, state, world),
     choices: choicesOf(state, world, storylet).map((c) => ({ ...c, text: renderText(c.choice.text, state, world) })),
-    memories: storylet.layout === "pledge"
-      ? pawnableMemories(state, world).map((m) => ({ id: m.id, label: m.label_fake }))
-      : [],
+    memories: storylet.layout === "pledge" ? pledgeOptions(state, world) : [],
   };
 }
 export type SceneView = ReturnType<typeof currentScene>;
@@ -144,6 +152,11 @@ export function currentReport(state: GameState, world: World) {
     if (!fragment) throw new EngineError(`report slot ${slot} has no fragment in state`);
     return { slot, label: label ?? slot, fragment, text: renderText(fragment.text, state, world) };
   });
+}
+
+/** Report notes whose conditions hold, rendered, in content order. */
+export function currentNotes(state: GameState, world: World): string[] {
+  return world.report.notes.filter((n) => evaluateAll(state, world, n.when)).map((n) => renderText(n.text, state, world));
 }
 
 /** Profile to persist between nights. */
