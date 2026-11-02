@@ -41,10 +41,11 @@ export function App() {
   const { world, src, assets } = content;
   /** Portraits are full 9:16 scenes and replace the background; a square image (evidence close-up)
    *  stays an inset over the background instead. Decided by the asset's own proportions. */
-  const visuals = (storylet: { background: string; portrait?: string | undefined }) => {
+  const visuals = (storylet: { background: string; portrait?: string | undefined; location: string }) => {
     const p = storylet.portrait ? assets[storylet.portrait] : undefined;
     const isScene = p !== undefined && p.h > p.w;
-    return { src: src(isScene ? storylet.portrait : storylet.background), inset: p && !isScene ? src(storylet.portrait) : undefined };
+    const outdoor = world.locations.find((l) => l.id === storylet.location)?.outdoor ?? false;
+    return { src: src(isScene ? storylet.portrait : storylet.background), inset: p && !isScene ? src(storylet.portrait) : undefined, rain: outdoor };
   };
 
   const startNight = () => {

@@ -19,7 +19,8 @@ export const QualityDefSchema = z.object({
 });
 export type QualityDef = z.infer<typeof QualityDefSchema>;
 
-export const LocationSchema = z.object({ id: Id, label: z.string().optional() });
+/** `outdoor` switches on weather overlays (rain, lightning) in the UI; indoors stay still. */
+export const LocationSchema = z.object({ id: Id, label: z.string().optional(), outdoor: z.boolean().default(false) });
 export type Location = z.infer<typeof LocationSchema>;
 
 export const ChoiceSchema = z.object({

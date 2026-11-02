@@ -30,7 +30,7 @@ qualities:
 
 locations:
   - { id: office, label: Контора Ника }
-  - { id: facade, label: Фасад Белведера }
+  - { id: facade, label: Фасад Белведера, outdoor: true }
   - { id: lobby, label: Вестибюль }
   - { id: freight_lift, label: Грузовой лифт }
   - { id: mailboxes, label: Почтовые ящики }

@@ -10,6 +10,7 @@ description: Формат сторилета и фрагмента отчёта,
 ## Файлы
 
 - `world.yaml` — качества, локации, глобальные правила (`rules.start`, `rules.onChoice`, `rules.interrupts`, `rules.onNightEnd`), пары воспоминаний.
+  Локация: `{ id, label, outdoor: true }`. `outdoor` включает дождь и зарницы поверх картинки; в помещениях флага нет, и погода не рисуется.
 - `storylets/*.yaml` — список сторилетов. Один файл на локацию или тему.
 - `report-fragments/*.yaml` — фрагменты отчёта по слотам.
 
