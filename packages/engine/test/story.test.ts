@@ -77,8 +77,8 @@ describe("story", () => {
     expect(story.sections).toEqual([
       { kind: "opening", text: "a came back" },
       { kind: "night", night: 1, paragraphs: [] }, // its only slot is the opening
-      { kind: "night", night: 3, paragraphs: ["trusted"] },
-      { kind: "night", night: 4, paragraphs: ["trusted"] },
+      { kind: "night", night: 3, paragraphs: [] }, // a pair was pawned: the litany carries the slot
+      { kind: "night", night: 4, paragraphs: ["trusted"] }, // the ending night keeps it
       { kind: "pledged_note", text: "Some nights are gone." },
       { kind: "litany", intro: "Paid:", text: "a came back trusted" },
       { kind: "ending", title: "Fire", paragraphs: ["The vault burns.", "Nothing is left, trust 2."] },

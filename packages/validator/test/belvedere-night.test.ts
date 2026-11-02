@@ -665,10 +665,14 @@ describe("belvedere: the campaign and the five endings", () => {
     expect(litany.text.split(" ").length).toBeGreaterThan(40);
     const nights = story.sections.filter((x) => x.kind === "night") as { night: number; paragraphs: string[] }[];
     expect(nights.map((n) => n.night)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    // prose only: no slot labels, and the first night does not repeat the opening
-    expect(nights[0]!.paragraphs.length).toBe(5);
+    // prose only: no slot labels; the first night does not repeat the opening, nights with a pawned pair leave the price to the litany
+    expect(nights[0]!.paragraphs.length).toBe(4);
     expect(nights[0]!.paragraphs).not.toContain(opening.text);
-    expect(nights[1]!.paragraphs.length).toBe(6);
+    expect(nights[1]!.paragraphs.length).toBe(5);
+    const price1 = currentReport(night1(), world).find((r) => r.slot === "price")!.text;
+    expect(nights[0]!.paragraphs).not.toContain(price1);
+    expect((story.sections.find((x) => x.kind === "litany") as { text: string }).text.startsWith(price1)).toBe(true);
+    expect(nights[8]!.paragraphs.length).toBe(6); // the final night pawned nothing
     const labels = world.report.slots.map((sl) => sl.label!);
     for (const n of nights) for (const p of n.paragraphs) expect(labels).not.toContain(p);
     expect(nights.some((n) => "entries" in n)).toBe(false);

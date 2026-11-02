@@ -79,12 +79,15 @@ export function storyView(profile: Profile, world: World, endingId: string): { t
         break;
       }
       case "nights": {
-        // The first night's opening slot is already the story's opening, so its page skips it.
+        // The first night's opening slot is already the story's opening, and the litany repeats the
+        // litany slot of every night a pair was pawned, so those pages skip them.
         const hasOpening = story.parts.includes("opening");
+        const hasLitany = story.parts.includes("litany");
         history.nights.forEach((rec, i) => {
           if (rec.pledged) return;
           const paragraphs = slots.flatMap(({ id }) => {
             if (hasOpening && i === 0 && id === openingSlot) return [];
+            if (hasLitany && rec.pair !== undefined && id === litanySlot) return [];
             const text = fragmentText(world, profile, rec, id);
             return text === null ? [] : [text];
           });
