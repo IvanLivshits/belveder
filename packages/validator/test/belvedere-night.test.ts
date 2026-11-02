@@ -510,3 +510,42 @@ describe("belvedere: floors 5–8 and the folder", () => {
     expect(currentScene(s, world).storylet.id).toBe("darkroom");
   });
 });
+
+describe("belvedere: Ruby after the lantern", () => {
+  /** Burns turns in the dressing room until Ruby is home (turn >= 6), then opens her door. */
+  const toRuby = (s: GameState) => {
+    let cur = s;
+    while (q(cur, "turn") < 6) cur = route(cur, ["Гримёрная", "Уйти"]);
+    return route(cur, ["Квартира певицы"]);
+  };
+
+  test("once she has written Walter's name, 'как кто' and 'про Хейла' are gone from her hub", () => {
+    const profile: Profile = { v: 1, profile: { nights: 3, dolly_trust: 3, "mem.true.lantern": 1, "mem.false.mcginnis": 0, "met.ruby": 1, "visited.floor7.tenant": 1 } };
+    let s = route(newNight(profile, world, 41), [...LIFT, "На седьмой"]);
+    s = toRuby(s);
+    expect(currentScene(s, world).storylet.id).toBe("ruby_recognizes");
+    s = route(s, ["Сказать, что помнишь"]);
+    expect(q(s, "seen.ruby_recognized")).toBe(1);
+    expect(q(s, "debt.ruby")).toBe(1);
+    const hub = currentScene(s, world);
+    expect(hub.storylet.id).toBe("ruby_room");
+    const open = hub.choices.filter((c) => c.available).map((c) => c.text);
+    expect(open).not.toContain("Спросить, как кто");
+    expect(open).not.toContain("Спросить про Хейла");
+    expect(open).toContain("Угостить сигаретой");
+    s = route(s, ["Угостить сигаретой", "Уйти"]);
+    s = walkUntilDawn(s);
+    s = pick(s, "Заложить эту ночь");
+    expect(currentReport(s, world).find((r) => r.slot === "witnesses")?.fragment.id).toBe("witnesses_ruby_walter");
+  });
+
+  test("on the first visit 'как кто' is open and gets its own witness fragment", () => {
+    let s = route(newNight(TRUSTED, world, 42), [...LIFT, "На седьмой"]);
+    s = toRuby(s);
+    s = route(s, ["Войти", "Спросить, как кто", "Уйти"]);
+    expect(q(s, "seen.ruby_who")).toBe(1);
+    s = walkUntilDawn(s);
+    s = pick(s, "Заложить эту ночь");
+    expect(currentReport(s, world).find((r) => r.slot === "witnesses")?.fragment.id).toBe("witnesses_ruby_who");
+  });
+});

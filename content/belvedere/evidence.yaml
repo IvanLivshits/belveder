@@ -22,6 +22,7 @@ items:
   - id: mailbox_note
     order: 15
     flag: seen.mailbox_paid
+    image: ev_owner_note
     title: Записка из ящика 3-В
     text: |
       «Аренда комнаты 3-В оплачена до конца дела. — В.»

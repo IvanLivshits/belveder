@@ -162,14 +162,14 @@
     Афиши «Синего фонаря» на стенах, стопка салфеток на столе, патефон без пластинки. Руби курит, потому что терять голос ей уже нечего.
   choices:
     - text: Спросить, как кто
-      when: [seen.ruby_who == 0]
+      when: [seen.ruby_intro == 1, seen.ruby_who == 0]
       effects: [seen.ruby_who = 1]
       outcome: |
         Руби пишет, зачёркивает, пишет снова:
 
         «Как человек, который считал чужие деньги и не взял себе ни цента. Почти ни цента».
     - text: Спросить про Хейла
-      when: [seen.ruby_hale == 0]
+      when: [seen.ruby_hale == 0, seen.ruby_recognized == 0]
       effects: [seen.ruby_hale = 1, clues += 1]
       outcome: |
         «Не знаю такого».
