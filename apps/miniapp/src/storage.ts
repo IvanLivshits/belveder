@@ -155,11 +155,23 @@ export function serializeUi(ui: UiMeta): string {
   return `u${UI_VERSION};h=${ui.hintsShown.join(",")};p=${ui.pagesRead.join(",")}`;
 }
 
+/** Grow-only sets: the union keeps every device's reads (G-Set); order is first-seen. */
+export function unionUi(a: UiMeta, b: UiMeta): UiMeta {
+  const u = (x: string[], y: string[]) => [...new Set([...x, ...y])];
+  return { hintsShown: u(a.hintsShown, b.hintsShown), pagesRead: u(a.pagesRead, b.pagesRead) };
+}
+
+function sameUi(a: UiMeta, b: UiMeta): boolean {
+  const same = (x: string[], y: string[]) => x.length === y.length && x.every((id) => y.includes(id));
+  return same(a.hintsShown, b.hintsShown) && same(a.pagesRead, b.pagesRead);
+}
+
+const EMPTY_UI: UiMeta = { hintsShown: [], pagesRead: [] };
+
 /** Unknown version or garbage decodes as empty: the worst case is a hint shown twice. */
 export function parseUi(doc: string): UiMeta {
-  const empty: UiMeta = { hintsShown: [], pagesRead: [] };
   const [ver, ...fields] = doc.split(";");
-  if (ver !== `u${UI_VERSION}`) return empty;
+  if (ver !== `u${UI_VERSION}`) return EMPTY_UI;
   const list = (key: string) => fields.find((f) => f.startsWith(`${key}=`))?.slice(2).split(",").filter((id) => UI_ID_RE.test(id)) ?? [];
   return { hintsShown: list("h"), pagesRead: list("p") };
 }
@@ -227,6 +239,25 @@ export function createSaves(local: KV, cloud?: KV, now: () => number = () => Dat
     return winner.body === "" ? null : winner.body;
   };
 
+  /** The ui document holds grow-only sets, so the two copies are merged, not ranked: picking the
+   *  higher rev would drop pages read on the other device. When both sides were readable and
+   *  differ, the union (rev = max + 1) goes back to every side that lacks something. */
+  const readUi = async (): Promise<UiMeta> => {
+    const [l, c] = await Promise.all([readEnvelope(local, UI), cloud ? readEnvelope(cloud, UI) : Promise.resolve<Read>({ ok: true, env: null })]);
+    const meta = (r: Read) => (r.ok && r.env && r.env.body !== "" ? parseUi(r.env.body) : EMPTY_UI);
+    const lm = meta(l), cm = meta(c);
+    const merged = unionUi(lm, cm);
+    revs.set(UI, Math.max(revs.get(UI) ?? 0, l.ok ? l.env?.rev ?? 0 : 0, c.ok ? c.env?.rev ?? 0 : 0));
+    if (l.ok && c.ok && !sameUi(lm, cm)) {
+      const rev = (revs.get(UI) ?? 0) + 1;
+      revs.set(UI, rev);
+      const doc = encodeEnvelope({ rev, savedAt: now(), body: serializeUi(merged) });
+      if (!sameUi(lm, merged)) void localQ.push(UI, doc);
+      if (!sameUi(cm, merged)) void cloudQ?.push(UI, doc);
+    }
+    return merged;
+  };
+
   return {
     persistProfile: (p) => write(PROFILE, serializeProfile(p)),
     persistRun: (s) => write(RUN, serializeRun(s)),
@@ -234,7 +265,7 @@ export function createSaves(local: KV, cloud?: KV, now: () => number = () => Dat
     loadProfile: async () => { const d = await read(PROFILE); return d === null ? null : parseProfile(d); },
     loadRun: async (profile) => { const d = await read(RUN); return d === null ? null : parseRun(d, profile); },
     persistUi: (ui) => write(UI, serializeUi(ui)),
-    loadUi: async () => { const d = await read(UI); return d === null ? { hintsShown: [], pagesRead: [] } : parseUi(d); },
+    loadUi: readUi,
     flush: () => Promise.all([localQ.idle(), cloudQ?.idle()]).then(() => undefined),
   };
 }

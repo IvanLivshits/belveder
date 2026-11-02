@@ -168,19 +168,58 @@ describe("saves transport", () => {
 });
 
 describe("ui meta", () => {
-  test("ui doc uses the same rev merge: local rev 5 beats cloud rev 4 and is pushed to cloud", async () => {
+  test("ui doc is a grow-only set: two devices' reads are merged, not ranked by rev", async () => {
+    const { serializeUi } = await import("../src/storage");
+    // phone read `pool` (rev 5); desktop, unsynced, read `sloan` and `eddie` (rev 6)
+    const cloud = fakeKV();
+    const localStore = fakeStorage();
+    const local = localKV(localStore);
+    await saveDoc(local, "ui", encodeEnvelope({ rev: 5, savedAt: 50, body: serializeUi({ hintsShown: ["turn"], pagesRead: ["case", "pool"] }) }));
+    await saveDoc(cloud.kv, "ui", encodeEnvelope({ rev: 6, savedAt: 55, body: serializeUi({ hintsShown: ["turn", "clues"], pagesRead: ["case", "sloan", "eddie"] }) }));
+    const saves = createSaves(local, cloud.kv, () => 60);
+    const ui = await saves.loadUi();
+    expect(ui.pagesRead.sort()).toEqual(["case", "eddie", "pool", "sloan"]);
+    expect(ui.hintsShown.sort()).toEqual(["clues", "turn"]);
+    await saves.flush();
+    // the union goes to both sides with rev = max + 1
+    expect(cloud.map.get("ui_0")).toContain("rev=7;at=60|u1;h=turn,clues;p=case,pool,sloan,eddie");
+    expect(localStore.getItem("blv_ui_0")).toContain("rev=7;at=60|u1;h=turn,clues;p=case,pool,sloan,eddie");
+    saves.persistUi({ ...ui, pagesRead: [...ui.pagesRead, "dolly"] });
+    await saves.flush();
+    expect(cloud.map.get("ui_0")).toContain("rev=8;at=60|");
+  });
+
+  test("ui doc: equal revs with different content still merge; identical copies are left alone", async () => {
     const { serializeUi } = await import("../src/storage");
     const cloud = fakeKV();
     const local = localKV(fakeStorage());
-    await saveDoc(local, "ui", encodeEnvelope({ rev: 5, savedAt: 50, body: serializeUi({ hintsShown: ["turn"], pagesRead: ["case", "night"] }) }));
-    await saveDoc(cloud.kv, "ui", encodeEnvelope({ rev: 4, savedAt: 40, body: serializeUi({ hintsShown: ["turn"], pagesRead: ["case"] }) }));
-    const saves = createSaves(local, cloud.kv, () => 60);
-    expect((await saves.loadUi()).pagesRead).toEqual(["case", "night"]);
+    await saveDoc(local, "ui", encodeEnvelope({ rev: 4, savedAt: 1, body: serializeUi({ hintsShown: [], pagesRead: ["case", "pool"] }) }));
+    await saveDoc(cloud.kv, "ui", encodeEnvelope({ rev: 4, savedAt: 2, body: serializeUi({ hintsShown: [], pagesRead: ["case", "sloan"] }) }));
+    const saves = createSaves(local, cloud.kv, () => 9);
+    expect((await saves.loadUi()).pagesRead.sort()).toEqual(["case", "pool", "sloan"]);
     await saves.flush();
-    expect(cloud.map.get("ui_0")).toContain("rev=5;at=50|u1;h=turn;p=case,night");
-    saves.persistUi({ hintsShown: ["turn"], pagesRead: ["case", "night", "dolly"] });
+    expect(cloud.map.get("ui_0")).toContain("rev=5;at=9|");
+    const writesAfterMerge = cloud.writes();
+    const freshLocal = fakeStorage();
+    const again = createSaves(localKV(freshLocal), cloud.kv);
+    expect((await again.loadUi()).pagesRead.sort()).toEqual(["case", "pool", "sloan"]);
+    await again.flush();
+    // local empty, cloud readable: only the local side lacks something, the cloud is not rewritten
+    expect(cloud.writes()).toBe(writesAfterMerge);
+    expect(freshLocal.getItem("blv_ui_0")).toContain("p=case,pool,sloan");
+  });
+
+  test("ui doc: an unreadable cloud never gets a blind write", async () => {
+    const { serializeUi } = await import("../src/storage");
+    let down = true;
+    const cloud = fakeKV({ fail: () => down });
+    const local = localKV(fakeStorage());
+    await saveDoc(local, "ui", encodeEnvelope({ rev: 3, savedAt: 1, body: serializeUi({ hintsShown: ["turn"], pagesRead: ["case"] }) }));
+    const saves = createSaves(local, cloud.kv);
+    expect((await saves.loadUi()).pagesRead).toEqual(["case"]);
     await saves.flush();
-    expect(cloud.map.get("ui_0")).toContain("rev=6;at=60|");
+    down = false;
+    expect(cloud.map.size).toBe(0);
   });
 
   test("round-trips through the codec and the saves transport", async () => {
