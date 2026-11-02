@@ -11,3 +11,4 @@ export * from "./NotebookPage";
 export * from "./Life";
 export * from "./MorningPage";
 export * from "./EvidencePage";
+export * from "./reading";
