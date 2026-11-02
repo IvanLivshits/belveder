@@ -18,6 +18,7 @@ interface WebAppApi {
   setBackgroundColor(color: string): void;
   onEvent(event: string, cb: () => void): void;
   BackButton: BackButtonApi;
+  SettingsButton?: BackButtonApi;
   CloudStorage: CloudStorageApi;
   HapticFeedback?: { impactOccurred(style: "light" | "medium" | "heavy"): void };
   showConfirm?(message: string, cb: (ok: boolean) => void): void;
@@ -46,6 +47,14 @@ export function setBackButton(visible: boolean, onClick: () => void): () => void
   if (!bb) return () => {};
   if (visible) { bb.onClick(onClick); bb.show(); } else bb.hide();
   return () => { bb.offClick(onClick); bb.hide(); };
+}
+
+/** Telegram's gear in the Mini App header; the same show/hide/onClick shape as BackButton. */
+export function setSettingsButton(visible: boolean, onClick: () => void): () => void {
+  const sb = isTelegram ? webApp?.SettingsButton : undefined;
+  if (!sb) return () => {};
+  if (visible) { sb.onClick(onClick); sb.show(); } else sb.hide();
+  return () => { sb.offClick(onClick); sb.hide(); };
 }
 
 export function haptic(): void {

@@ -2,14 +2,19 @@ import {
   changedQualities, choiceCost, choose, continueOutcome, currentNotes, currentOutcome, currentReport, currentScene, emptyProfile, getQuality,
   newNight, notebookView, pledge, profileOf, type GameState, type Profile,
 } from "@belvedere/engine";
-import { Backdrop, ChoiceList, DoorPicker, Hint, NotebookPage, PledgePicker, QualityBar, ReportPage, SceneCard, TitleScreen } from "@belvedere/ui-kit";
+import { RESERVED_QUALITIES } from "@belvedere/content-schema";
+import { Backdrop, ChoiceList, DoorPicker, Hint, MorningPage, NotebookPage, PledgePicker, QualityBar, ReportPage, SceneCard, TitleScreen, type LifeLineItem } from "@belvedere/ui-kit";
 import { useCallback, useEffect, useState } from "preact/hooks";
 import { loadContent, type Content } from "./content";
 import { saves } from "./saves";
 import { EMPTY_UI, type UiMeta } from "./storage";
-import { confirmDialog, haptic, setBackButton } from "./telegram";
+import { confirmDialog, haptic, setBackButton, setSettingsButton } from "./telegram";
 
-type Screen = { kind: "loading" } | { kind: "error"; message: string } | { kind: "title" } | { kind: "night" } | { kind: "notebook" };
+type Life = { title: string; intro: string; footer: string | null; lines: LifeLineItem[] };
+type Screen =
+  | { kind: "loading" } | { kind: "error"; message: string } | { kind: "title" } | { kind: "night" } | { kind: "notebook" }
+  /** Between the report and the next night: the life page with tonight's changes. */
+  | { kind: "morning"; life: Life };
 
 function randomSeed(): number {
   return (Math.random() * 0x100000000) >>> 0;
@@ -56,6 +61,19 @@ export function App() {
   ), [screen.kind]);
   const dismissHint = useCallback(() => setHints((h) => h.slice(1)), []);
 
+  // Wipes every device: tombstones go to the cloud, other clients pick them up on their next load.
+  const reset = useCallback(async () => {
+    if (!(await confirmDialog("Стереть весь прогресс на всех устройствах? Ночи, воспоминания и блокнот начнутся заново."))) return;
+    const fresh = saves.resetAll();
+    setProfile(emptyProfile());
+    setState(null);
+    setUi(fresh);
+    setHints([]);
+    setScreen({ kind: "title" });
+  }, []);
+  // Telegram's gear opens the same reset; in a browser the link lives at the bottom of the notebook.
+  useEffect(() => setSettingsButton(content !== null, () => void reset()), [content, reset]);
+
   if (screen.kind === "loading") return <div class="screen" />;
   if (screen.kind === "error" || !content) return <div class="screen"><p class="scene__text" style="padding:24px">Ошибка: {screen.kind === "error" ? screen.message : "нет контента"}</p></div>;
   const { world, src, assets } = content;
@@ -76,37 +94,32 @@ export function App() {
     saves.persistRun(s);
   };
 
+  const paper = src("paper_dark");
+  const texture = paper ? `url(${paper})` : undefined;
+  const hint = hints[0] !== undefined && <Hint text={hints[0]} onDismiss={dismissHint} />;
+  const paperHint = hints[0] !== undefined && <Hint text={hints[0]} onDismiss={dismissHint} placement="bottom" />;
+
+  if (screen.kind === "morning") {
+    return (
+      <div class="screen">
+        <MorningPage title="Утро" life={screen.life} nextLabel="Следующая ночь" onNext={startNight} texture={texture} />
+      </div>
+    );
+  }
+
   if (screen.kind === "title" || !state) {
-    const nights = getQuality({ run: {}, profile: profile.profile }, world, "nights");
-    const hasProgress = state !== null || nights > 0 || ui.hintsShown.length > 0;
-    // Wipes every device: tombstones go to the cloud, other clients pick them up on their next load.
-    const reset = async () => {
-      if (!(await confirmDialog("Стереть весь прогресс на всех устройствах? Ночи, воспоминания и блокнот начнутся заново."))) return;
-      const fresh = saves.resetAll();
-      setProfile(emptyProfile());
-      setState(null);
-      setUi(fresh);
-      setHints([]);
-    };
     return (
       <div class="screen">
         <TitleScreen
           coverSrc={src("cover")}
           canContinue={state !== null}
-          nights={nights}
+          nights={getQuality({ run: {}, profile: profile.profile }, world, "nights")}
           onContinue={() => setScreen({ kind: "night" })}
           onNewNight={startNight}
-          resetLabel={hasProgress ? "Сбросить прогресс" : undefined}
-          onReset={hasProgress ? reset : undefined}
         />
       </div>
     );
   }
-
-  const paper = src("paper_dark");
-  const texture = paper ? `url(${paper})` : undefined;
-  const hint = hints[0] !== undefined && <Hint text={hints[0]} onDismiss={dismissHint} />;
-  const paperHint = hints[0] !== undefined && <Hint text={hints[0]} onDismiss={dismissHint} placement="bottom" />;
 
   if (screen.kind === "notebook") {
     const nb = notebookView(state, world);
@@ -119,6 +132,8 @@ export function App() {
           lockedLabel={(n) => `Ещё страниц: ${n}`}
           backLabel="Назад"
           onBack={() => setScreen({ kind: "night" })}
+          resetLabel="Сбросить прогресс"
+          onReset={() => void reset()}
           texture={texture}
         />
       </div>
@@ -127,11 +142,21 @@ export function App() {
 
   if (state.phase === "report") {
     const entries = currentReport(state, world).map((r) => ({ slot: r.slot, label: r.label, text: r.text }));
+    // The morning page is built from the report state, while tonight's pledged.*/returned.* flags are still set.
     const finish = () => {
       const p = profileOf(state);
+      const nb = notebookView(state, world);
+      const { pledgedPrefix, returnedPrefix } = RESERVED_QUALITIES;
+      const life: Life | null = nb && {
+        ...nb.life,
+        lines: nb.life.lines.map((l) => ({
+          ...l,
+          animate: getQuality(state, world, returnedPrefix + l.pair) === 1 ? "return" : getQuality(state, world, pledgedPrefix + l.pair) === 1 ? "strike" : undefined,
+        })),
+      };
       setProfile(p);
       setState(null);
-      setScreen({ kind: "title" });
+      setScreen(life ? { kind: "morning", life } : { kind: "title" });
       saves.clearRun();
       saves.persistProfile(p);
     };
