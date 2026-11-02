@@ -92,7 +92,7 @@ export function pledgeOptions(state: GameState, world: World) {
 }
 
 /** Pawns a fake memory by pair id: fake flag -> 0, `pledged.<id>` -> 1; if returnWhen holds,
- *  real flag -> 1, `returned.<id>` -> 1 and `memories_returned` += 1. Then the night ends,
+ *  real flag -> 1, `returned.<id>` -> 1, `returned_tonight` -> 1 and `memories_returned` += 1. Then the night ends,
  *  with the report built while these run flags are still set. Only on a pledge-layout storylet. */
 export function pledge(state: GameState, world: World, pairId: string): GameState {
   if (state.phase !== "scene") throw new EngineError("cannot pledge outside a scene");
@@ -101,13 +101,14 @@ export function pledge(state: GameState, world: World, pairId: string): GameStat
   const pair = pawnableMemories(state, world).find((m) => m.id === pairId);
   if (!pair) throw new EngineError(`memory pair ${pairId} not available to pawn`);
 
-  const { pledgedPrefix, returnedPrefix, memoriesReturned } = RESERVED_QUALITIES;
+  const { pledgedPrefix, returnedPrefix, returnedTonight, memoriesReturned } = RESERVED_QUALITIES;
   let next: GameState = { ...state, log: [...state.log, { storylet: storylet.id, choice: -1, pair: pairId }] };
   next = setQuality(next, world, pair.fake, 0);
   next = setQuality(next, world, pledgedPrefix + pair.id, 1);
   if (evaluateAll(next, world, pair.returnWhen)) {
     next = setQuality(next, world, pair.real, 1);
     next = setQuality(next, world, returnedPrefix + pair.id, 1);
+    next = setQuality(next, world, returnedTonight, 1);
     next = setQuality(next, world, memoriesReturned, getQuality(next, world, memoriesReturned) + 1);
   }
   return endNight(next, world);
@@ -157,6 +158,11 @@ export function currentReport(state: GameState, world: World) {
 /** Report notes whose conditions hold, rendered, in content order. */
 export function currentNotes(state: GameState, world: World): string[] {
   return world.report.notes.filter((n) => evaluateAll(state, world, n.when)).map((n) => renderText(n.text, state, world));
+}
+
+/** Morning notes, evaluated on the report state so `pledged.*`, `returned_tonight` and `night_pledged` are still visible. */
+export function morningNotes(state: GameState, world: World): string[] {
+  return world.morning.notes.filter((n) => evaluateAll(state, world, n.when)).map((n) => renderText(n.text, state, world));
 }
 
 /** Profile to persist between nights. */

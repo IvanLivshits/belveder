@@ -2,7 +2,7 @@
  *  If content changes on purpose: UPDATE_GOLDEN=1 bun test, explain in the commit. */
 import { describe, expect, test } from "bun:test";
 import {
-  choiceCost, choose, continueOutcome, currentNotes, currentReport, currentScene, emptyProfile, getQuality, newNight, notebookView, pledge, pledgeOptions, profileOf,
+  choiceCost, choose, continueOutcome, currentNotes, currentReport, currentScene, emptyProfile, getQuality, morningNotes, newNight, notebookView, pledge, pledgeOptions, profileOf,
   type GameState, type Profile,
 } from "@belvedere/engine";
 import { expectGolden } from "../../engine/test/golden-helper";
@@ -30,6 +30,22 @@ function play(profile: Profile, seed: number, plan: Step[]): GameState {
 }
 
 const q = (s: GameState, id: string) => getQuality(s, world, id);
+
+/** Like play(), but outcome screens are skipped automatically and Eddie on the stairs is let go. */
+function route(start: GameState, steps: string[]): GameState {
+  let s = start;
+  for (const text of steps) {
+    if (s.phase === "outcome") s = continueOutcome(s, world);
+    if (currentScene(s, world).storylet.id === "stairs_eddie") { s = pick(s, "Отпустить"); s = continueOutcome(s, world); }
+    s = pick(s, text);
+  }
+  return s.phase === "outcome" ? continueOutcome(s, world) : s;
+}
+
+const TO_FLOOR_4 = [
+  "Открыть", "Взять деньги и дело", "Войти через парадную", "Кивнуть", "Спросить, где он ночевал", "К лестнице",
+  "Лестница", "Вверх, на второй", "Лестница", "Вверх, на третий", "Лестница", "Вверх, на четвёртый",
+];
 
 // From the task: office -> facade -> lobby (Dolly's rules, then a cigarette) -> stairs -> 2 -> 3 -> service door
 // -> search the bed -> down (Eddie intercepts at turn >= 3, let him go) -> Dolly -> pledge -> pawn the marines memory.
@@ -65,6 +81,7 @@ function walkUntilDawn(start: GameState): GameState {
     if (s.phase === "outcome") { s = continueOutcome(s, world); continue; }
     const id = currentScene(s, world).storylet.id;
     if (id === "stairs_eddie") { s = pick(s, "Отпустить"); continue; }
+    if (id === "stairs_top") { s = pick(s, "Вниз, на третий"); continue; }
     if (id === "lobby_hub" || id === "lobby_hub_first_night") { s = pick(s, "К лестнице"); continue; }
     if (id === "stairs") {
       const floor = q(s, "floor");
@@ -206,5 +223,48 @@ describe("belvedere: dawn", () => {
 
   test("same seed and plan are reproducible", () => {
     expect(play(emptyProfile(), 2024, PLAN_RING)).toEqual(play(emptyProfile(), 2024, PLAN_RING));
+  });
+
+});
+
+describe("belvedere: the rough player", () => {
+  test("pressure on Sloan, then breaking into the archive, still leads to the real ledger", () => {
+    let s = route(newNight(emptyProfile(), world, 3), [...TO_FLOOR_4, "Кабинет аудитора", "Сесть без приглашения", "Надавить и потребовать книгу"]);
+    expect(q(s, "has.ledger_fake")).toBe(1);
+    expect(q(s, "has.ledger_true")).toBe(0);
+    s = route(s, ["Уйти", "Служебная дверь", "Вскрыть замок"]);
+    expect(currentScene(s, world).storylet.id).toBe("archive_shelves");
+    const texts = currentScene(s, world).choices.filter((c) => c.available).map((c) => c.text);
+    expect(texts).toContain("Сравнить с копией Слоуна");
+    expect(texts).not.toContain("Пошарить за стеллажом");
+    s = route(s, ["Сравнить с копией Слоуна"]);
+    expect(q(s, "has.ledger_true")).toBe(1);
+    expect(q(s, "suspicion")).toBe(3); // 1 for the pressure, 2 for the lock
+  });
+
+  test("at suspicion 5 a tenant door is shown locked and costs nothing", () => {
+    let s = route(newNight(emptyProfile(), world, 3), ["Открыть", "Взять деньги и дело", "Войти через парадную", "Кивнуть", "Спросить, где он ночевал", "К лестнице", "Лестница", "Вверх, на второй"]);
+    expect(currentScene(s, world).storylet.id).toBe("floor_02_doors");
+    s = { ...s, run: { ...s.run, suspicion: 5 } };
+    const scene = currentScene(s, world);
+    const laundry = scene.choices.find((c) => c.text === "Прачечная")!;
+    expect(laundry.available).toBe(false);
+    const turn = q(s, "turn");
+    expect(() => choose(s, world, laundry.index)).toThrow(/not available/);
+    expect(q(s, "turn")).toBe(turn);
+    expect(scene.choices.find((c) => c.text === "Лестница")?.available).toBe(true);
+  });
+
+  test("first night without a find: Dolly advises pledging the night", () => {
+    const s = route(newNight(emptyProfile(), world, 3), ["Открыть", "Взять деньги и дело", "Войти через парадную", "Кивнуть", "Спросить, где он ночевал", "Уйти до рассвета (залог)"]);
+    expect(s.storyletId).toBe("pledge_first_empty");
+    expect(pledgeOptions(s, world).some((o) => o.canReturn)).toBe(false);
+  });
+
+  test("morning notes: exactly one line for a pledged night, a hole and a return", () => {
+    const empty = route(newNight(emptyProfile(), world, 3), ["Открыть", "Взять деньги и дело", "Войти через парадную", "Кивнуть", "Спросить, где он ночевал", "Уйти до рассвета (залог)"]);
+    expect(morningNotes(route(empty, ["Заложить эту ночь"]), world)).toEqual(["Вчерашней ночи нет. Список тот же. Почему-то от этого не легче."]);
+    expect(morningNotes(pledge(empty, world, "lantern"), world)).toEqual(["Одна строка зачёркнута. На её месте пусто, и пустота ноет, как зуб."]);
+    expect(morningNotes(play(emptyProfile(), 2024, PLAN_RING), world)).toEqual(["Одна строка написана другим почерком. Твоим, но другим."]);
   });
 });

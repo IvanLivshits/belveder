@@ -19,6 +19,7 @@ export const check: Rule = (world) => {
   }
   for (const f of world.fragments) checkText(`fragment ${f.id}`, f.text);
   world.report.notes.forEach((n, i) => checkText(`report note #${i}`, n.text));
+  world.morning.notes.forEach((n, i) => checkText(`morning note #${i}`, n.text));
   world.notebook?.pages.forEach((p) => {
     checkText(`notebook page ${p.id} text`, p.text);
     checkText(`notebook page ${p.id} rule`, p.rule);

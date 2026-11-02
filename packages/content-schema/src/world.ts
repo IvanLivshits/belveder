@@ -139,6 +139,8 @@ export const MemoryPairSchema = z.object({
 export const RESERVED_QUALITIES = {
   pledgedPrefix: "pledged.",
   returnedPrefix: "returned.",
+  /** Run flag: a real memory came back this night (memories_returned counts the whole game). */
+  returnedTonight: "returned_tonight",
   memoriesReturned: "memories_returned",
 } as const;
 export type MemoryPair = z.infer<typeof MemoryPairSchema>;
@@ -157,6 +159,8 @@ export const WorldSchema = z.object({
   storylets: z.array(StoryletSchema),
   fragments: z.array(ReportFragmentSchema),
   notebook: NotebookSchema.optional(),
+  /** Morning screen: `notes` work like report.notes, evaluated on the report state (run flags still set). */
+  morning: z.object({ notes: z.array(ReportNoteSchema).default([]) }).default({ notes: [] }),
 });
 export type World = z.infer<typeof WorldSchema>;
 /** Shape accepted by `WorldSchema.parse` (defaults optional). */

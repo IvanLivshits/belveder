@@ -177,3 +177,25 @@
       free: true
       effects: [night_pledged = 1]
       endNight: true
+
+# Первая ночь, ничего своего не найдено: Долли советует не тратить жизнь зря.
+- id: pledge_first_empty
+  location: pledge
+  layout: pledge
+  priority: 5
+  # turn < 16: на рассвете важнее объяснить, почему игрок внизу (pledge_first_dawn).
+  when: [nights == 0, turn < 16, has.ring == 0, seen.sloan_cashbox == 0, has.ledger_true == 0]
+  background: lobby
+  portrait: dolly_worry
+  title: Залог
+  text: |
+    Долли кладёт на стойку пустой конверт и смотрит на твои руки.
+
+    — Пустые. Ничего своего наверху не нашёл. — Она вздыхает. — Можешь отдать кусок жизни, но взамен ничего не встанет, останется дыра. Или отдай ночь: ничего не потеряешь. Третий этаж никуда не денется, Ник. Я тоже.
+  choices:
+    - text: Заложить эту ночь
+      free: true
+      effects: [night_pledged = 1]
+      outcome: |
+        — Правильно, — говорит Долли и заклеивает конверт. — Жизнь тратят на что-то. Не на пустые руки.
+      endNight: true

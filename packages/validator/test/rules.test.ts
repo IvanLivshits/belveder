@@ -31,6 +31,13 @@ describe("validator rules", () => {
     expect(messages(rules["placeholders"]!(ghost, assets))).toMatch(/notebook page p text: placeholder \{ghost\}/);
   });
 
+  test("memories: a world with pairs must declare returned_tonight and memories_returned", () => {
+    const w = broken((w) => { w.qualities = w.qualities.filter((q) => q.id !== "returned_tonight" && q.id !== "memories_returned"); });
+    const out = messages(rules["memories"]!(w, assets));
+    expect(out).toMatch(/engine writes returned_tonight on pledge/);
+    expect(out).toMatch(/engine writes memories_returned on pledge/);
+  });
+
   test("qualities: undeclared quality in effect and rules", () => {
     const w = broken((w) => {
       w.storylets[0]!.choices[0]!.effects = ["ghost += 1"];
@@ -106,7 +113,7 @@ describe("validator rules", () => {
     expect(out).toMatch(/fake and real flags are the same/);
     expect(out).toMatch(/duplicate pair id/);
     expect(out).toMatch(/engine writes returned.a on pledge but it is not declared/);
-    expect(out).toMatch(/engine writes memories_returned but it is not declared/);
+    expect(out).toMatch(/engine writes memories_returned on pledge but it is not declared/);
   });
 
   test("memories: returnWhen syntax is rejected by the schema", () => {

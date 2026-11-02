@@ -112,6 +112,7 @@ describe("mini world night", () => {
     expect(s.profile["mem.true.a"]).toBe(1);
     expect(s.run["pledged.a"]).toBe(1);
     expect(s.run["returned.a"]).toBe(1);
+    expect(s.run["returned_tonight"]).toBe(1);
     expect(s.profile["memories_returned"]).toBe(1);
     expect(s.run["night_pledged"]).toBeUndefined();
     expect(s.report["summary"]).toBe("sum_returned"); // report sees this night's run flags
@@ -127,6 +128,7 @@ describe("mini world night", () => {
     expect(n.profile["mem.true.b"]).toBeUndefined();
     expect(n.run["pledged.b"]).toBe(1);
     expect(n.run["returned.b"]).toBeUndefined();
+    expect(n.run["returned_tonight"]).toBeUndefined();
     expect(n.profile["memories_returned"]).toBe(1);
   });
 

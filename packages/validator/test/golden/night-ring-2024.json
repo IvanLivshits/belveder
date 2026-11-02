@@ -1,5 +1,5 @@
 {
-  "digest": "89696945ac90f4ab4f8280effc0f5cd7ea8c678b1e16faacd228776f4c31f75f",
+  "digest": "2d588f6c467760970a6d145ccded7528d63ec436b1b47634f16ff26ff9618f82",
   "snapshot": {
     "location": "pledge",
     "log": [
@@ -118,6 +118,7 @@
       "has.ring": 1,
       "pledged.ring": 1,
       "returned.ring": 1,
+      "returned_tonight": 1,
       "seen.client_first": 1,
       "seen.dolly_cig": 1,
       "seen.eddie": 1,

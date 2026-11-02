@@ -12,14 +12,14 @@ description: Что проверяет validator, как добавить нов
 
 | Правило | Что ловит | Уровень |
 |---|---|---|
-| `qualities` | условие или эффект на необъявленное качество, в том числе в `rules.*`, `report.notes` и `notebook`; `rules.start` указывает на несуществующую локацию | error |
+| `qualities` | условие или эффект на необъявленное качество, в том числе в `rules.*`, `report.notes`, `morning.notes` и `notebook`; `rules.start` указывает на несуществующую локацию | error |
 | `references` | `goto` выбора или перехвата на несуществующую локацию; `background`/`portrait` нет в `assets.json` | error |
 | `dead-ends` | локация без сторилетов (error); сторилет, у которого все choices условные (warning) | error / warning |
 | `reachability` | локация, недостижимая из `rules.start` по графу `goto` (условия игнорируются) | warning |
 | `report-slots` | слот отчёта без фрагментов или без фолбэка (фрагмента без условий) | error |
 | `layouts` | `layout: doors` не с тремя choices или дверь без `goto`; `layout: pledge` без `memories` в мире или без безусловного `endNight`-выбора | error |
 | `placeholders` | `{…}` в тексте сторилета, выбора, `outcome`, фрагмента, пометки отчёта или страницы блокнота, не являющийся объявленным качеством | error |
-| `memories` | пара с повторным `id`, необъявленным, одинаковым или повторно использованным флагом, `returnWhen` на необъявленное качество; мир с парами без `pledged.*`, `returned.*`, `memories_returned` | error |
+| `memories` | пара с повторным `id`, необъявленным, одинаковым или повторно использованным флагом, `returnWhen` на необъявленное качество; мир с парами без `pledged.*`, `returned.*`, `returned_tonight`, `memories_returned` | error |
 | `notebook` | повторный `id` страницы; `when` страницы или `life.footer` на run-качество (закрылись бы на следующую ночь); плейсхолдер в `life.states` кроме `{label_fake}`/`{label_real}` | error |
 | `planned` | условие на качество, которое ничего не ставит (ни эффект, ни правило, ни движок) и у которого default 0. Обычно контент будущих этажей | warning |
 

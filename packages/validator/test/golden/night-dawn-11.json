@@ -1,5 +1,5 @@
 {
-  "digest": "b9c54723a346450b60962848ac7f661a699296495864b8e8ca8d89b3d2ee8d8e",
+  "digest": "1452408b673db14f350f876eb3d9f294d8e055caaf01ad187e551c364b45437b",
   "snapshot": {
     "location": "pledge",
     "log": [
@@ -48,8 +48,8 @@
         "storylet": "floor_04_doors"
       },
       {
-        "choice": 3,
-        "storylet": "stairs"
+        "choice": 0,
+        "storylet": "stairs_top"
       },
       {
         "choice": 2,
@@ -64,8 +64,8 @@
         "storylet": "floor_04_doors"
       },
       {
-        "choice": 3,
-        "storylet": "stairs"
+        "choice": 0,
+        "storylet": "stairs_top"
       },
       {
         "choice": 2,
@@ -80,8 +80,8 @@
         "storylet": "floor_04_doors"
       },
       {
-        "choice": 3,
-        "storylet": "stairs"
+        "choice": 0,
+        "storylet": "stairs_top"
       },
       {
         "choice": 2,
@@ -96,8 +96,8 @@
         "storylet": "floor_04_doors"
       },
       {
-        "choice": 3,
-        "storylet": "stairs"
+        "choice": 0,
+        "storylet": "stairs_top"
       },
       {
         "choice": 2,
@@ -112,8 +112,8 @@
         "storylet": "floor_04_doors"
       },
       {
-        "choice": 3,
-        "storylet": "stairs"
+        "choice": 0,
+        "storylet": "stairs_top"
       },
       {
         "choice": 2,
@@ -128,8 +128,8 @@
         "storylet": "floor_04_doors"
       },
       {
-        "choice": 3,
-        "storylet": "stairs"
+        "choice": 0,
+        "storylet": "stairs_top"
       }
     ],
     "pendingChoice": null,

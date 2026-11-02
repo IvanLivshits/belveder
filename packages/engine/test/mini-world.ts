@@ -15,6 +15,7 @@ export const miniWorld: World = WorldSchema.parse({
     { id: "night_pledged", scope: "run" },
     { id: "pledged.*", scope: "run" },
     { id: "returned.*", scope: "run" },
+    { id: "returned_tonight", scope: "run" },
     { id: "memories_returned", scope: "profile" },
   ],
   locations: [{ id: "hall" }, { id: "room" }, { id: "vault" }],

@@ -27,8 +27,10 @@ export const check: Rule = (world) => {
       if (!declared(q)) issues.push(error(where, `engine writes ${q} on pledge but it is not declared`));
     }
   });
-  if (world.memories.length > 0 && !declared(RESERVED_QUALITIES.memoriesReturned)) {
-    issues.push(error("memories", `engine writes ${RESERVED_QUALITIES.memoriesReturned} but it is not declared`));
+  if (world.memories.length > 0) {
+    for (const q of [RESERVED_QUALITIES.returnedTonight, RESERVED_QUALITIES.memoriesReturned]) {
+      if (!declared(q)) issues.push(error("memories", `engine writes ${q} on pledge but it is not declared`));
+    }
   }
   return issues;
 };

@@ -30,6 +30,7 @@ currentScene(state, world)      → { storylet, text, choices[{index, text, avai
 currentOutcome(state, world)    → { storylet, text }
 currentReport(state, world)     → [{ slot, label, fragment, text }]
 currentNotes(state, world)      → string[]   # report.notes с истинными when
+morningNotes(state, world)      → string[]   # morning.notes, по состоянию отчёта (run-флаги ещё стоят)
 pledgeOptions(state, world)     → [{ id, label, canReturn }]   # canReturn: returnWhen выполнено прямо сейчас
 choiceCost(state, world, choice)→ number     # прирост «часов» (качество из rules.onChoice) от эффектов + onChoice; free → 0
 changedQualities(prev, next)    → string[]   # что изменилось между состояниями; приложение показывает hint при первом изменении
@@ -41,7 +42,7 @@ notebookView(state, world)      → { pages[], locked, life{lines[{pair, status:
 - **Качества** — целые числа в двух мешках: `run` (сбрасывается каждую ночь) и `profile` (живёт между ночами). Флаги и множества — тоже качества 0/1 с составным id (`visited.floor2.tenant`), объявленные через namespace `visited.*`. Значение, равное default, не хранится.
 - **Выбор сторилета**: все сторилеты локации с истинными `when`, берутся с максимальным `priority`, ничья решается seed-RNG (mulberry32, состояние в `state.rng`).
 - **Глобальные правила** из `world.rules`: `onChoice` (эффекты на каждый выбор, например `turn += 1`), `interrupts` (список `{when, goto}`, первый подходящий после каждого выбора переносит игрока), `onNightEnd` (эффекты на профиль). Ночь заканчивается только `endNight`-выбором или залогом воспоминания, поэтому рассвет и поимка — перехваты в локацию залога. Движок исполняет всё это, не зная смысла.
-- **Воспоминания**: `world.memories` — список пар `{id, fake, real, returnWhen}`. Флаги для движка непрозрачные id качеств. При залоге пары движок пишет run-флаги `pledged.<id>`, `returned.<id>` и профильный `memories_returned` (константы `RESERVED_QUALITIES`), чтобы отчёт знал, что случилось этой ночью. Сторилет `layout: pledge` показывает ложные воспоминания со значением 1; залог ночи целиком — обычный выбор с эффектом из контента.
+- **Воспоминания**: `world.memories` — список пар `{id, fake, real, returnWhen}`. Флаги для движка непрозрачные id качеств. При залоге пары движок пишет run-флаги `pledged.<id>`, `returned.<id>`, `returned_tonight` и профильный `memories_returned` (константы `RESERVED_QUALITIES`), чтобы отчёт знал, что случилось этой ночью. Сторилет `layout: pledge` показывает ложные воспоминания со значением 1; залог ночи целиком — обычный выбор с эффектом из контента.
 - **Отчёт**: для каждого слота берётся фрагмент с истинными `when` и максимальным приоритетом; ничья через RNG. Считается до сброса run, поэтому может ссылаться на run-качества.
 - **Детерминизм**: одинаковый seed + действия → байт-в-байт одинаковое состояние. Проверяется golden digest = sha256 от канонического JSON.
 

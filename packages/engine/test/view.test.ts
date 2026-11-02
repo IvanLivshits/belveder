@@ -1,7 +1,7 @@
 /** Pure view helpers: choice cost, max clamping, change detection, report notes, notebook. */
 import { describe, expect, test } from "bun:test";
 import { WorldSchema, type World, type WorldInput } from "@belvedere/content-schema";
-import { changedQualities, choiceCost, choose, clockQuality, continueOutcome, currentNotes, emptyProfile, lifeStatus, newNight, notebookView, pledge } from "../src";
+import { changedQualities, choiceCost, choose, clockQuality, continueOutcome, currentNotes, emptyProfile, lifeStatus, morningNotes, newNight, notebookView, pledge } from "../src";
 import { miniWorld } from "./mini-world";
 
 const variant = (patch: (w: WorldInput) => void): World => {
@@ -55,6 +55,7 @@ describe("changed qualities", () => {
 describe("report notes and notebook", () => {
   const w = variant((w) => {
     w.report.notes = [{ when: ["returned.a == 1"], text: "a is back" }, { text: "always, heat {heat}" }];
+    w.morning = { notes: [{ when: ["night_pledged == 1"], text: "same list" }, { when: ["night_pledged == 0", "returned_tonight == 0"], text: "a hole" }, { when: ["returned_tonight == 1"], text: "new hand" }] };
     w.notebook = {
       life: { title: "Me", intro: "intro", states: { fake: "{label_fake}", empty: "~~{label_fake}~~ — nothing", real: "~~{label_fake}~~ → {label_real}" }, footer: { when: ["memories_returned >= 1"], text: "footer" } },
       pages: [
@@ -69,6 +70,14 @@ describe("report notes and notebook", () => {
     s = choose(s, w, 0); s = choose(s, w, 2); s = continueOutcome(s, w);
     s = pledge(s, w, "a");
     expect(currentNotes(s, w)).toEqual(["a is back", "always, heat 2"]);
+  });
+
+  test("morning notes: exactly one of pledged night / hole / new hand", () => {
+    const toVault = (p: { v: 1; profile: Record<string, number> }) => { let s = newNight(p, w, 3); s = choose(s, w, 0); s = choose(s, w, 2); return continueOutcome(s, w); };
+    expect(morningNotes(choose(toVault({ v: 1, profile: {} }), w, 0), w)).toEqual(["same list"]);
+    expect(morningNotes(pledge(toVault({ v: 1, profile: {} }), w, "a"), w)).toEqual(["a hole"]); // trust 0: a does not return
+    expect(morningNotes(pledge(toVault({ v: 1, profile: { trust: 1 } }), w, "a"), w)).toEqual(["new hand"]);
+    expect(morningNotes(pledge(toVault({ v: 1, profile: { trust: 1 } }), w, "a"), miniWorld)).toEqual([]);
   });
 
   test("notebook: pages unlock on profile, life lines follow the pairs", () => {
