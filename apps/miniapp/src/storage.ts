@@ -141,6 +141,29 @@ function makeQueue(store: KV) {
   };
 }
 
+// ---- app-level document: what the UI already showed (hints, notebook pages) ----
+
+export interface UiMeta {
+  hintsShown: string[];
+  pagesRead: string[];
+}
+
+const UI_VERSION = 1;
+const UI_ID_RE = /^[a-z][a-z0-9_.]*$/;
+
+export function serializeUi(ui: UiMeta): string {
+  return `u${UI_VERSION};h=${ui.hintsShown.join(",")};p=${ui.pagesRead.join(",")}`;
+}
+
+/** Unknown version or garbage decodes as empty: the worst case is a hint shown twice. */
+export function parseUi(doc: string): UiMeta {
+  const empty: UiMeta = { hintsShown: [], pagesRead: [] };
+  const [ver, ...fields] = doc.split(";");
+  if (ver !== `u${UI_VERSION}`) return empty;
+  const list = (key: string) => fields.find((f) => f.startsWith(`${key}=`))?.slice(2).split(",").filter((id) => UI_ID_RE.test(id)) ?? [];
+  return { hintsShown: list("h"), pagesRead: list("p") };
+}
+
 // ---- public API ----
 
 export interface Saves {
@@ -151,12 +174,15 @@ export interface Saves {
   clearRun(): void;
   loadProfile(): Promise<Profile | null>;
   loadRun(profile: Profile): Promise<GameState | null>;
+  persistUi(ui: UiMeta): void;
+  loadUi(): Promise<UiMeta>;
   /** Resolves when queued writes have settled (tests, page hide). */
   flush(): Promise<void>;
 }
 
 const PROFILE = "profile";
 const RUN = "run";
+const UI = "ui";
 
 type Read = { ok: true; env: Envelope | null } | { ok: false };
 
@@ -207,6 +233,8 @@ export function createSaves(local: KV, cloud?: KV, now: () => number = () => Dat
     clearRun: () => write(RUN, ""),
     loadProfile: async () => { const d = await read(PROFILE); return d === null ? null : parseProfile(d); },
     loadRun: async (profile) => { const d = await read(RUN); return d === null ? null : parseRun(d, profile); },
+    persistUi: (ui) => write(UI, serializeUi(ui)),
+    loadUi: async () => { const d = await read(UI); return d === null ? { hintsShown: [], pagesRead: [] } : parseUi(d); },
     flush: () => Promise.all([localQ.idle(), cloudQ?.idle()]).then(() => undefined),
   };
 }

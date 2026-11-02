@@ -7,10 +7,26 @@ export interface QualityItem {
 /** Bounded qualities up to this size are drawn as pips; larger ones as a thin bar. */
 const PIP_LIMIT = 10;
 
+export interface QualityBarProps {
+  items: QualityItem[];
+  /** Opens the notebook; the button is rendered only when given. */
+  onNotebook?: (() => void) | undefined;
+  /** Unread dot on the notebook icon. */
+  badge?: boolean | undefined;
+  notebookLabel?: string | undefined;
+}
+
 /** Top HUD strip: label in small caps, value as pips, bar or number. Pure presentation, no quality names. */
-export function QualityBar({ items }: { items: QualityItem[] }) {
+export function QualityBar({ items, onNotebook, badge, notebookLabel }: QualityBarProps) {
   return (
     <div class="hud">
+      {onNotebook && (
+        <button class={`hud__book${badge ? " hud__book--badge" : ""}`} type="button" onClick={onNotebook} aria-label={notebookLabel ?? "notebook"}>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2zM5 18a2 2 0 0 1 2-2h11M9 8h5" />
+          </svg>
+        </button>
+      )}
       {items.map((q) => (
         <span key={q.label} class="hud__item">
           <span class="hud__label">{q.label}</span>

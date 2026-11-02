@@ -166,3 +166,18 @@ describe("saves transport", () => {
     expect(await saves.loadRun(emptyProfile())).toBeNull();
   });
 });
+
+describe("ui meta", () => {
+  test("round-trips through the codec and the saves transport", async () => {
+    const { parseUi, serializeUi } = await import("../src/storage");
+    const ui = { hintsShown: ["turn", "dolly_trust"], pagesRead: ["case", "new_tenants"] };
+    expect(parseUi(serializeUi(ui))).toEqual(ui);
+    expect(parseUi(serializeUi({ hintsShown: [], pagesRead: [] }))).toEqual({ hintsShown: [], pagesRead: [] });
+    expect(parseUi("u9;h=a;p=b")).toEqual({ hintsShown: [], pagesRead: [] });
+    const saves = createSaves(localKV(fakeStorage()));
+    expect(await saves.loadUi()).toEqual({ hintsShown: [], pagesRead: [] });
+    saves.persistUi(ui);
+    await saves.flush();
+    expect(await saves.loadUi()).toEqual(ui);
+  });
+});

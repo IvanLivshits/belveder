@@ -6,3 +6,5 @@ export * from "./PledgePicker";
 export * from "./QualityBar";
 export * from "./ReportPage";
 export * from "./TitleScreen";
+export * from "./Hint";
+export * from "./NotebookPage";

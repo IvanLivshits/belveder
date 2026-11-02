@@ -11,12 +11,15 @@ export interface ReportPageProps {
   onNext: () => void;
   /** CSS background-image value for paper texture, e.g. `url(/ui/paper_dark.webp)`. */
   texture?: string | undefined;
+  /** Small print above the title. */
+  notes?: string[] | undefined;
 }
 
 /** Night report assembled from fragment slots. */
-export function ReportPage({ title, entries, nextLabel, onNext, texture }: ReportPageProps) {
+export function ReportPage({ title, entries, nextLabel, onNext, texture, notes }: ReportPageProps) {
   return (
     <article class={`paper${texture ? " paper--textured" : ""}`} style={texture ? { "--paper-texture": texture } : undefined}>
+      {notes?.map((n, i) => <p key={i} class="report__note">{n}</p>)}
       <h1 class="report__title">{title}</h1>
       {entries.map((e) => (
         <div key={e.slot} class="report__entry">
