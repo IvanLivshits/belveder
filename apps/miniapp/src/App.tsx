@@ -1,6 +1,6 @@
 import {
   changedQualities, choiceCost, choose, continueOutcome, currentNotes, currentOutcome, currentReport, currentScene, emptyProfile, getQuality,
-  newNight, notebookView, pledge, profileOf, type GameState, type Profile,
+  morningNotes, newNight, notebookView, pledge, profileOf, type GameState, type Profile,
 } from "@belvedere/engine";
 import { RESERVED_QUALITIES } from "@belvedere/content-schema";
 import { Backdrop, ChoiceList, DoorPicker, Hint, MorningPage, NotebookPage, PledgePicker, QualityBar, ReportPage, SceneCard, TitleScreen, type LifeLineItem } from "@belvedere/ui-kit";
@@ -14,7 +14,7 @@ type Life = { title: string; intro: string; footer: string | null; lines: LifeLi
 type Screen =
   | { kind: "loading" } | { kind: "error"; message: string } | { kind: "title" } | { kind: "night" } | { kind: "notebook" }
   /** Between the report and the next night: the life page with tonight's changes. */
-  | { kind: "morning"; life: Life };
+  | { kind: "morning"; life: Life; notes: string[] };
 
 function randomSeed(): number {
   return (Math.random() * 0x100000000) >>> 0;
@@ -102,7 +102,7 @@ export function App() {
   if (screen.kind === "morning") {
     return (
       <div class="screen">
-        <MorningPage title="Утро" life={screen.life} nextLabel="Следующая ночь" onNext={startNight} texture={texture} />
+        <MorningPage title="Утро" life={screen.life} notes={screen.notes} nextLabel="Следующая ночь" onNext={startNight} texture={texture} />
       </div>
     );
   }
@@ -156,7 +156,7 @@ export function App() {
       };
       setProfile(p);
       setState(null);
-      setScreen(life ? { kind: "morning", life } : { kind: "title" });
+      setScreen(life ? { kind: "morning", life, notes: morningNotes(state, world) } : { kind: "title" });
       saves.clearRun();
       saves.persistProfile(p);
     };

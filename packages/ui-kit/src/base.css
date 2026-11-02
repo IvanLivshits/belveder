@@ -171,6 +171,7 @@ button { font: inherit; }
 @keyframes strike { to { background-size: 100% 1.5px; opacity: 0.55; } }
 .life__line--anim-return .life__arrow, .life__line--anim-return .life__real { opacity: 0; animation: ink 0.9s ease-out 1.5s forwards; }
 @keyframes ink { to { opacity: 1; } }
+.morning__note { margin: -8px 0 20px; font-size: 15px; line-height: 1.45; text-align: center; font-style: italic; }
 .morning__title { margin: 0 0 20px; font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase; text-align: center; color: var(--hint); }
 .paper--morning { display: flex; flex-direction: column; }
 .paper--morning .report__actions { margin-top: auto; padding-top: 24px; }
