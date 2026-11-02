@@ -2,33 +2,6 @@
 # Приход в вестибюль (seen.lobby == 0) — одна из четырёх карточек по priority.
 # Любой выбор в них ставит seen.lobby = 1, дальше вестибюль — хаб lobby_hub.
 
-- id: lobby_first_night
-  location: lobby
-  priority: 1
-  when: [seen.lobby == 0, nights == 0]
-  background: lobby
-  portrait: dolly
-  title: Вестибюль
-  text: |
-    Лифт не работает с тех пор, как город перестал верить в лифты. Долли сидит на табурете у шахты и вяжет что-то бесконечно серое.
-
-    — Хейл? — Она не поднимает глаз. — Поднимался. Курил «Пульман Ред». Спрашивал, сколько дают за имя.
-  choices:
-    - text: Спросить, сколько дают за имя
-      effects: [seen.lobby = 1, seen.dolly_hale = 1, clues += 1]
-      outcome: |
-        — Смотря чьё. — Спицы не останавливаются. — За своё дают мало. За чужое, если тебя им зовут, — столько, что хватает на всё.
-    - text: Предложить сигарету
-      when: [cigarettes >= 1]
-      effects: [seen.lobby = 1, seen.dolly_cig = 1, cigarettes -= 1, dolly_trust += 1]
-      outcome: |
-        Долли берёт сигарету и прячет её в карман фартука. Не закуривает. Так берут задаток.
-    - text: Молча пойти к лестнице
-      effects: [seen.lobby = 1, seen.lobby_silent = 1, suspicion += 1]
-      outcome: |
-        За спиной стихают спицы. Ты чувствуешь, как она запоминает твою спину.
-      goto: floor_01
-
 - id: lobby_wary
   location: lobby
   priority: 1

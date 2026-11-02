@@ -1,4 +1,4 @@
-/** Every `{...}` in storylet text, choice text, outcome and fragment text must name a declared quality. */
+/** Every `{...}` in storylet text, choice text, outcome, fragment, report note and notebook page must name a declared quality. */
 import { placeholders, qualityMatches } from "@belvedere/content-schema";
 import { error, type Issue, type Rule } from "./types";
 
@@ -18,5 +18,10 @@ export const check: Rule = (world) => {
     });
   }
   for (const f of world.fragments) checkText(`fragment ${f.id}`, f.text);
+  world.report.notes.forEach((n, i) => checkText(`report note #${i}`, n.text));
+  world.notebook?.pages.forEach((p) => {
+    checkText(`notebook page ${p.id} text`, p.text);
+    checkText(`notebook page ${p.id} rule`, p.rule);
+  });
   return issues;
 };

@@ -17,6 +17,19 @@ describe("validator rules", () => {
     expect(runRules(miniWorld, assets).filter((i) => i.level === "error")).toEqual([]);
   });
 
+  test("notebook: unique ids, profile-only unlocks, life placeholders", () => {
+    const nb = (pages: object[], states = { fake: "{label_fake}", empty: "x", real: "{label_real}" }) => broken((w) => {
+      w.notebook = { life: { title: "t", intro: "i", states, footer: "f" }, pages: pages as never };
+    });
+    expect(messages(rules["notebook"]!(nb([{ id: "p", title: "t", text: "x", rule: "r", when: ["trust >= 1"] }]), assets))).toBe("");
+    expect(messages(rules["notebook"]!(nb([{ id: "p", title: "t", text: "x", rule: "r", when: ["heat >= 1"] }]), assets))).toMatch(/run quality heat/);
+    expect(messages(rules["notebook"]!(nb([{ id: "p", title: "t", text: "x", rule: "r" }, { id: "p", title: "t", text: "x", rule: "r" }]), assets))).toMatch(/duplicate page id/);
+    expect(messages(rules["notebook"]!(nb([], { fake: "{trust}", empty: "x", real: "y" }), assets))).toMatch(/unknown placeholder \{trust\}/);
+    const ghost = nb([{ id: "p", title: "t", text: "heat {ghost}", rule: "r", when: ["phantom >= 1"] }]);
+    expect(messages(rules["qualities"]!(ghost, assets))).toMatch(/notebook page p: condition uses undeclared quality: phantom/);
+    expect(messages(rules["placeholders"]!(ghost, assets))).toMatch(/notebook page p text: placeholder \{ghost\}/);
+  });
+
   test("qualities: undeclared quality in effect and rules", () => {
     const w = broken((w) => {
       w.storylets[0]!.choices[0]!.effects = ["ghost += 1"];

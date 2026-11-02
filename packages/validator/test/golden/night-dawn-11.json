@@ -1,11 +1,11 @@
 {
-  "digest": "f20f901b111097333cc90cb8ab0547b621a0d584e34ec95fd6eb034ae4c603fe",
+  "digest": "7a6f73e0a15141b10f2cbf829d3bdd9f16396912fb704c6761476f4412c25f80",
   "snapshot": {
     "location": "pledge",
     "log": [
       {
-        "choice": 2,
-        "storylet": "office_first_night"
+        "choice": 1,
+        "storylet": "office_ring"
       },
       {
         "choice": 2,
@@ -13,7 +13,7 @@
       },
       {
         "choice": 2,
-        "storylet": "lobby_first_night"
+        "storylet": "lobby_wary"
       },
       {
         "choice": 2,
@@ -134,13 +134,21 @@
     ],
     "pendingChoice": null,
     "phase": "scene",
-    "profile": {},
+    "profile": {
+      "dolly_trust": 1,
+      "mem.false.marines": 0,
+      "mem.true.ring": 1,
+      "memories_returned": 1,
+      "nights": 1,
+      "visited.floor1.tenant": 1,
+      "visited.floor3.service": 1
+    },
     "report": {},
     "rng": 11,
     "run": {
       "debt.eddie": 1,
       "floor": 3,
-      "seen.client_first": 1,
+      "seen.client_ring": 1,
       "seen.eddie": 1,
       "seen.lobby": 1,
       "seen.lobby_silent": 1,

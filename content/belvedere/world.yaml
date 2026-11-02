@@ -4,10 +4,35 @@ title: Ломбард на последнем этаже
 # Качества. scope run сбрасывается каждую ночь, profile живёт между ночами.
 # Namespace `x.*` объявляет семейство качеств.
 qualities:
-  - { id: turn, scope: run, label: Ход, visible: true, min: 0, max: 16 }
-  - { id: suspicion, scope: run, label: Подозрение, visible: true, min: 0, max: 10 }
-  - { id: cigarettes, scope: run, label: Сигареты, visible: true, min: 0, max: 5, default: 3 }
-  - { id: clues, scope: run, label: Улики, visible: true, min: 0 }
+  # hint — одна строка под HUD при первом изменении качества за всю игру.
+  - id: turn
+    scope: run
+    label: Ход
+    visible: true
+    min: 0
+    max: 16
+    hint: "Каждое действие стоит времени. Ночь длится 16 ходов, с 22:00 до 06:00. На рассвете ты окажешься у Долли, где бы ни был."
+  - id: suspicion
+    scope: run
+    label: Подозрение
+    visible: true
+    min: 0
+    max: 10
+    hint: "Громкие поступки дом запоминает. С 5 жильцы перестают открывать двери. Чай у Долли и сигарета Горману его снижают."
+  - id: cigarettes
+    scope: run
+    label: Сигареты
+    visible: true
+    min: 0
+    max: 5
+    default: 3
+    hint: "Сигареты здесь вместо мелочи: угостить, задобрить, откупиться. Каждую ночь у тебя снова три."
+  - id: clues
+    scope: run
+    label: Улики
+    visible: true
+    min: 0
+    hint: "Всё, что ты нашёл этой ночью. Некоторые находки помогут вернуть настоящее воспоминание при залоге."
   - { id: floor, scope: run, label: Этаж, min: 0, max: 13 }
   - { id: has.*, scope: run, label: Предметы и улики }
   - { id: seen.*, scope: run, label: Увидено этой ночью }
@@ -19,12 +44,23 @@ qualities:
   - { id: returned.*, scope: run, label: Вернулось этой ночью, min: 0, max: 1 }
 
   - { id: nights, scope: profile, label: Ночей, min: 0 }
-  - { id: dolly_trust, scope: profile, label: Доверие Долли, visible: true, min: 0, max: 5 }
+  - id: dolly_trust
+    scope: profile
+    label: Доверие Долли
+    visible: true
+    min: 0
+    max: 5
+    hint: "Долли помнит все ночи, поэтому её доверие не сгорает. Чем оно выше, тем больше она тебе откроет."
   # Ложная биография Ника есть с самого начала (default 1); залог обнуляет флаг.
   - { id: mem.false.*, scope: profile, label: Жизнь Ника, default: 1, min: 0, max: 1 }
   - { id: mem.true.*, scope: profile, label: Жизнь Уолтера, min: 0, max: 1 }
   # Движок увеличивает на 1 при каждом возврате настоящего воспоминания.
-  - { id: memories_returned, scope: profile, label: Возвращено воспоминаний, min: 0, max: 8 }
+  - id: memories_returned
+    scope: profile
+    label: Возвращено воспоминаний
+    min: 0
+    max: 8
+    hint: "Вместо отданного вернулось настоящее воспоминание. Посмотри в блокноте, что ты теперь о себе знаешь."
   - { id: visited.*, scope: profile, label: Визиты дверей }
   - { id: paths.*, scope: profile, label: Открытые пути }
 
@@ -121,3 +157,9 @@ report:
     - { id: finding, label: Находка }
     - { id: twist, label: Поворот }
     - { id: price, label: Цена }
+  # Пояснение над страницей отчёта; показываются все подходящие строки.
+  notes:
+    - when: [seen.client_first == 1]
+      text: "Это отчёт Ника за ночь. Из таких страниц сложится дело Хейла, и у каждого игрока оно своё."
+    - when: [night_pledged == 1]
+      text: "Эта ночь заложена: в итоговое дело она не попадёт."

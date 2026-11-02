@@ -1,6 +1,6 @@
-/** Loads a content folder (world.yaml + storylets/*.yaml + report-fragments/*.yaml)
+/** Loads a content folder (world.yaml + storylets/*.yaml + report-fragments/*.yaml + optional notebook.yaml)
  *  into a validated World. Used by the build script, the CLI and tests. */
-import { readdirSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { WorldSchema, type World, type WorldInput } from "@belvedere/content-schema";
 
@@ -21,10 +21,12 @@ async function readList(dir: string): Promise<unknown[]> {
 
 export async function loadWorldDir(dir: string): Promise<World> {
   const base = (await readYaml(join(dir, "world.yaml"))) as Record<string, unknown>;
+  const notebookPath = join(dir, "notebook.yaml");
   const input = {
     ...base,
     storylets: await readList(join(dir, "storylets")),
     fragments: await readList(join(dir, "report-fragments")),
+    ...(existsSync(notebookPath) ? { notebook: await readYaml(notebookPath) } : {}),
   } as WorldInput;
   const parsed = WorldSchema.safeParse(input);
   if (!parsed.success) {

@@ -33,6 +33,8 @@ export const check: Rule = (world) => {
     });
   }
   for (const f of world.fragments) checkConds(`fragment ${f.id}`, f.when);
+  world.report.notes.forEach((n, i) => checkConds(`report note #${i}`, n.when));
+  world.notebook?.pages.forEach((p) => checkConds(`notebook page ${p.id}`, p.when));
 
   const seen = new Set<string>();
   for (const q of world.qualities) {
