@@ -12,8 +12,8 @@
     "content:build": "bun run packages/validator/src/build-content.ts content/belvedere content/belvedere/build/world.json",
     "validate": "bun run content:build && bun run packages/validator/src/cli.ts content/belvedere/build/world.json assets/assets.json",
     "assets": "python3 -I tools/assets/convert.py",
-    "bot": "bun run --cwd apps/bot start",
-    "bot:webhook": "bun run --cwd apps/bot set-webhook"
+    "bot": "bun run apps/bot/src/index.ts",
+    "bot:webhook": "bun run apps/bot/src/set-webhook.ts"
   },
   "devDependencies": {
     "@types/bun": "^1.3.0",
