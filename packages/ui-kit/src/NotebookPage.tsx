@@ -1,11 +1,6 @@
-import type { ComponentChildren } from "preact";
+import { Life, type LifeLineItem } from "./Life";
 
-export interface LifeLineItem {
-  pair: string;
-  status: "fake" | "empty" | "real";
-  /** `~~…~~` is struck through; the part after `→` is set in another hand. */
-  text: string;
-}
+export type { LifeLineItem } from "./Life";
 
 export interface NotebookPageItem {
   id: string;
@@ -15,7 +10,7 @@ export interface NotebookPageItem {
 }
 
 export interface NotebookPageProps {
-  life: { title: string; intro: string; footer: string; lines: LifeLineItem[] };
+  life: { title: string; intro: string; footer: string | null; lines: LifeLineItem[] };
   pages: NotebookPageItem[];
   /** Pages still closed. */
   locked: number;
@@ -23,31 +18,17 @@ export interface NotebookPageProps {
   lockedLabel: (n: number) => string;
   backLabel: string;
   onBack: () => void;
+  /** Small link at the very bottom (settings live here, away from the night loop). */
+  resetLabel?: string | undefined;
+  onReset?: (() => void) | undefined;
   texture?: string | undefined;
 }
 
-/** Renders `~~x~~` as struck text and `→ y` as a second hand. */
-function lifeText(text: string): ComponentChildren {
-  const [before, after] = text.split("→");
-  const parts = (before ?? "").split(/~~(.+?)~~/);
-  return (
-    <>
-      {parts.map((p, i) => (i % 2 === 1 ? <s key={i}>{p}</s> : p))}
-      {after !== undefined && <><span aria-hidden="true">→</span><span class="life__real">{after}</span></>}
-    </>
-  );
-}
-
 /** Nick's notebook: the life page on top, then every open reference page. */
-export function NotebookPage({ life, pages, locked, ruleLabel, lockedLabel, backLabel, onBack, texture }: NotebookPageProps) {
+export function NotebookPage({ life, pages, locked, ruleLabel, lockedLabel, backLabel, onBack, resetLabel, onReset, texture }: NotebookPageProps) {
   return (
     <article class={`paper${texture ? " paper--textured" : ""}`} style={texture ? { "--paper-texture": texture } : undefined}>
-      <h1 class="report__title">{life.title}</h1>
-      <p class="notebook__intro">{life.intro}</p>
-      <ul class="life">
-        {life.lines.map((l) => <li key={l.pair} class={`life__line life__line--${l.status}`}>{lifeText(l.text)}</li>)}
-      </ul>
-      <p class="notebook__intro">{life.footer}</p>
+      <Life {...life} />
       {pages.map((p) => (
         <section key={p.id} class="notebook__page">
           <h2 class="notebook__title">{p.title}</h2>
@@ -59,6 +40,7 @@ export function NotebookPage({ life, pages, locked, ruleLabel, lockedLabel, back
       <div class="report__actions">
         <button class="choice choice--primary" type="button" onClick={onBack}>{backLabel}</button>
       </div>
+      {onReset && resetLabel && <button class="title__reset notebook__reset" type="button" onClick={onReset}>{resetLabel}</button>}
     </article>
   );
 }

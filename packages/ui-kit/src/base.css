@@ -162,6 +162,20 @@ button { font: inherit; }
 .life__line s { opacity: 0.55; text-decoration-color: rgba(201,162,74,0.8); }
 .life__line--empty { color: var(--hint); }
 .life__real { margin-left: 6px; font-family: "Segoe Script", "Bradley Hand", "Comic Sans MS", cursive; font-style: italic; color: var(--accent); }
+/* Morning: the strike is drawn over ~1s, then the new hand fades in. */
+.life__line--anim-strike s, .life__line--anim-return s {
+  text-decoration: none;
+  background: linear-gradient(rgba(201,162,74,0.8), rgba(201,162,74,0.8)) no-repeat left 55% / 0% 1.5px;
+  animation: strike 1s ease-in-out 0.4s forwards;
+}
+@keyframes strike { to { background-size: 100% 1.5px; } }
+.life__line--anim-return .life__arrow, .life__line--anim-return .life__real { opacity: 0; animation: ink 0.9s ease-out 1.5s forwards; }
+@keyframes ink { to { opacity: 1; } }
+.morning__title { margin: 0 0 20px; font-size: 13px; letter-spacing: 0.3em; text-transform: uppercase; text-align: center; color: var(--hint); }
+.paper--morning { display: flex; flex-direction: column; }
+.paper--morning .report__actions { margin-top: auto; padding-top: 24px; }
+.notebook__reset { display: block; margin: 18px auto 0; }
+@media (prefers-reduced-motion: reduce) { .life__line--anim-strike s, .life__line--anim-return s { background-size: 100% 1.5px; animation: none; } .life__line--anim-return .life__arrow, .life__line--anim-return .life__real { opacity: 1; animation: none; } }
 .notebook__page { margin: 0 0 18px; }
 .notebook__title { margin: 0 0 6px; font-size: 15px; letter-spacing: 0.1em; text-transform: uppercase; }
 .notebook__rule { margin: 6px 0 0; font-size: 13px; line-height: 1.4; color: var(--hint); }

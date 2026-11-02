@@ -4,12 +4,9 @@ export interface TitleScreenProps {
   nights: number;
   onContinue: () => void;
   onNewNight: () => void;
-  /** Small text link under the actions; rendered only when there is progress to wipe. */
-  resetLabel?: string | undefined;
-  onReset?: (() => void) | undefined;
 }
 
-export function TitleScreen({ coverSrc, canContinue, nights, onContinue, onNewNight, resetLabel, onReset }: TitleScreenProps) {
+export function TitleScreen({ coverSrc, canContinue, nights, onContinue, onNewNight }: TitleScreenProps) {
   return (
     <div class="title">
       <img class="title__cover" src={coverSrc} alt="" draggable={false} />
@@ -22,7 +19,6 @@ export function TitleScreen({ coverSrc, canContinue, nights, onContinue, onNewNi
         </button>
       </div>
       {nights > 0 && <span class="title__hint">Ночей пройдено: {nights}</span>}
-      {onReset && resetLabel && <button class="title__reset" type="button" onClick={onReset}>{resetLabel}</button>}
     </div>
   );
 }

@@ -24,7 +24,8 @@ export function lifeStatus(state: Bags, world: World, pairId: string): LifeStatu
 }
 
 /** Notebook contents for the renderer: open pages (conditions hold), how many are still
- *  closed, and the life page built from memory pairs. Null when the world has no notebook. */
+ *  closed, and the life page built from memory pairs (footer null until its `when` holds).
+ *  Null when the world has no notebook. */
 export function notebookView(state: Bags, world: World) {
   const nb = world.notebook;
   if (!nb) return null;
@@ -35,7 +36,7 @@ export function notebookView(state: Bags, world: World) {
     life: {
       title: nb.life.title,
       intro: nb.life.intro,
-      footer: nb.life.footer,
+      footer: evaluateAll(state, world, nb.life.footer.when) ? nb.life.footer.text : null,
       lines: world.memories.map((pair): LifeLine => {
         const status = lifeStatus(state, world, pair.id);
         const text = nb.life.states[status].replace(/\{label_fake\}/g, pair.label_fake).replace(/\{label_real\}/g, pair.label_real);

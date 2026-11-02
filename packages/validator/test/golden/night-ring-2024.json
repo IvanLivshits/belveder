@@ -1,8 +1,12 @@
 {
-  "digest": "7f29c56e54c2cfb4445bd322144841e7699bb32eae116d3dd4a379cbf7300747",
+  "digest": "89696945ac90f4ab4f8280effc0f5cd7ea8c678b1e16faacd228776f4c31f75f",
   "snapshot": {
     "location": "pledge",
     "log": [
+      {
+        "choice": 0,
+        "storylet": "office_morning"
+      },
       {
         "choice": 3,
         "storylet": "office_first_night"
@@ -21,7 +25,7 @@
       },
       {
         "choice": 2,
-        "storylet": "lobby_hub"
+        "storylet": "lobby_hub_first_night"
       },
       {
         "choice": 2,
@@ -77,7 +81,7 @@
       },
       {
         "choice": 3,
-        "storylet": "lobby_hub"
+        "storylet": "lobby_hub_first_night"
       },
       {
         "choice": -1,
@@ -92,6 +96,7 @@
       "mem.false.marines": 0,
       "mem.true.ring": 1,
       "memories_returned": 1,
+      "met.dolly": 1,
       "nights": 1,
       "visited.floor1.tenant": 1,
       "visited.floor3.service": 1
@@ -118,6 +123,7 @@
       "seen.eddie": 1,
       "seen.lobby": 1,
       "seen.lobby_rules": 1,
+      "seen.office_morning": 1,
       "turn": 8
     },
     "seed": 2024,

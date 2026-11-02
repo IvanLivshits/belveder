@@ -1,8 +1,12 @@
 {
-  "digest": "df31752a0543c14e68adac2feb449cc9ba9a6778ab66cff704d5d2b289b8b2ec",
+  "digest": "f9bd679b2f38e82271fc0650f101ac0c3ffd29588bf8887d90acc5b448fab3aa",
   "snapshot": {
     "location": "pledge",
     "log": [
+      {
+        "choice": 0,
+        "storylet": "office_morning"
+      },
       {
         "choice": 0,
         "storylet": "office_first_night"
@@ -29,7 +33,7 @@
       },
       {
         "choice": 2,
-        "storylet": "lobby_hub"
+        "storylet": "lobby_hub_first_night"
       },
       {
         "choice": 2,
@@ -85,7 +89,7 @@
       },
       {
         "choice": 3,
-        "storylet": "lobby_hub"
+        "storylet": "lobby_hub_first_night"
       },
       {
         "choice": -1,
@@ -99,13 +103,14 @@
       "mem.false.marines": 0,
       "mem.true.ring": 1,
       "memories_returned": 1,
+      "met.dolly": 1,
       "nights": 1,
       "visited.floor1.tenant": 1,
       "visited.floor3.service": 1
     },
     "report": {
       "client": "client_first",
-      "entry": "entry_default",
+      "entry": "entry_hint",
       "finding": "finding_ring",
       "price": "price_marines",
       "twist": "twist_ring_returned",
@@ -126,6 +131,7 @@
       "seen.lobby": 1,
       "seen.lobby_rules": 1,
       "seen.office_belvedere": 1,
+      "seen.office_morning": 1,
       "turn": 8
     },
     "seed": 5,

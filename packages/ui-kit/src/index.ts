@@ -8,3 +8,5 @@ export * from "./ReportPage";
 export * from "./TitleScreen";
 export * from "./Hint";
 export * from "./NotebookPage";
+export * from "./Life";
+export * from "./MorningPage";

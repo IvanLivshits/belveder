@@ -1,5 +1,5 @@
 {
-  "digest": "7a6f73e0a15141b10f2cbf829d3bdd9f16396912fb704c6761476f4412c25f80",
+  "digest": "b9c54723a346450b60962848ac7f661a699296495864b8e8ca8d89b3d2ee8d8e",
   "snapshot": {
     "location": "pledge",
     "log": [
@@ -139,6 +139,8 @@
       "mem.false.marines": 0,
       "mem.true.ring": 1,
       "memories_returned": 1,
+      "met.dolly": 1,
+      "met.office_ring": 1,
       "nights": 1,
       "visited.floor1.tenant": 1,
       "visited.floor3.service": 1

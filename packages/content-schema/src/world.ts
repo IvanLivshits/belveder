@@ -95,7 +95,8 @@ export const NotebookSchema = z.object({
     intro: z.string().min(1),
     /** fake: still on the shelf; empty: pawned, nothing came back; real: the real memory returned. */
     states: z.object({ fake: z.string().min(1), empty: z.string().min(1), real: z.string().min(1) }),
-    footer: z.string().min(1),
+    /** Shown only while `when` holds (profile-only conditions, like pages). */
+    footer: z.object({ when: z.array(ConditionSchema).default([]), text: z.string().min(1) }),
   }),
   pages: z.array(NotebookPageSchema),
 });

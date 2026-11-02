@@ -18,9 +18,10 @@ describe("validator rules", () => {
   });
 
   test("notebook: unique ids, profile-only unlocks, life placeholders", () => {
-    const nb = (pages: object[], states = { fake: "{label_fake}", empty: "x", real: "{label_real}" }) => broken((w) => {
-      w.notebook = { life: { title: "t", intro: "i", states, footer: "f" }, pages: pages as never };
+    const nb = (pages: object[], states = { fake: "{label_fake}", empty: "x", real: "{label_real}" }, footerWhen: string[] = []) => broken((w) => {
+      w.notebook = { life: { title: "t", intro: "i", states, footer: { when: footerWhen, text: "f" } }, pages: pages as never };
     });
+    expect(messages(rules["notebook"]!(nb([], undefined, ["heat >= 1"]), assets))).toMatch(/life.footer: when uses run quality heat/);
     expect(messages(rules["notebook"]!(nb([{ id: "p", title: "t", text: "x", rule: "r", when: ["trust >= 1"] }]), assets))).toBe("");
     expect(messages(rules["notebook"]!(nb([{ id: "p", title: "t", text: "x", rule: "r", when: ["heat >= 1"] }]), assets))).toMatch(/run quality heat/);
     expect(messages(rules["notebook"]!(nb([{ id: "p", title: "t", text: "x", rule: "r" }, { id: "p", title: "t", text: "x", rule: "r" }]), assets))).toMatch(/duplicate page id/);

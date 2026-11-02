@@ -60,26 +60,26 @@
 - id: office_ring
   location: office
   priority: 3
-  when: [mem.true.ring == 1]
+  when: [mem.true.ring == 1, met.office_ring == 0]
   background: office_empty
   portrait: vivian_recognize
   title: Контора
   text: |
-    Она снимает перчатку, и ты видишь тонкое кольцо.
+    Половина десятого. Мокрое пальто, трость у стола, тот же конверт. Она снимает перчатку, и ты видишь тонкое кольцо.
 
     Вспоминается часовня на Канал-стрит: рис на мокрых ступенях, чья-то ладонь в твоей. Ты смотришь на свою руку. Кольца нет. Только светлая полоска на пальце, будто его сняли недавно.
   choices:
     - text: Спросить, где они венчались
       when: [seen.office_chapel == 0]
       free: true
-      effects: [seen.office_chapel = 1, clues += 1]
+      effects: [seen.office_chapel = 1, clues += 1, met.office_ring = 1]
       outcome: |
         — На Канал-стрит. — Пауза. — Откуда вы знаете, что мы венчались?
 
         Ты не знаешь, откуда ты знаешь.
     - text: Взять деньги и дело
       free: true
-      effects: [seen.client_ring = 1]
+      effects: [seen.client_ring = 1, met.office_ring = 1]
       goto: facade
 
 - id: facade_night
@@ -100,7 +100,7 @@
     - text: Подойти к машине у фонаря
       when: [nights >= 1, seen.facade_car == 0]
       free: true
-      effects: [seen.facade_car = 1, suspicion += 1]
+      effects: [seen.facade_car = 1, suspicion += 1, met.gorman = 1]
       outcome: |
         Стекло опускается на два пальца. Внутри тлеет сигарета и блестит значок.
 

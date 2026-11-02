@@ -56,7 +56,7 @@ describe("report notes and notebook", () => {
   const w = variant((w) => {
     w.report.notes = [{ when: ["returned.a == 1"], text: "a is back" }, { text: "always, heat {heat}" }];
     w.notebook = {
-      life: { title: "Me", intro: "intro", states: { fake: "{label_fake}", empty: "~~{label_fake}~~ — nothing", real: "~~{label_fake}~~ → {label_real}" }, footer: "footer" },
+      life: { title: "Me", intro: "intro", states: { fake: "{label_fake}", empty: "~~{label_fake}~~ — nothing", real: "~~{label_fake}~~ → {label_real}" }, footer: { when: ["memories_returned >= 1"], text: "footer" } },
       pages: [
         { id: "open", title: "Open", text: "t", rule: "r" },
         { id: "trusted", title: "Trusted", text: "trust {trust}", rule: "r", when: ["trust >= 1"] },
@@ -76,6 +76,7 @@ describe("report notes and notebook", () => {
     let v = notebookView(s, w)!;
     expect(v.pages.map((p) => p.id)).toEqual(["open"]);
     expect(v.locked).toBe(1);
+    expect(v.life.footer).toBeNull();
     expect(v.life.lines).toEqual([
       { pair: "a", status: "fake", text: "False A" },
       { pair: "b", status: "fake", text: "False B" },
@@ -87,6 +88,7 @@ describe("report notes and notebook", () => {
     expect(v.pages.map((p) => p.id)).toEqual(["open", "trusted"]);
     expect(v.pages[1]!.text).toBe("trust 1");
     expect(lifeStatus(s, w, "a")).toBe("real");
+    expect(v.life.footer).toBe("footer"); // first return
     expect(v.life.lines[0]!.text).toBe("~~False A~~ → True A");
     // pawning b without its returnWhen leaves an empty line
     let n = newNight({ v: 1, profile: { ...s.profile } }, w, 4);

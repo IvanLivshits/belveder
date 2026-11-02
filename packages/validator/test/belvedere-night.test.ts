@@ -34,25 +34,28 @@ const q = (s: GameState, id: string) => getQuality(s, world, id);
 // From the task: office -> facade -> lobby (Dolly's rules, then a cigarette) -> stairs -> 2 -> 3 -> service door
 // -> search the bed -> down (Eddie intercepts at turn >= 3, let him go) -> Dolly -> pledge -> pawn the marines memory.
 const PLAN_RING: Step[] = [
-  "Взять деньги и дело", "Войти через парадную",
+  "Открыть", "Взять деньги и дело", "Войти через парадную",
   "Кивнуть", "Предложить сигарету", "next", "К лестнице",
   "Лестница", "Вверх, на второй", "Лестница", "Вверх, на третий",
   "Служебная дверь", "Обыскать кровать", "next", "Уйти",
   "Лестница", "Отпустить", "next", "Вниз, на второй", "Лестница", "Вниз, в вестибюль",
-  "Долли", "Оставить залог и выйти",
+  "Долли", "Уйти до рассвета (залог)",
   ["pledge", "ring"],
 ];
 
 // The tutorial route from the task: every first-night card on the way to the ring.
 const PLAN_FIRST_NIGHT: Step[] = [
-  "Спросить, что это за дом", "next", "Взять деньги и дело",
+  "Открыть", "Спросить, что это за дом", "next", "Взять деньги и дело",
   "Поднять газету", "next", "Войти через парадную",
-  "Спросить, как её зовут", "next", "Спросить, где он ночевал", "next", "К лестнице",
+  "Спросить, давно ли она здесь", "next", "Спросить, где он ночевал", "next", "К лестнице",
   "Лестница", "Вверх, на второй", "Лестница", "Вверх, на третий",
   "Служебная дверь", "Обыскать кровать", "next", "Уйти",
   "Лестница", "Отпустить", "next", "Вниз, на второй", "Лестница", "Вниз, в вестибюль",
-  "Долли", "Оставить залог и выйти",
+  "Долли", "Уйти до рассвета (залог)",
 ];
+
+/** Any night after the first: office -> facade -> wary Dolly -> pledge. */
+const PLAN_QUICK_EXIT: Step[] = ["Взять деньги и дело", "Войти через парадную", "Молча пойти к лестнице", "Долли", "Уйти до рассвета (залог)"];
 
 /** Walks the stairs up and down until the turn limit; landings and the lobby hub lead back to the stairwell. */
 function walkUntilDawn(start: GameState): GameState {
@@ -62,7 +65,7 @@ function walkUntilDawn(start: GameState): GameState {
     if (s.phase === "outcome") { s = continueOutcome(s, world); continue; }
     const id = currentScene(s, world).storylet.id;
     if (id === "stairs_eddie") { s = pick(s, "Отпустить"); continue; }
-    if (id === "lobby_hub") { s = pick(s, "К лестнице"); continue; }
+    if (id === "lobby_hub" || id === "lobby_hub_first_night") { s = pick(s, "К лестнице"); continue; }
     if (id === "stairs") {
       const floor = q(s, "floor");
       s = pick(s, floor < 4 ? ["", "Вверх, на второй", "Вверх, на третий", "Вверх, на четвёртый"][floor]! : "Вниз, на третий");
@@ -98,7 +101,7 @@ describe("belvedere: the ring", () => {
     expect(n.storyletId).toBe("office_ring");
     expect(n.run).toEqual({});
     // dolly_trust is 1, so the wary Dolly greets Nick; her silent exit has no outcome screen
-    n = play(profileOf(first), 7, ["Взять деньги и дело", "Войти через парадную", "Молча пойти к лестнице", "Долли", "Оставить залог и выйти"]);
+    n = play(profileOf(first), 7, PLAN_QUICK_EXIT);
     expect(currentScene(n, world).memories.map((m) => m.id)).not.toContain("ring");
     expect(currentScene(n, world).memories.length).toBe(7);
   });
@@ -114,6 +117,19 @@ describe("belvedere: the ring", () => {
 });
 
 describe("belvedere: first night", () => {
+  test("the game opens on office_morning with Nick's biography; the notebook starts with five pages", () => {
+    const s = newNight(emptyProfile(), world, 1);
+    expect(s.storyletId).toBe("office_morning");
+    expect(currentScene(s, world).choices.map((c) => c.text)).toEqual(["Открыть"]);
+    const nb = notebookView(s, world)!;
+    expect(nb.pages.map((p) => p.id)).toEqual(["case", "belvedere", "night", "cigarettes", "clues"]);
+    expect(nb.life.footer).toBeNull();
+    expect(nb.life.lines.length).toBe(8);
+    const after = pick(s, "Открыть");
+    expect(after.storyletId).toBe("office_first_night");
+    expect(q(after, "turn")).toBe(0);
+  });
+
   test("tutorial route: Dolly's first pledge screen, only the ring can return, notes on the report", async () => {
     let s = play(emptyProfile(), 5, PLAN_FIRST_NIGHT);
     expect(s.storyletId).toBe("pledge_first_night");
@@ -137,20 +153,35 @@ describe("belvedere: first night", () => {
     expect(nb.life.lines.find((l) => l.pair === "ring")).toEqual({ pair: "ring", status: "real", text: "~~Морская пехота, Тихий океан~~ → Кольцо: свадьба на Канал-стрит" });
     expect(nb.life.lines.filter((l) => l.status === "fake").length).toBe(7);
     expect(nb.pages.map((p) => p.id)).toContain("new_tenants");
+    expect(nb.pages.map((p) => p.id)).toContain("dolly"); // met on the first night
+    expect(nb.pages.map((p) => p.id)).toContain("report"); // opens from the second night
     expect(nb.pages.map((p) => p.id)).not.toContain("eddie");
+    expect(nb.life.footer).toBe("Почерк в некоторых строках не мой. То есть мой, но другой."); // after the first return
     expect(currentNotes(n, world)).toEqual([]);
   });
 
-  test("dawn on the first night shows pledge_first_night, not pledge_dawn", () => {
-    const s = walkUntilDawn(play(emptyProfile(), 11, ["Взять деньги и дело", "Войти через парадную", "Кивнуть", "Спросить, где он ночевал", "next", "К лестнице", "Лестница"]));
+  test("dawn on the first night shows pledge_first_dawn, which explains the pledge", () => {
+    const s = walkUntilDawn(play(emptyProfile(), 11, ["Открыть", "Взять деньги и дело", "Войти через парадную", "Кивнуть", "Спросить, где он ночевал", "next", "К лестнице", "Лестница"]));
     expect(q(s, "turn")).toBe(16);
     expect(s.location).toBe("pledge");
-    expect(s.storyletId).toBe("pledge_first_night");
+    expect(s.storyletId).toBe("pledge_first_dawn");
+    expect(currentScene(s, world).memories.length).toBe(8);
+  });
+
+  test("office_ring opens the second night only, then the office goes back to normal", () => {
+    const first = play(emptyProfile(), 2024, PLAN_RING);
+    const second = newNight(profileOf(first), world, 7);
+    expect(second.storyletId).toBe("office_ring");
+    const secondDone = play(profileOf(first), 7, PLAN_QUICK_EXIT);
+    expect(q(secondDone, "met.office_ring")).toBe(1);
+    const third = newNight(profileOf(play(profileOf(first), 7, [...PLAN_QUICK_EXIT, "Заложить эту ночь", "next"])), world, 8);
+    expect(third.storyletId).not.toBe("office_ring");
+    expect(third.location).toBe("office");
   });
 
   test("choice cost: free 0, plain 1, a long talk 2", () => {
     const s = newNight(emptyProfile(), world, 1);
-    const office = currentScene(s, world);
+    const office = currentScene(pick(s, "Открыть"), world); // office_first_night: every choice is free
     expect(office.choices.map((c) => choiceCost(s, world, c.choice))).toEqual([0, 0, 0, 0]);
     const meal = world.storylets.flatMap((st) => st.choices).find((c) => c.text === "Сесть и поесть")!;
     expect(choiceCost(s, world, meal)).toBe(2);
