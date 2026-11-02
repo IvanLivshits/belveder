@@ -91,6 +91,7 @@ button { font: inherit; }
   background: linear-gradient(180deg, rgba(60,45,25,0.55), rgba(11,13,18,0.9)); color: var(--text); cursor: pointer; font-size: 13px; text-align: center; line-height: 1.25;
 }
 .door__glyph { display: block; margin-bottom: 4px; color: var(--accent); opacity: 0.9; }
+.door__cost { font-size: 10px; letter-spacing: 0.06em; color: var(--hint); font-variant-numeric: tabular-nums; }
 .door:active { transform: scale(0.97); }
 .door--locked { opacity: 0.4; cursor: default; filter: grayscale(1); }
 

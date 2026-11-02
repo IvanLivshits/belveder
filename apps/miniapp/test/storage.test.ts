@@ -168,6 +168,21 @@ describe("saves transport", () => {
 });
 
 describe("ui meta", () => {
+  test("ui doc uses the same rev merge: local rev 5 beats cloud rev 4 and is pushed to cloud", async () => {
+    const { serializeUi } = await import("../src/storage");
+    const cloud = fakeKV();
+    const local = localKV(fakeStorage());
+    await saveDoc(local, "ui", encodeEnvelope({ rev: 5, savedAt: 50, body: serializeUi({ hintsShown: ["turn"], pagesRead: ["case", "night"] }) }));
+    await saveDoc(cloud.kv, "ui", encodeEnvelope({ rev: 4, savedAt: 40, body: serializeUi({ hintsShown: ["turn"], pagesRead: ["case"] }) }));
+    const saves = createSaves(local, cloud.kv, () => 60);
+    expect((await saves.loadUi()).pagesRead).toEqual(["case", "night"]);
+    await saves.flush();
+    expect(cloud.map.get("ui_0")).toContain("rev=5;at=50|u1;h=turn;p=case,night");
+    saves.persistUi({ hintsShown: ["turn"], pagesRead: ["case", "night", "dolly"] });
+    await saves.flush();
+    expect(cloud.map.get("ui_0")).toContain("rev=6;at=60|");
+  });
+
   test("round-trips through the codec and the saves transport", async () => {
     const { parseUi, serializeUi } = await import("../src/storage");
     const ui = { hintsShown: ["turn", "dolly_trust"], pagesRead: ["case", "new_tenants"] };

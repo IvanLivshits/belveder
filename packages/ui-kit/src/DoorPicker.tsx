@@ -37,6 +37,7 @@ export function DoorPicker({ doors, onChoose }: DoorPickerProps) {
         >
           <Icon name={d.available ? ORDER[i] ?? "door" : "lock"} />
           <span>{d.text}</span>
+          <span class="door__cost">{d.cost ?? "\u00a0"}</span>
         </button>
       ))}
     </div>
