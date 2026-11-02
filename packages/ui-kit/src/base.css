@@ -92,9 +92,29 @@ button { font: inherit; }
 .door:active { transform: scale(0.97); }
 .door--locked { opacity: 0.4; cursor: default; filter: grayscale(1); }
 
-/* ---- HUD ---- */
-.hud { position: absolute; top: 0; left: 0; right: 0; display: flex; gap: 12px; flex-wrap: wrap; padding: calc(8px + env(safe-area-inset-top)) 14px 8px; font-size: 12px; color: var(--hint); background: linear-gradient(180deg, rgba(0,0,0,0.55), transparent); letter-spacing: 0.04em; pointer-events: none; }
-.hud__item b { color: var(--text); font-weight: 600; }
+/* ---- HUD: a brass-lined strip of small-caps labels with pips ---- */
+.hud {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 1;
+  display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: flex-start;
+  padding: calc(10px + env(safe-area-inset-top)) 16px 9px;
+  background: linear-gradient(180deg, rgba(6,7,10,0.88) 0%, rgba(6,7,10,0.55) 70%, rgba(6,7,10,0) 100%);
+  pointer-events: none;
+}
+.hud::after {
+  content: ""; position: absolute; left: 16px; right: 16px; bottom: 4px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(201,162,74,0.45) 20%, rgba(201,162,74,0.45) 80%, transparent);
+}
+.hud__item { display: flex; flex-direction: column; justify-content: space-between; height: 30px; }
+.hud__label { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--hint); white-space: nowrap; }
+.hud__num { display: block; font-size: 14px; line-height: 14px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+.hud__num small { font-size: 10px; font-weight: 400; color: var(--hint); }
+.hud__pips { display: flex; gap: 3px; height: 14px; align-items: center; }
+.hud__pip { width: 6px; height: 6px; border-radius: 1px; transform: rotate(45deg); border: 1px solid rgba(201,162,74,0.55); background: transparent; }
+.hud__pip--on { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 4px rgba(201,162,74,0.6); }
+.hud__bar { position: relative; display: block; min-width: 56px; height: 14px; }
+.hud__bar .hud__num { font-size: 12px; line-height: 10px; }
+.hud__fill { position: absolute; left: 0; bottom: 0; height: 2px; background: var(--accent); box-shadow: 0 0 4px rgba(201,162,74,0.6); }
+.hud__bar::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: rgba(201,162,74,0.25); }
 
 /* ---- report & title ---- */
 .paper { position: absolute; inset: 0; overflow-y: auto; padding: calc(24px + env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom)); background: var(--panel); color: var(--text); }

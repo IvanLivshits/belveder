@@ -4,7 +4,7 @@ title: Ломбард на последнем этаже
 # Качества. scope run сбрасывается каждую ночь, profile живёт между ночами.
 # Namespace `x.*` объявляет семейство качеств.
 qualities:
-  - { id: turn, scope: run, label: Ход, visible: true, min: 0 }
+  - { id: turn, scope: run, label: Ход, visible: true, min: 0, max: 16 }
   - { id: suspicion, scope: run, label: Подозрение, visible: true, min: 0, max: 10 }
   - { id: cigarettes, scope: run, label: Сигареты, visible: true, min: 0, max: 5, default: 3 }
   - { id: clues, scope: run, label: Улики, visible: true, min: 0 }
