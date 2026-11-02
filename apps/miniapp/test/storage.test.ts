@@ -32,7 +32,7 @@ function fakeKV(opts: { fail?: () => boolean; delay?: number } = {}) {
   return { kv, map: m, writes: () => writes };
 }
 
-const profileWith = (trust: number) => ({ v: 1 as const, profile: { trust } });
+const profileWith = (trust: number) => ({ v: 1 as const, profile: { trust }, history: { nights: [], pledges: [] } });
 
 describe("saves transport", () => {
   test("local only: profile and run round-trip", async () => {

@@ -1,0 +1,82 @@
+# Площадки 9–12.
+# Время: 00:00 = ход 4, 01:00 = ход 6, 02:00 = ход 8.
+# Беннет дома только до эфира (до полуночи), в студии в эфире с 00:00 до 02:00.
+# С 11-го на 12-й — решётка: пропуск Корделии или часовой ключ Фенна.
+
+- id: floor_09_doors
+  location: floor_09
+  layout: doors
+  background: landing_09
+  title: Площадка 9
+  text: |
+    Кабели вдоль плинтуса, как корни. Над дверью студии громкоговоритель, из него ровный мужской голос, когда идёт эфир, и шипение, когда эфира нет. На двери квартиры табличка: «К. Беннет. Не беспокоить после 23:30».
+  choices:
+    - text: Квартира диктора
+      when: [turn < 4, suspicion < 5]
+      effects: [visited.floor9.tenant += 1, floor = 9, met.bennett = 1]
+      goto: tenant_09
+    - text: Студия WHRW
+      effects: [visited.floor9.service += 1, floor = 9]
+      goto: service_09
+    - text: Лестница
+      free: true
+      effects: [floor = 9]
+      goto: stairwell
+
+- id: floor_10_doors
+  location: floor_10
+  layout: doors
+  background: landing_10
+  title: Площадка 10
+  text: |
+    Здесь тикает всё: стены, пол, дверная ручка под ладонью. Сквозь щель под служебной дверью видно, как медленно поворачивается огромное латунное колесо.
+  choices:
+    - text: Мастерская часовщика
+      when: [suspicion < 5]
+      effects: [visited.floor10.tenant += 1, floor = 10, met.fenn = 1]
+      goto: tenant_10
+    - text: Механизм башенных часов
+      effects: [visited.floor10.service += 1, floor = 10]
+      goto: service_10
+    - text: Лестница
+      free: true
+      effects: [floor = 10]
+      goto: stairwell
+
+- id: floor_11_doors
+  location: floor_11
+  layout: doors
+  background: landing_11
+  title: Площадка 11
+  text: |
+    Толстый ковёр съедает шаги. Приёмная с табличкой «Секретарь. Мисс К. Шоу» и дверь поменьше: «Архив посещений». Лестница наверх за кованой решёткой.
+  choices:
+    - text: Приёмная
+      effects: [visited.floor11.tenant += 1, floor = 11, met.cordelia = 1]
+      goto: tenant_11
+    - text: Архив посещений
+      effects: [visited.floor11.service += 1, floor = 11]
+      goto: service_11
+    - text: Лестница
+      free: true
+      effects: [floor = 11]
+      goto: stairwell
+
+- id: floor_12_doors
+  location: floor_12
+  layout: doors
+  background: landing_12
+  title: Площадка 12
+  text: |
+    Дверь с латунной табличкой без имени: «Займы под залог». Рядом узкая дверь в кладовую, из-под неё пахнет старой бумагой и сургучом. Дальше коридор упирается в кирпичную стену.
+  choices:
+    - text: Ломбард
+      effects: [visited.floor12.tenant += 1, floor = 12]
+      goto: tenant_12
+    - text: Книга залогов
+      effects: [visited.floor12.service += 1, floor = 12]
+      goto: service_12
+    - text: Лестница
+      free: true
+      effects: [floor = 12]
+      goto: stairwell

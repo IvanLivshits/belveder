@@ -1,4 +1,4 @@
-import { RESERVED_QUALITIES, type World } from "@belvedere/content-schema";
+import { RESERVED_QUALITIES, placeholders, qualityMatches, type World } from "@belvedere/content-schema";
 import { evaluateAll } from "./conditions";
 import { applyEffects } from "./effects";
 import { recordEvidence } from "./evidence";
@@ -6,7 +6,7 @@ import { resetRun } from "./qualities";
 import { buildReport } from "./report";
 import { seedRng } from "./rng";
 import { choicesOf, selectStorylet } from "./select";
-import { EngineError, STATE_VERSION, findStorylet, type GameState, type Profile } from "./state";
+import { EngineError, STATE_VERSION, findStorylet, type GameState, type NightRecord, type Profile } from "./state";
 import { renderText } from "./text";
 import { getQuality, setQuality } from "./qualities";
 
@@ -36,14 +36,33 @@ export function newNight(profile: Profile, world: World, seed: number): GameStat
     profile: { ...profile.profile },
     log: [],
     report: {},
+    history: { nights: [...(profile.history?.nights ?? [])], pledges: [...(profile.history?.pledges ?? [])] },
+    ending: null,
   };
   return enterLocation(resetRun(base), world, world.rules.start);
 }
 
-function endNight(state: GameState, world: World): GameState {
+/** Builds the report, applies onNightEnd and appends the night to the history (with the
+ *  values of every placeholder the chosen fragments use, so the story can render them later). */
+function endNight(state: GameState, world: World, pair?: string): GameState {
   const [report, rng] = buildReport(state, world, state.rng);
+  const values: Record<string, number> = {};
+  for (const id of Object.values(report)) {
+    for (const ph of placeholders(world.fragments.find((f) => f.id === id)?.text ?? "")) {
+      if (world.qualities.some((q) => qualityMatches(q.id, ph))) values[ph] = getQuality(state, world, ph);
+    }
+  }
+  const pledged = world.rules.pledgedNightWhen !== undefined && evaluateAll(state, world, world.rules.pledgedNightWhen);
+  const record: NightRecord = { pledged, ...(pair !== undefined ? { pair } : {}), report, values };
   const withEnd = applyEffects({ ...state, rng }, world, world.rules.onNightEnd);
-  return { ...withEnd, phase: "report", report };
+  return { ...withEnd, phase: "report", report, history: { nights: [...state.history.nights, record], pledges: state.history.pledges } };
+}
+
+/** An ending choice: `endings.<id> = 1`, then the night closes like any other (report, onNightEnd,
+ *  history) and the phase becomes "ending". The profile keeps everything until `newCase`. */
+function finishGame(state: GameState, world: World, ending: string): GameState {
+  const flagged = setQuality(state, world, RESERVED_QUALITIES.endingPrefix + ending, 1);
+  return { ...endNight(flagged, world), phase: "ending", ending };
 }
 
 /** Applies a choice's effects. With an outcome text the state pauses in phase "outcome"
@@ -70,9 +89,10 @@ export function continueOutcome(state: GameState, world: World): GameState {
   return resolveChoice({ ...state, phase: "scene", pendingChoice: null }, world, state.pendingChoice);
 }
 
-/** endNight wins; otherwise the first matching interrupt redirects; otherwise the choice's goto. */
+/** An ending finishes the game; endNight wins over interrupts; otherwise the first matching interrupt redirects; otherwise the choice's goto. */
 function resolveChoice(state: GameState, world: World, index: number): GameState {
   const choice = findStorylet(world, state.storyletId).choices[index]!;
+  if (choice.ending !== undefined) return finishGame(state, world, choice.ending);
   if (choice.endNight) return endNight(state, world);
   const interrupt = world.rules.interrupts.find((i) => evaluateAll(state, world, i.when));
   return enterLocation(state, world, interrupt?.goto ?? choice.goto ?? state.location);
@@ -104,7 +124,11 @@ export function pledge(state: GameState, world: World, pairId: string): GameStat
   if (!pair) throw new EngineError(`memory pair ${pairId} not available to pawn`);
 
   const { pledgedPrefix, returnedPrefix, returnedTonight, memoriesReturned } = RESERVED_QUALITIES;
-  let next: GameState = { ...state, log: [...state.log, { storylet: storylet.id, choice: -1, pair: pairId }] };
+  let next: GameState = {
+    ...state,
+    log: [...state.log, { storylet: storylet.id, choice: -1, pair: pairId }],
+    history: { nights: state.history.nights, pledges: [...state.history.pledges, pairId] },
+  };
   next = setQuality(next, world, pair.fake, 0);
   next = setQuality(next, world, pledgedPrefix + pair.id, 1);
   if (evaluateAll(next, world, pair.returnWhen)) {
@@ -113,7 +137,7 @@ export function pledge(state: GameState, world: World, pairId: string): GameStat
     next = setQuality(next, world, returnedTonight, 1);
     next = setQuality(next, world, memoriesReturned, getQuality(next, world, memoriesReturned) + 1);
   }
-  return endNight(next, world);
+  return endNight(next, world, pairId);
 }
 
 export function step(state: GameState, world: World, action: Action): GameState {
@@ -169,5 +193,5 @@ export function morningNotes(state: GameState, world: World): string[] {
 
 /** Profile to persist between nights. */
 export function profileOf(state: GameState): Profile {
-  return { v: STATE_VERSION, profile: { ...state.profile } };
+  return { v: STATE_VERSION, profile: { ...state.profile }, history: { nights: [...state.history.nights], pledges: [...state.history.pledges] } };
 }

@@ -1,6 +1,27 @@
 {
-  "digest": "073fdf2321632c230225aa7d7b90482a2f0185244cc179bb5b7c6025531ac11d",
+  "digest": "42a974bf49542da4842dd802ba27e1eef4c240798b744fa4e9c66d63405fc137",
   "snapshot": {
+    "ending": null,
+    "history": {
+      "nights": [
+        {
+          "pair": "ring",
+          "pledged": false,
+          "report": {
+            "client": "client_first",
+            "entry": "entry_cig",
+            "finding": "finding_ring",
+            "price": "price_marines",
+            "twist": "twist_ring_returned",
+            "witnesses": "witnesses_eddie"
+          },
+          "values": {}
+        }
+      ],
+      "pledges": [
+        "ring"
+      ]
+    },
     "location": "pledge",
     "log": [
       {

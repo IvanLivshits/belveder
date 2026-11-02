@@ -36,6 +36,8 @@ export const ChoiceSchema = z.object({
   endNight: z.boolean().default(false),
   /** Skip `rules.onChoice` (e.g. does not cost a turn). */
   free: z.boolean().default(false),
+  /** Finishes the game with this ending (from `endings.yaml`) after the outcome, if any. */
+  ending: Id.optional(),
 });
 export type Choice = z.infer<typeof ChoiceSchema>;
 
@@ -125,6 +127,8 @@ export const RulesSchema = z.object({
   /** Location of the first scene of every night. */
   start: Id,
   clock: ClockSchema.optional(),
+  /** Evaluated on the report state: when all hold, the night is recorded as pawned and left out of the final story. */
+  pledgedNightWhen: z.array(ConditionSchema).optional(),
   /** Applied after every non-free choice, e.g. `turn += 1`. */
   onChoice: z.array(EffectSchema).default([]),
   interrupts: z.array(InterruptSchema).default([]),
@@ -164,12 +168,41 @@ export type EvidenceItem = z.infer<typeof EvidenceItemSchema>;
 export const EvidenceSchema = z.object({ items: z.array(EvidenceItemSchema) });
 export type Evidence = z.infer<typeof EvidenceSchema>;
 
-/** Quality ids the engine writes on its own; a world with memories (or evidence) must declare them. */
+/** An ending: full-screen image, title, text, and epilogues shown when their `when` holds
+ *  (they may look at `endings.*` of earlier playthroughs). */
+export const EndingSchema = z.object({
+  id: Id,
+  title: z.string().min(1),
+  image: Id,
+  text: z.string().min(1),
+  epilogues: z.array(ReportNoteSchema).default([]),
+});
+export type Ending = z.infer<typeof EndingSchema>;
+
+export const STORY_PARTS = ["opening", "nights", "pledged_note", "litany", "ending", "epilogues"] as const;
+export type StoryPartKind = (typeof STORY_PARTS)[number];
+/** The final story assembled from the saved nights; `opening_slot`/`litany_slot` default to the first and last report slot. */
+export const StorySchema = z.object({
+  title: z.string().min(1),
+  parts: z.array(z.enum(STORY_PARTS)),
+  opening_slot: Id.optional(),
+  litany_slot: Id.optional(),
+  pledged_note: z.string().min(1),
+  litany_intro: z.string().min(1),
+  closing: z.string().min(1),
+});
+export type Story = z.infer<typeof StorySchema>;
+export const EndingsSchema = z.object({ endings: z.array(EndingSchema), story: StorySchema });
+export type Endings = z.infer<typeof EndingsSchema>;
+
+/** Quality ids the engine writes on its own; a world with memories (or evidence, or endings) must declare them. */
 export const RESERVED_QUALITIES = {
   pledgedPrefix: "pledged.",
   returnedPrefix: "returned.",
   /** Profile flag per evidence item: `found.<id>` once its run flag has been 1. */
   foundPrefix: "found.",
+  /** Profile flag per ending reached: `endings.<id>`; the only qualities a new case keeps. */
+  endingPrefix: "endings.",
   /** Run flag: a real memory came back this night (memories_returned counts the whole game). */
   returnedTonight: "returned_tonight",
   memoriesReturned: "memories_returned",
@@ -191,6 +224,7 @@ export const WorldSchema = z.object({
   fragments: z.array(ReportFragmentSchema),
   notebook: NotebookSchema.optional(),
   evidence: EvidenceSchema.default({ items: [] }),
+  endings: EndingsSchema.optional(),
   /** Morning screen: `notes` work like report.notes, evaluated on the report state (run flags still set). */
   morning: z.object({ notes: z.array(ReportNoteSchema).default([]) }).default({ notes: [] }),
 });

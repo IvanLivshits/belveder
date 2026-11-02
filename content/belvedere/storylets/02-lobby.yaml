@@ -184,7 +184,7 @@
   text: |
     Долли сдвигает решётку. Кабина пахнет машинным маслом и чужими чемоданами. Она кладёт ладонь на рычаг.
 
-    — Куда? Выше восьмого не повезу. Там уже не мои этажи.
+    — Куда? — Она смотрит на тебя дольше, чем нужно. — Выше восьмого вожу только своих.
   choices:
     - text: На второй
       effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 2]
@@ -207,6 +207,26 @@
     - text: На восьмой
       effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 8]
       goto: floor_08
+    - text: На девятый
+      when: [dolly_trust >= 4]
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 9]
+      goto: floor_09
+    - text: На десятый
+      when: [dolly_trust >= 4]
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 10]
+      goto: floor_10
+    - text: На одиннадцатый
+      when: [dolly_trust >= 4]
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 11]
+      goto: floor_11
+    - text: Попросить нажать две кнопки сразу
+      when: [dolly_trust >= 5]
+      effects: [seen.lift_used = 1, paths.vault = 1, floor = 13]
+      outcome: |
+        Долли долго смотрит на панель. Потом кладёт два пальца на «12» и «1» и нажимает одновременно.
+
+        — Я ничего не знаю о тринадцатом, — говорит она, пока лифт ползёт вверх мимо всех этажей. — Запомни: ничего.
+      goto: vault
     - text: Передумать
       free: true
       goto: lobby

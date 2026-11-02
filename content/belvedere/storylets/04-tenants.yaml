@@ -105,6 +105,27 @@
       free: true
       effects: [seen.pool_intro = 1]
 
+- id: pool_walter
+  location: tenant_03
+  priority: 4
+  when: [mem.true.name == 1, seen.pool_walter == 0]
+  background: landing_03
+  portrait: pool_recognize
+  title: Квартира миссис Пул
+  text: |
+    — Уолтер, — говорит она и роняет половник. — Ты же съехал. Ты же съехал в то утро и сказал, что тебя зовут по-другому.
+  choices:
+    - text: Сказать, что она ошибается
+      effects: [seen.pool_walter = 1]
+      outcome: |
+        Миссис Пул кивает, поднимает половник и вытирает его о фартук.
+
+        — Конечно. Они все так говорят. — Она ставит вторую тарелку. — Ешь, остынет.
+    - text: Признаться
+      effects: [seen.pool_walter = 1, seen.pool_confess = 1, clues += 1]
+      outcome: |
+        — Я знала. — Она садится напротив. — В то утро я постучала и сказала: «Доброе утро, мистер…». А ты сказал: «Кэллоуэй». Сам. Я не подсказывала. Ты выбрал первую фамилию, которую увидел на визитке у себя на тумбочке.
+
 - id: pool_table
   location: tenant_03
   background: landing_03
@@ -209,7 +230,7 @@
         Квитанция ломбарда. «Предмет залога: имя». Подпись смазана дождём.
     - text: "Предложить сделку: молчание за настоящую копию"
       when: [debt.sloan >= 2, has.ledger_true == 0]
-      effects: [has.ledger_true = 1, clues += 1]
+      effects: [has.ledger_true = 1, clues += 1, met.sloan_deal = 1]
       outcome: |
         Слоун встаёт, отодвигает шкаф и достаёт из-за него вторую книгу, перевязанную бечёвкой.
 

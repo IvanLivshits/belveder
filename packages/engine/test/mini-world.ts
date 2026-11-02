@@ -17,6 +17,7 @@ export const miniWorld: World = WorldSchema.parse({
     { id: "returned.*", scope: "run" },
     { id: "returned_tonight", scope: "run" },
     { id: "memories_returned", scope: "profile" },
+    { id: "endings.*", scope: "profile" },
   ],
   locations: [{ id: "hall" }, { id: "room" }, { id: "vault" }],
   memories: [
@@ -24,7 +25,10 @@ export const miniWorld: World = WorldSchema.parse({
     { id: "b", fake: "mem.false.b", real: "mem.true.b", label_fake: "False B", label_real: "True B", returnWhen: ["heat >= 9"] },
   ],
   // Turn 4 sends the player to the vault (pledge screen); the night only ends there.
-  rules: { start: "hall", onChoice: ["turn += 1"], clock: { quality: "turn", start: "22:00", step: 30 }, interrupts: [{ when: ["turn >= 4"], goto: "vault" }], onNightEnd: ["nights += 1"] },
+  rules: {
+    start: "hall", onChoice: ["turn += 1"], clock: { quality: "turn", start: "22:00", step: 30 },
+    interrupts: [{ when: ["turn >= 4"], goto: "vault" }], onNightEnd: ["nights += 1"], pledgedNightWhen: ["night_pledged == 1"],
+  },
   report: { slots: [{ id: "summary", label: "Summary" }] },
   storylets: [
     {
@@ -47,12 +51,21 @@ export const miniWorld: World = WorldSchema.parse({
     {
       id: "vault_pledge", location: "vault", layout: "pledge", background: "bg", text: "Pawn one.", choices: [
         { text: "pledge the night", free: true, effects: ["night_pledged = 1"], endNight: true },
+        // The game's one ending: only once something real came back.
+        { text: "burn it all", when: ["trust >= 2"], free: true, ending: "fire", outcome: "It burns." },
       ],
     },
   ],
   fragments: [
-    { id: "sum_default", slot: "summary", priority: -100, text: "nothing" },
+    { id: "sum_default", slot: "summary", priority: -100, text: "nothing (heat {heat})" },
     { id: "sum_trust", slot: "summary", when: ["trust >= 1"], text: "trusted" },
     { id: "sum_returned", slot: "summary", priority: 1, when: ["returned.a == 1"], text: "a came back" },
   ],
+  endings: {
+    endings: [
+      { id: "fire", title: "Fire", image: "bg", text: "The vault burns.\n\nNothing is left, trust {trust}.", epilogues: [{ text: "Ash." }, { when: ["endings.water == 1"], text: "Steam, too." }] },
+      { id: "water", title: "Water", image: "bg", text: "Unreachable here." },
+    ],
+    story: { title: "The Case", parts: ["opening", "nights", "pledged_note", "litany", "ending", "epilogues"], pledged_note: "Some nights are gone.", litany_intro: "Paid:", closing: "The end." },
+  },
 });

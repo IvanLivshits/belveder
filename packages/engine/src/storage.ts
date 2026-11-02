@@ -7,7 +7,7 @@
  * Qualities are written as `q.<id>=<int>`, only non-default ones.
  * Chunk 0 starts with the header `<version>:<chunkCount>|`.
  */
-import { STATE_VERSION, type GameState, type Profile, type Qualities } from "./state";
+import { STATE_VERSION, emptyHistory, type GameState, type History, type NightRecord, type Profile, type Qualities } from "./state";
 
 export const STORAGE_VERSION = 1;
 /** Telegram CloudStorage value limit is 4096; keep headroom. */
@@ -54,14 +54,54 @@ function decodeDoc(doc: string): Map<string, string> {
   return decodeFields(nl < 0 ? "" : doc.slice(nl + 1));
 }
 
+// ---- history (the final story's raw material) ----
+// `h=` nights separated by `,`; one night is `<0|1>/<pair>/<slot:frag+…>/<quality:value+…>`.
+// `pl=` pawned pair ids in order. Both optional: docs from before the story decode as empty.
+
+function encodeNight(n: NightRecord): string {
+  const report = Object.keys(n.report).sort().map((s) => `${s}:${n.report[s]}`).join("+");
+  const values = Object.keys(n.values).sort().map((q) => `${q}:${n.values[q]}`).join("+");
+  return `${n.pledged ? 1 : 0}/${n.pair ?? ""}/${report}/${values}`;
+}
+
+function decodeNight(src: string): NightRecord {
+  const [pledged, pair, report, values] = src.split("/");
+  if (pledged === undefined || pair === undefined || report === undefined || values === undefined) throw new Error(`bad night record: ${src}`);
+  const pairs = (list: string) => (list === "" ? [] : list.split("+")).map((kv) => { const i = kv.indexOf(":"); return [kv.slice(0, i), kv.slice(i + 1)] as const; });
+  const rec: NightRecord = {
+    pledged: pledged === "1",
+    report: Object.fromEntries(pairs(report)),
+    values: Object.fromEntries(pairs(values).map(([k, v]) => { const n = Number(v); if (!Number.isInteger(n)) throw new Error(`bad value: ${kv(k, v)}`); return [k, n]; })),
+  };
+  return pair === "" ? rec : { ...rec, pair };
+}
+const kv = (k: string, v: string) => `${k}:${v}`;
+
+/** Empty fields are left out, so a profile without nights serializes exactly as before the story existed. */
+function encodeHistory(h: History): string[] {
+  const out: string[] = [];
+  if (h.nights.length > 0) out.push(`h=${h.nights.map(encodeNight).join(",")}`);
+  if (h.pledges.length > 0) out.push(`pl=${h.pledges.join(",")}`);
+  return out;
+}
+
+function historyFrom(fields: Map<string, string>): History {
+  const h = fields.get("h"), pl = fields.get("pl");
+  return {
+    nights: h === undefined || h === "" ? [] : h.split(",").map(decodeNight),
+    pledges: pl === undefined || pl === "" ? [] : pl.split(","),
+  };
+}
+
 // ---- profile ----
 
 export function serializeProfile(profile: Profile): string {
-  return encodeDoc(encodeQualities(profile.profile));
+  return encodeDoc([...encodeQualities(profile.profile), ...encodeHistory(profile.history ?? emptyHistory())]);
 }
 
 export function parseProfile(doc: string): Profile {
-  return { v: STATE_VERSION, profile: qualitiesFrom(decodeDoc(doc)) };
+  const f = decodeDoc(doc);
+  return { v: STATE_VERSION, profile: qualitiesFrom(f), history: historyFrom(f) };
 }
 
 // ---- in-progress run ----
@@ -74,6 +114,7 @@ export function serializeRun(state: GameState): string {
     `loc=${state.location}`,
     `sl=${state.storyletId}`,
     `pc=${state.pendingChoice ?? ""}`,
+    `end=${state.ending ?? ""}`,
     `log=${state.log.map((e) => `${e.storylet}:${e.pair !== undefined ? `p${e.pair}` : e.choice}`).join(",")}`,
     `rep=${Object.keys(state.report).sort().map((s) => `${s}:${state.report[s]}`).join(",")}`,
     ...encodeQualities(state.run),
@@ -90,7 +131,7 @@ export function parseRun(doc: string, profile: Profile): GameState {
     return v;
   };
   const phase = need("phase");
-  if (phase !== "scene" && phase !== "outcome" && phase !== "report") throw new Error(`bad phase: ${phase}`);
+  if (phase !== "scene" && phase !== "outcome" && phase !== "report" && phase !== "ending") throw new Error(`bad phase: ${phase}`);
   const log = need("log") === "" ? [] : need("log").split(",").map((e) => {
     const i = e.lastIndexOf(":");
     const tail = e.slice(i + 1);
@@ -116,6 +157,8 @@ export function parseRun(doc: string, profile: Profile): GameState {
     profile: { ...profile.profile },
     log,
     report,
+    history: { nights: [...(profile.history?.nights ?? [])], pledges: [...(profile.history?.pledges ?? [])] },
+    ending: f.get("end") ? f.get("end")! : null,
   };
 }
 

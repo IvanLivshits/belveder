@@ -1,0 +1,216 @@
+{
+  "digest": "539dcb715c38d23c66f0d5d02bb4a1a91e7dcfc40f21f90ec5d02c0d104679f0",
+  "snapshot": {
+    "ending": "signature_truth",
+    "history": {
+      "nights": [
+        {
+          "pair": "ring",
+          "pledged": false,
+          "report": {
+            "client": "client_first",
+            "entry": "entry_cig",
+            "finding": "finding_ring",
+            "price": "price_marines",
+            "twist": "twist_ring_returned",
+            "witnesses": "witnesses_eddie"
+          },
+          "values": {}
+        },
+        {
+          "pair": "lantern",
+          "pledged": false,
+          "report": {
+            "client": "client_ring",
+            "entry": "entry_cig",
+            "finding": "finding_ruby_record",
+            "price": "price_mcginnis",
+            "twist": "twist_lantern_returned",
+            "witnesses": "witnesses_ruby"
+          },
+          "values": {}
+        },
+        {
+          "pair": "hospital",
+          "pledged": false,
+          "report": {
+            "client": "client_lantern",
+            "entry": "entry_lift",
+            "finding": "finding_medical_file",
+            "price": "price_lorraine",
+            "twist": "twist_hospital_returned",
+            "witnesses": "witnesses_auerbach"
+          },
+          "values": {}
+        },
+        {
+          "pair": "voice",
+          "pledged": false,
+          "report": {
+            "client": "client_hospital",
+            "entry": "entry_lift",
+            "finding": "finding_default",
+            "price": "price_father",
+            "twist": "twist_voice_returned",
+            "witnesses": "witnesses_ruby_walter"
+          },
+          "values": {}
+        },
+        {
+          "pair": "ledger",
+          "pledged": false,
+          "report": {
+            "client": "client_voice",
+            "entry": "entry_lift",
+            "finding": "finding_true_ledger",
+            "price": "price_senator_dog",
+            "twist": "twist_ledger_returned",
+            "witnesses": "witnesses_sloan"
+          },
+          "values": {}
+        },
+        {
+          "pair": "cashbox",
+          "pledged": false,
+          "report": {
+            "client": "client_return",
+            "entry": "entry_lift",
+            "finding": "finding_ticket",
+            "price": "price_sheriff",
+            "twist": "twist_cashbox_returned",
+            "witnesses": "witnesses_sloan"
+          },
+          "values": {}
+        },
+        {
+          "pair": "name",
+          "pledged": false,
+          "report": {
+            "client": "client_cashbox",
+            "entry": "entry_lift",
+            "finding": "finding_signature_photo",
+            "price": "price_license",
+            "twist": "twist_name_returned",
+            "witnesses": "witnesses_eddie"
+          },
+          "values": {}
+        },
+        {
+          "pair": "secret",
+          "pledged": false,
+          "report": {
+            "client": "client_name",
+            "entry": "entry_lift",
+            "finding": "finding_vivian_envelope",
+            "price": "price_scar",
+            "twist": "twist_secret_returned",
+            "witnesses": "witnesses_default"
+          },
+          "values": {}
+        },
+        {
+          "pledged": false,
+          "report": {
+            "client": "client_default",
+            "entry": "entry_default",
+            "finding": "finding_default",
+            "price": "price_default",
+            "twist": "twist_default",
+            "witnesses": "witnesses_default"
+          },
+          "values": {}
+        }
+      ],
+      "pledges": [
+        "ring",
+        "lantern",
+        "hospital",
+        "voice",
+        "ledger",
+        "cashbox",
+        "name",
+        "secret"
+      ]
+    },
+    "location": "lobby",
+    "log": [
+      {
+        "choice": 0,
+        "storylet": "office_signature"
+      },
+      {
+        "choice": 1,
+        "storylet": "lobby_vivian"
+      }
+    ],
+    "pendingChoice": null,
+    "phase": "ending",
+    "profile": {
+      "dolly_trust": 5,
+      "endings.signature_truth": 1,
+      "found.ledger_true": 1,
+      "found.medical_file": 1,
+      "found.pawn_ticket": 1,
+      "found.ring": 1,
+      "found.ruby_record": 1,
+      "found.signature_photo": 1,
+      "found.vivian_envelope": 1,
+      "mem.false.father": 0,
+      "mem.false.license": 0,
+      "mem.false.lorraine": 0,
+      "mem.false.marines": 0,
+      "mem.false.mcginnis": 0,
+      "mem.false.scar": 0,
+      "mem.false.senator_dog": 0,
+      "mem.false.sheriff": 0,
+      "mem.true.cashbox": 1,
+      "mem.true.hospital": 1,
+      "mem.true.lantern": 1,
+      "mem.true.ledger": 1,
+      "mem.true.name": 1,
+      "mem.true.ring": 1,
+      "mem.true.secret": 1,
+      "mem.true.voice": 1,
+      "memories_returned": 8,
+      "met.auerbach": 1,
+      "met.dolly": 1,
+      "met.eddie": 1,
+      "met.mei": 1,
+      "met.office_cashbox": 1,
+      "met.office_hospital": 1,
+      "met.office_lantern": 1,
+      "met.office_ledger": 1,
+      "met.office_name": 1,
+      "met.office_ring": 1,
+      "met.office_voice": 1,
+      "met.ruby": 1,
+      "met.sloan_deal": 1,
+      "nights": 9,
+      "paths.freight_lift": 1,
+      "paths.vault": 1,
+      "visited.floor1.tenant": 2,
+      "visited.floor3.service": 1,
+      "visited.floor4.tenant": 2,
+      "visited.floor5.service": 1,
+      "visited.floor5.tenant": 1,
+      "visited.floor7.service": 3,
+      "visited.floor7.tenant": 2,
+      "visited.floor8.tenant": 1
+    },
+    "report": {
+      "client": "client_default",
+      "entry": "entry_default",
+      "finding": "finding_default",
+      "price": "price_default",
+      "twist": "twist_default",
+      "witnesses": "witnesses_default"
+    },
+    "rng": 9,
+    "run": {
+      "turn": 1
+    },
+    "seed": 9,
+    "storyletId": "lobby_vivian",
+    "v": 1
+  }
+}

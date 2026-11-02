@@ -12,7 +12,7 @@ description: Что проверяет validator, как добавить нов
 
 | Правило | Что ловит | Уровень |
 |---|---|---|
-| `qualities` | условие или эффект на необъявленное качество, в том числе в `rules.*`, `report.notes`, `morning.notes` и `notebook`; `rules.clock.quality` не объявлено; `rules.start` указывает на несуществующую локацию | error |
+| `qualities` | условие или эффект на необъявленное качество, в том числе в `rules.*` (включая `pledgedNightWhen`), `report.notes`, `morning.notes`, `notebook` и эпилогах концовок; `rules.clock.quality` не объявлено; `rules.start` указывает на несуществующую локацию | error |
 | `references` | `goto` выбора или перехвата на несуществующую локацию; `background`/`portrait` нет в `assets.json` | error |
 | `dead-ends` | локация без сторилетов (error); сторилет, у которого все choices условные (warning) | error / warning |
 | `reachability` | локация, недостижимая из `rules.start` по графу `goto` (условия игнорируются) | warning |
@@ -24,10 +24,11 @@ description: Что проверяет validator, как добавить нов
 | `self-exclusion` | выбор без `goto`/`endNight` ломает `when` своей карточки, а другие остающиеся выборы нет: после него карточка сменится посреди сцены и соседние вопросы пропадут. Не срабатывает, если флаг ставят все остающиеся выборы (карточка на один показ) или у карточки `intro: true` | warning |
 | `planned` | условие на качество, которое ничего не ставит (ни эффект, ни правило, ни движок) и у которого default 0. Обычно контент будущих этажей | warning |
 | `evidence` | повторный `id` карточки; `flag` на необъявленное качество; `image` нет в `assets.json`; мир с уликами без `found.*` | error |
+| `endings` | `ending` выбора не из `endings.yaml`; `ending` вместе с `endNight`; повторный id концовки; картинки нет в `assets.json`; `endings.*` не объявлено; `opening_slot`/`litany_slot` не из слотов отчёта | error |
 
 Тупики по состоянию (нет подходящего сторилета, нет доступных выборов) ловит симуляция, а не статическое правило: условия вида `seen.x == 0` / `seen.x == 1` или набор `floor == 1..4` дополняют друг друга, и статически это не видно. Поэтому «все выборы условные» — warning, а `stuck` в симуляции — error.
 
-Ожидаемые предупреждения в срезе этажей 1–8: `planned` только на пары `name` и `secret` (`has.signature_photo`, `seen.vault13`); `stairs`, `stairs_upper`, `stairs_top` с условными выборами (`floor` всегда 1–8). В «never shown» у случайного игрока за 200 ночей бывают `office_lantern`, `ruby_recognizes`, `auerbach_shock`, `stairs_gorman_collar`, `pledge_caught`: до них доходят направленные маршруты (тесты `belvedere-night.test.ts`), автор проверял 110 000 ночей.
+Ожидаемые предупреждения на полном мире (этажи 1–12, подвал, тринадцатый): только «все выборы условные» у четырёх лестниц (`stairs`, `stairs_upper`, `stairs_grate`, `stairs_top`), `planned` быть не должно. Случайный игрок за 200 ночей не доходит до верхних этажей и концовок (`by ending: 0`, в «never shown» карточки Владельца, тринадцатого, финала): до них доходят направленные маршруты кампании в `belvedere-night.test.ts`, автор проверял 110 000 ночей.
 
 Каждое правило — функция `(world, assets) => Issue[]`, `Issue = { level, where, message }`.
 
@@ -44,7 +45,7 @@ description: Что проверяет validator, как добавить нов
 
 ```
 simulated 200 nights
-  ended by memory pledge: 120, by endNight choice: 80, stuck: 0, errors: 0
+  ended by memory pledge: 120, by endNight choice: 80, by ending: 0, stuck: 0, errors: 0
   turns per night: min 1, avg 5.7, max 17
   storylets never shown (6): lobby_late, pledge_caught, ...
   choices never taken (15): lobby_hub#1, ...

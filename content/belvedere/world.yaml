@@ -68,6 +68,8 @@ qualities:
   - { id: paths.*, scope: profile, label: Открытые пути }
   # Ставит движок: улика с run-флагом из evidence.yaml найдена хотя бы раз (папка улик).
   - { id: found.*, scope: profile, label: Улики в деле, min: 0, max: 1 }
+  # Ставит движок на концовке; переживает «Новое дело» (эпилоги смотрят на прошлые прохождения).
+  - { id: endings.*, scope: profile, label: Увиденные концовки, min: 0, max: 1 }
 
 locations:
   - { id: office, label: Контора Ника }
@@ -98,6 +100,20 @@ locations:
   - { id: service_07, label: Гримёрная }
   - { id: tenant_08, label: Приёмная доктора }
   - { id: service_08, label: Процедурная }
+  - { id: floor_09, label: Площадка 9 }
+  - { id: floor_10, label: Площадка 10 }
+  - { id: floor_11, label: Площадка 11 }
+  - { id: floor_12, label: Площадка 12 }
+  - { id: tenant_09, label: Квартира диктора }
+  - { id: service_09, label: Студия WHRW }
+  - { id: tenant_10, label: Мастерская часовщика }
+  - { id: service_10, label: Механизм часов }
+  - { id: tenant_11, label: Приёмная }
+  - { id: service_11, label: Архив посещений }
+  - { id: tenant_12, label: Ломбард }
+  - { id: service_12, label: Книга залогов }
+  - { id: basement, label: Подвал }
+  - { id: vault, label: Тринадцатый }
   - { id: pledge, label: Залог у Долли }
 
 rules:
@@ -105,6 +121,8 @@ rules:
   onChoice: [turn += 1]
   # Часы в HUD: 22:00 + ход × 30 минут (ход 4 — полночь, ход 6 — час ночи). Цена хода по-прежнему из onChoice.
   clock: { quality: turn, start: "22:00", step: 30 }
+  # Ночь, заложенная целиком, не попадает в итоговое «Дело Хейла» (проверяется по состоянию отчёта).
+  pledgedNightWhen: [night_pledged == 1]
   # Ночь кончается только выбором на экране залога (endNight).
   # Перехваты проверяются после каждого выбора, срабатывает первый подходящий.
   interrupts:
@@ -116,7 +134,7 @@ rules:
 # Ложное (fake) закладывается у Долли; если returnWhen выполнено этой ночью,
 # на его место встаёт настоящее (real). Ключи fake/real, а не false/true:
 # по YAML 1.2 `false:`/`true:` — булевы значения, не строки.
-# На этажах 1–8 достижимы все пары, кроме name и secret (объявлены заранее).
+# Все восемь пар достижимы: name через негатив у Мэй, secret через конверт на тринадцатом.
 memories:
   - id: ring
     fake: mem.false.marines

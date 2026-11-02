@@ -2,7 +2,7 @@
  *  If content changes on purpose: UPDATE_GOLDEN=1 bun test, explain in the commit. */
 import { describe, expect, test } from "bun:test";
 import {
-  choiceCost, choose, clockTime, continueOutcome, currentNotes, currentReport, currentScene, emptyProfile, evidenceView, getQuality, morningNotes, newNight, notebookView, pledge, pledgeOptions, profileOf,
+  choiceCost, choose, clockTime, continueOutcome, currentNotes, currentReport, currentScene, emptyProfile, endingView, evidenceView, getQuality, morningNotes, newCase, newNight, notebookView, pledge, pledgeOptions, profileOf, storyView,
   type GameState, type Profile,
 } from "@belvedere/engine";
 import { expectGolden } from "../../engine/test/golden-helper";
@@ -75,8 +75,8 @@ const PLAN_FIRST_NIGHT: Step[] = [
 const PLAN_QUICK_EXIT: Step[] = ["Взять деньги и дело", "Войти через парадную", "Молча пойти к лестнице", "Долли", "Уйти до рассвета (залог)"];
 
 /** Stairwell labels by target floor, for climbing one flight at a time from a landing. */
-const UP = ["", "", "Вверх, на второй", "Вверх, на третий", "Вверх, на четвёртый", "Вверх, на пятый", "Вверх, на шестой", "Вверх, на седьмой", "Вверх, на восьмой"];
-const DOWN = ["", "Вниз, в вестибюль", "Вниз, на второй", "Вниз, на третий", "Вниз, на четвёртый", "Вниз, на пятый", "Вниз, на шестой", "Вниз, на седьмой"];
+const UP = ["", "", "Вверх, на второй", "Вверх, на третий", "Вверх, на четвёртый", "Вверх, на пятый", "Вверх, на шестой", "Вверх, на седьмой", "Вверх, на восьмой", "Вверх, на девятый", "Вверх, на десятый", "Вверх, на одиннадцатый", "Вверх, на двенадцатый (пропуск)"];
+const DOWN = ["", "Вниз, в вестибюль", "Вниз, на второй", "Вниз, на третий", "Вниз, на четвёртый", "Вниз, на пятый", "Вниз, на шестой", "Вниз, на седьмой", "Вниз, на восьмой", "Вниз, на девятый", "Вниз, на десятый", "Вниз, на одиннадцатый"];
 
 /** Walks the stairs up and down until the turn limit; landings and the lobby hub lead back to the stairwell. */
 function walkUntilDawn(start: GameState): GameState {
@@ -547,5 +547,179 @@ describe("belvedere: Ruby after the lantern", () => {
     s = walkUntilDawn(s);
     s = pick(s, "Заложить эту ночь");
     expect(currentReport(s, world).find((r) => r.slot === "witnesses")?.fragment.id).toBe("witnesses_ruby_who");
+  });
+});
+
+/** The author's eight-night campaign: one profile, every memory pair returns, every ending reachable from it. */
+describe("belvedere: the campaign and the five endings", () => {
+  /** Office -> facade -> trusting Dolly (tea, cigarette, so trust grows by one a night) -> the freight lift. */
+  const TRUSTED_LIFT = ["Взять деньги и дело", "Войти через парадную", "Сесть и выпить чаю", "Предложить сигарету", "Попросить грузовой лифт"];
+  const nightEnd = (s: GameState, pair: string) => { const d = walkUntilDawn(s); expect(currentScene(d, world).storylet.id).toBe("pledge_dawn"); return pledge(d, world, pair); };
+  /** From Ruby's landing on the 7th, wait for 01:00 in the dressing room. */
+  const waitForRuby = (s: GameState) => { let cur = s; while (q(cur, "turn") < 6) cur = route(cur, ["Гримёрная", "Уйти"]); return cur; };
+
+  const night1 = () => play(emptyProfile(), 2024, PLAN_RING);
+  const night2 = (p: Profile) => {
+    let s = route(newNight(p, world, 2), ["Взять деньги и дело", "Войти через парадную", "Предложить сигарету", "К лестнице"]);
+    s = climb(s, 7);
+    s = route(s, ["Квартира певицы", "Войти", "Угостить сигаретой", "Попросить поставить пластинку", "Взять пластинку", "Уйти"]);
+    return nightEnd(s, "lantern");
+  };
+  const night3 = (p: Profile) => {
+    let s = route(newNight(p, world, 3), [...TRUSTED_LIFT, "На восьмой"]);
+    expect(q(s, "turn")).toBe(3);
+    s = route(s, ["Приёмная доктора", "Сесть на кушетку", "Спросить, за что он не может спать", "Попросить карточку Вивиан Хейл", "Уйти"]);
+    s = climb(s, 1);
+    s = route(s, ["Долли", "Уйти до рассвета (залог)"]);
+    return pledge(s, world, "hospital");
+  };
+  const night4 = (p: Profile) => {
+    let s = route(newNight(p, world, 4), [...TRUSTED_LIFT, "На седьмой"]);
+    s = waitForRuby(s);
+    s = route(s, ["Квартира певицы", "Сказать, что помнишь", "Угостить сигаретой", "Уйти"]);
+    return nightEnd(s, "voice");
+  };
+  const night5 = (p: Profile) => {
+    let s = route(newNight(p, world, 5), [...TRUSTED_LIFT, "На четвёртый", "Кабинет аудитора", "Сесть без приглашения", "Угостить сигаретой", "Пообещать, что полиция о нём не узнает", "Предложить сделку: молчание за настоящую копию", "Уйти"]);
+    expect(q(s, "met.sloan_deal")).toBe(1);
+    return nightEnd(s, "ledger");
+  };
+  const night6 = (p: Profile) => {
+    const s = route(newNight(p, world, 6), [...TRUSTED_LIFT, "На четвёртый", "Кабинет аудитора", "Угостить сигаретой", "Спросить, что связывает его с Хейлом", "Уйти"]);
+    return nightEnd(s, "cashbox");
+  };
+  const night7 = (p: Profile) => {
+    const s = route(newNight(p, world, 7), [...TRUSTED_LIFT, "На пятый", "Студия фотографа", "Посмотреть на снимки", "Помочь развесить снимки", "Уйти", "Фотолаборатория", "Проявить негатив без подписи", "Уйти"]);
+    expect(q(s, "has.signature_photo")).toBe(1);
+    return nightEnd(s, "name");
+  };
+  const night8 = (p: Profile) => {
+    let s = route(newNight(p, world, 8), ["Поднять трость и взять дело", "Войти через парадную", "Сесть и выпить чаю", "Предложить сигарету", "Попросить грузовой лифт", "Попросить нажать две кнопки сразу"]);
+    expect(currentScene(s, world).storylet.id).toBe("vault_room");
+    s = route(s, ["Найти конверт Вивиан Хейл", "Вернуться к лифту", "Уйти до рассвета (залог)"]);
+    return pledge(s, world, "secret");
+  };
+  /** Profiles after each night, computed once. */
+  const P: Profile[] = [];
+  const after = (n: number): Profile => {
+    const steps = [night1, night2, night3, night4, night5, night6, night7, night8];
+    while (P.length < n) {
+      const i = P.length;
+      const s = i === 0 ? night1() : steps[i]!(P[i - 1]!);
+      expect(s.phase).toBe("report");
+      P.push(profileOf(s));
+    }
+    return P[n - 1]!;
+  };
+  const returned = (p: Profile) => world.memories.filter((m) => p.profile[m.real] === 1).map((m) => m.id);
+  const finish = (s: GameState, text: string) => { let e = route(s, [text]); if (e.phase === "outcome") e = continueOutcome(e, world); return e; };
+
+  test("eight nights return all eight pairs, Dolly's trust reaches 5, every night is on record", async () => {
+    const p = after(8);
+    expect(returned(p)).toEqual(["ring", "lantern", "ledger", "hospital", "voice", "cashbox", "name", "secret"]);
+    expect(p.profile["memories_returned"]).toBe(8);
+    expect(p.profile["dolly_trust"]).toBe(5);
+    expect(p.profile["nights"]).toBe(8);
+    expect(p.history!.pledges).toEqual(["ring", "lantern", "hospital", "voice", "ledger", "cashbox", "name", "secret"]);
+    expect(p.history!.nights.map((n) => n.pledged)).toEqual(Array(8).fill(false));
+    expect(p.history!.nights.map((n) => n.report["price"])).toEqual(["price_marines", "price_mcginnis", "price_lorraine", "price_father", "price_senator_dog", "price_sheriff", "price_license", "price_scar"]);
+    expect(after(6).profile["memories_returned"]).toBe(6);
+  });
+
+  test("signature: after the eighth night Vivian waits in the lobby; the truth ends the case, the story holds nine nights", async () => {
+    let s = newNight(after(8), world, 9);
+    expect(s.storyletId).toBe("office_signature");
+    s = route(s, ["Пойти в Белведер"]);
+    expect(currentScene(s, world).storylet.id).toBe("lobby_vivian");
+    expect(currentScene(s, world).choices.map((c) => c.choice.ending)).toEqual(["signature_forgive", "signature_truth", "signature_letter"]);
+    s = finish(s, "Рассказать ей правду");
+    expect(s.phase).toBe("ending");
+    expect(s.ending).toBe("signature_truth");
+    expect(q(s, "endings.signature_truth")).toBe(1);
+    const view = endingView(s, world);
+    expect(view.title).toBe("Подпись. Правда");
+    expect(view.image).toBe("ending_signature");
+    expect(view.paragraphs.length).toBe(4);
+    expect(view.epilogues.length).toBe(1);
+    const story = storyView(profileOf(s), world, "signature_truth");
+    expect(story.title).toBe("Дело Хейла");
+    expect(story.sections.map((x) => x.kind)).toEqual(["opening", ...Array(9).fill("night"), "litany", "ending", "epilogues", "closing"]);
+    const opening = story.sections[0] as { text: string };
+    expect(opening.text).toBe(currentReport(night1(), world).find((r) => r.slot === "client")!.text);
+    const litany = story.sections.find((x) => x.kind === "litany") as { text: string };
+    expect(litany.text.split(" ").length).toBeGreaterThan(40);
+    const nights = story.sections.filter((x) => x.kind === "night") as { night: number; entries: { label: string }[] }[];
+    expect(nights.map((n) => n.night)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(nights[0]!.entries.map((e) => e.label)).toEqual(["Клиентка", "Вход", "Свидетели", "Находка", "Поворот", "Цена"]);
+    // a new case keeps only the endings seen
+    const fresh = newCase(profileOf(s));
+    expect(fresh.profile).toEqual({ "endings.signature_truth": 1 });
+    expect(fresh.history).toEqual({ nights: [], pledges: [] });
+    const n = newNight(fresh, world, 10);
+    expect(n.storyletId).toBe("office_morning");
+    expect(notebookView(n, world)!.pages.length).toBe(5);
+    expect(evidenceView(n, world).items).toEqual([]);
+    await expectGolden(DIR, "campaign-signature-truth", s);
+  });
+
+  test("case closed: after the third night, up to Miss Shaw for a pass and the report is signed at turn 12", () => {
+    // trust 3 is enough for the lift, so no cigarette for Dolly tonight: that is the turn the author's count leaves out
+    let s = route(newNight(after(3), world, 31), ["Взять деньги и дело", "Войти через парадную", "Сесть и выпить чаю", "Попросить грузовой лифт", "На восьмой"]);
+    s = climb(s, 11); // Eddie on the way up is let go (one turn)
+    s = route(s, ["Приёмная", "Спросить, чего она хочет", "Предложить ей сигарету, чтобы она захотела хотя бы её", "Уйти"]);
+    expect(q(s, "has.cordelia_pass")).toBe(1);
+    s = route(s, ["Лестница", "Вверх, на двенадцатый (пропуск)", "Ломбард", "Подойти к стойке"]);
+    expect(currentScene(s, world).storylet.id).toBe("owner_office");
+    expect(currentScene(s, world).choices.filter((c) => c.available).map((c) => c.text)).toContain("Подписать отчёт: «Уолтер Хейл мёртв»");
+    s = finish(s, "Подписать отчёт: «Уолтер Хейл мёртв»");
+    expect(q(s, "turn")).toBe(12);
+    expect(s.phase).toBe("ending");
+    expect(s.ending).toBe("case_closed");
+    expect(endingView(s, world).epilogues.length).toBe(1); // the redemption epilogue needs endings.redemption
+  });
+
+  test("redemption: with the name back, the real ledger and Sloan's deal, the name is bought back", () => {
+    let s = route(newNight(after(7), world, 71), ["Поднять трость и взять дело", "Войти через парадную", "Сесть и выпить чаю", "Предложить сигарету", "Попросить грузовой лифт", "На одиннадцатый"]);
+    s = route(s, ["Приёмная", "Спросить, чего она хочет", "Предложить ей сигарету, чтобы она захотела хотя бы её", "Уйти", "Лестница", "Вверх, на двенадцатый (пропуск)", "Ломбард", "Подойти к стойке"]);
+    s = finish(s, "Выкупить имя");
+    expect(s.ending).toBe("redemption");
+    expect(storyView(profileOf(s), world, "redemption").sections.filter((x) => x.kind === "night").length).toBe(8);
+  });
+
+  test("new proprietor: Gorman's car, Fenn's key, Eddie's cylinder, the stolen pass, the torn page, the chair at turn 15 with suspicion 8", () => {
+    let s = route(newNight(after(6), world, 61), ["Взять деньги и дело", "Подойти к машине у фонаря", "Войти через парадную", "Спросить, откуда она знает, что тебя ждут", "Попросить грузовой лифт", "На десятый"]);
+    expect(q(s, "suspicion")).toBe(1);
+    s = route(s, ["Мастерская часовщика", "Спросить, на какую минуту", "Угостить сигаретой", "Попросить часовой ключ", "Уйти", "Лестница"]);
+    expect(currentScene(s, world).storylet.id).toBe("stairs_eddie_again");
+    s = continueOutcome(pick(s, "Выхватить цилиндр"), world); // route() would let him go
+    expect(q(s, "suspicion")).toBe(3);
+    s = route(s, ["Вверх, на одиннадцатый", "Приёмная", "Взять пропуск со стола, пока она смотрит в окно", "Уйти", "Лестница"]);
+    expect(currentScene(s, world).storylet.id).toBe("stairs_gorman_again");
+    s = route(s, ["Спросить, почему он платит", "Вверх, на двенадцатый (пропуск)", "Книга залогов", "Вырвать страницу с сорок первой строкой", "Уйти", "Ломбард", "Подойти к стойке"]);
+    expect(q(s, "suspicion")).toBe(8);
+    s = finish(s, "Сесть в его кресло");
+    expect(q(s, "turn")).toBe(15);
+    expect(s.ending).toBe("new_proprietor");
+  });
+
+  test("ashes: Eddie's chute, Silas's matches, Dolly's two buttons, a match on the thirteenth; the redemption epilogue only once redemption was seen", () => {
+    const toMatch = (p: Profile) => {
+      let s = route(newNight(p, world, 62), ["Взять деньги и дело", "Войти через парадную", "Сесть и выпить чаю", "К лестнице"]);
+      s = climb(s, 2);
+      s = route(s, ["Прачечная", "Спросить, куда он хочет уехать", "Угостить сигаретой и спросить, кому идут записки", "Спросить, куда ведёт желоб", "Уйти", "Бельё", "Прыгнуть"]);
+      expect(currentScene(s, world).storylet.id).toBe("silas_intro");
+      s = route(s, ["Сесть рядом с огнём", "Спросить, кем он был", "Прикурить от топки и угостить его", "Попросить спички", "Подняться по чёрной лестнице в вестибюль", "Долли", "Попросить грузовой лифт", "Попросить нажать две кнопки сразу"]);
+      expect(currentScene(s, world).storylet.id).toBe("vault_room");
+      expect(q(s, "has.matches")).toBe(1);
+      return finish(s, "Чиркнуть спичкой Сайласа");
+    };
+    const first = toMatch(after(6));
+    expect(first.ending).toBe("ashes");
+    expect(endingView(first, world).epilogues.length).toBe(1);
+    // the same campaign in a player who already bought the name back in an earlier case
+    const seen: Profile = { ...after(6), profile: { ...after(6).profile, "endings.redemption": 1 } };
+    const second = toMatch(seen);
+    expect(endingView(second, world).epilogues.length).toBe(2);
+    expect(endingView(second, world).epilogues[1]).toMatch(/Вивиан узнала мужа/);
   });
 });

@@ -1,9 +1,9 @@
 import {
-  changedQualities, choiceCost, choose, clockTime, continueOutcome, currentNotes, currentOutcome, currentReport, currentScene, emptyProfile, evidenceView, getQuality,
-  morningNotes, newNight, notebookView, pledge, profileOf, type GameState, type Profile,
+  changedQualities, choiceCost, choose, clockTime, continueOutcome, currentNotes, currentOutcome, currentReport, currentScene, emptyProfile, endingView, evidenceView, getQuality,
+  morningNotes, newCase, newNight, notebookView, pledge, profileOf, storyView, type GameState, type Profile,
 } from "@belvedere/engine";
 import { RESERVED_QUALITIES } from "@belvedere/content-schema";
-import { Backdrop, ChoiceList, DoorPicker, EvidencePage, Hint, MorningPage, NotebookPage, PledgePicker, QualityBar, ReportPage, SceneCard, TitleScreen, type LifeLineItem } from "@belvedere/ui-kit";
+import { Backdrop, ChoiceList, ConfirmSheet, DoorPicker, EndingPage, EvidencePage, Hint, MorningPage, NotebookPage, PledgePicker, QualityBar, ReportPage, SceneCard, StoryPage, TitleScreen, type LifeLineItem } from "@belvedere/ui-kit";
 import { useCallback, useEffect, useState } from "preact/hooks";
 import { loadContent, type Content } from "./content";
 import { saves } from "./saves";
@@ -15,6 +15,8 @@ type Screen =
   | { kind: "loading" } | { kind: "error"; message: string } | { kind: "title" } | { kind: "night" } | { kind: "notebook" }
   /** Evidence folder: the list, or one open card. */
   | { kind: "evidence"; item: string | null }
+  /** The whole case as one page, after the ending screen. */
+  | { kind: "story" }
   /** Between the report and the next night: the life page with tonight's changes. */
   | { kind: "morning"; life: Life; notes: string[] };
 
@@ -38,6 +40,8 @@ export function App() {
   const [ui, setUi] = useState<UiMeta>(EMPTY_UI);
   /** Tutorial hints waiting to be shown, first on screen. */
   const [hints, setHints] = useState<string[]>([]);
+  /** Index of an ending choice waiting for the player's confirmation. */
+  const [confirm, setConfirm] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -104,6 +108,37 @@ export function App() {
   const texture = paper ? `url(${paper})` : undefined;
   const hint = hints[0] !== undefined && <Hint text={hints[0]} onDismiss={dismissHint} />;
   const paperHint = hints[0] !== undefined && <Hint text={hints[0]} onDismiss={dismissHint} placement="bottom" />;
+
+  // The case is over: the ending screen, then the story, then a fresh case that keeps only endings.*.
+  if (state?.phase === "ending" && state.ending !== null) {
+    const endingId = state.ending;
+    if (screen.kind === "story") {
+      const story = storyView(profileOf(state), world, endingId);
+      const startCase = () => {
+        const p = newCase(profileOf(state));
+        const fresh = saves.resetAll(); // tombstones + a higher ui epoch, so other devices drop the old notebook reads too
+        saves.persistProfile(p);
+        const meta = { ...fresh, hintsShown: ui.hintsShown };
+        saves.persistUi(meta);
+        setProfile(p);
+        setState(null);
+        setUi(meta);
+        setHints([]);
+        setScreen({ kind: "title" });
+      };
+      return (
+        <div class="screen">
+          <StoryPage title={story.title} sections={story.sections} nightLabel={(n) => `Ночь ${n}`} nextLabel="Новое дело" onNext={startCase} texture={texture} />
+        </div>
+      );
+    }
+    const ending = endingView(state, world);
+    return (
+      <div class="screen">
+        <EndingPage src={src(ending.image)} title={ending.title} paragraphs={ending.paragraphs} epilogues={ending.epilogues} nextLabel={world.endings?.story.title ?? "Дальше"} onNext={() => setScreen({ kind: "story" })} />
+      </div>
+    );
+  }
 
   if (screen.kind === "morning") {
     return (
@@ -259,7 +294,17 @@ export function App() {
 
   const scene = currentScene(state, world);
   const items = scene.choices.map((c) => ({ index: c.index, text: c.text, available: c.available, cost: costLabel(choiceCost(state, world, c.choice)) }));
-  const onChoose = (index: number) => advance(choose(state, world, index));
+  // An ending choice asks first; there is no way back after it.
+  const onChoose = (index: number) => (scene.storylet.choices[index]?.ending !== undefined ? setConfirm(index) : advance(choose(state, world, index)));
+  const confirmSheet = confirm !== null && (
+    <ConfirmSheet
+      text="Это финал дела. Дальше пути назад не будет."
+      okLabel="Закончить дело"
+      cancelLabel="Ещё нет"
+      onOk={() => { const i = confirm; setConfirm(null); advance(choose(state, world, i)); }}
+      onCancel={() => setConfirm(null)}
+    />
+  );
   const picker = scene.storylet.layout === "doors"
     ? <DoorPicker doors={items} onChoose={onChoose} />
     : scene.storylet.layout === "pledge"
@@ -274,6 +319,7 @@ export function App() {
         <SceneCard title={scene.storylet.title} text={scene.text}>
           {picker}
         </SceneCard>
+        {confirmSheet}
       </Backdrop>
     </div>
   );

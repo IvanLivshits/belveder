@@ -23,6 +23,8 @@ export const check: Rule = (world) => {
   world.rules.interrupts.forEach((i, n) => checkConds(`rules.interrupts #${n}`, i.when));
   checkEffects("rules.onNightEnd", world.rules.onNightEnd);
   if (world.rules.clock && !declared(world.rules.clock.quality)) issues.push(error("rules.clock", `undeclared quality: ${world.rules.clock.quality}`));
+  if (world.rules.pledgedNightWhen) checkConds("rules.pledgedNightWhen", world.rules.pledgedNightWhen);
+  world.endings?.endings.forEach((e) => e.epilogues.forEach((ep, i) => checkConds(`ending ${e.id} epilogue #${i}`, ep.when)));
   if (!world.locations.some((l) => l.id === world.rules.start)) {
     issues.push(error("rules.start", `unknown location: ${world.rules.start}`));
   }

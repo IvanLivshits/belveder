@@ -1,6 +1,21 @@
 {
-  "digest": "f02d7fcc9cf3e5aa674d746e1a2a54a4d263d0383ad82ebecc1909feb48a2ad1",
+  "digest": "a6fc408e17c70005a93184bb17d9f222129df59d319ad09437ea3ed1924509c0",
   "snapshot": {
+    "ending": null,
+    "history": {
+      "nights": [
+        {
+          "pledged": true,
+          "report": {
+            "summary": "sum_default"
+          },
+          "values": {
+            "heat": 0
+          }
+        }
+      ],
+      "pledges": []
+    },
     "location": "vault",
     "log": [
       {

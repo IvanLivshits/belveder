@@ -1,6 +1,6 @@
 /** Plays N nights with random choices (seeded) and reports coverage and stuck states. */
 import type { World } from "@belvedere/content-schema";
-import { choose, continueOutcome, currentScene, emptyProfile, newNight, nextInt, pledge, profileOf, seedRng, type GameState, type Profile } from "@belvedere/engine";
+import { choose, continueOutcome, currentScene, emptyProfile, newCase, newNight, nextInt, pledge, profileOf, seedRng, type GameState, type Profile } from "@belvedere/engine";
 
 export interface SimulationReport {
   nights: number;
@@ -8,6 +8,8 @@ export interface SimulationReport {
   endedByPledge: number;
   /** Nights ended by an endNight choice (with or without an outcome screen). */
   endedByChoice: number;
+  /** Games finished by an ending choice (the profile is reset afterwards, like a new case). */
+  endedByEnding: number;
   stuck: { seed: number; storylet: string }[];
   errors: { seed: number; message: string }[];
   neverShown: string[];
@@ -33,7 +35,7 @@ export function simulate(world: World, opts: SimulationOptions = {}): Simulation
   const shown = new Set<string>();
   const taken = new Set<string>();
   const r: SimulationReport = {
-    nights, endedByPledge: 0, endedByChoice: 0, stuck: [], errors: [], neverShown: [], neverTaken: [],
+    nights, endedByPledge: 0, endedByChoice: 0, endedByEnding: 0, stuck: [], errors: [], neverShown: [], neverTaken: [],
     turns: { min: Infinity, avg: 0, max: 0 },
   };
   let rng = seedRng(opts.seed ?? 1);
@@ -46,8 +48,9 @@ export function simulate(world: World, opts: SimulationOptions = {}): Simulation
     try {
       let s = newNight(profile, world, seed);
       let steps = 0;
-      while (s.phase !== "report" && steps++ < maxSteps) {
-        if (s.phase === "outcome") { s = continueOutcome(s, world); if (s.phase === "report") r.endedByChoice++; continue; }
+      const over = (st: GameState) => st.phase === "report" || st.phase === "ending";
+      while (!over(s) && steps++ < maxSteps) {
+        if (s.phase === "outcome") { s = continueOutcome(s, world); if (s.phase === "report") r.endedByChoice++; if (s.phase === "ending") r.endedByEnding++; continue; }
         const scene = currentScene(s, world);
         shown.add(scene.storylet.id);
         const open = scene.choices.filter((c) => c.available);
@@ -60,18 +63,19 @@ export function simulate(world: World, opts: SimulationOptions = {}): Simulation
           taken.add(`${scene.storylet.id}#${pick.index}`);
           s = choose(s, world, pick.index);
           if (s.phase === "report") r.endedByChoice++;
+          if (s.phase === "ending") r.endedByEnding++;
         } else {
           const m = scene.memories[i - open.length]!;
           taken.add(`${scene.storylet.id}#mem:${m.id}`);
           s = pledge(s, world, m.id);
           r.endedByPledge++;
         }
-        if (s.phase === "report") {
+        if (over(s)) {
           const turns = turnQ ? (s.run[turnQ] ?? 0) : steps;
           turnsTotal += turns;
           r.turns.min = Math.min(r.turns.min, turns);
           r.turns.max = Math.max(r.turns.max, turns);
-          profile = profileOf(s);
+          profile = s.phase === "ending" ? newCase(profileOf(s)) : profileOf(s);
         }
       }
       if ((s as GameState).phase === "scene" && steps >= maxSteps) r.errors.push({ seed, message: `night did not end within ${maxSteps} steps` });
@@ -79,7 +83,7 @@ export function simulate(world: World, opts: SimulationOptions = {}): Simulation
       r.errors.push({ seed, message: (e as Error).message });
     }
   }
-  const ended = r.endedByPledge + r.endedByChoice;
+  const ended = r.endedByPledge + r.endedByChoice + r.endedByEnding;
   r.turns.avg = ended ? turnsTotal / ended : 0;
   if (!Number.isFinite(r.turns.min)) r.turns.min = 0;
   r.neverShown = world.storylets.map((s) => s.id).filter((id) => !shown.has(id));
@@ -90,7 +94,7 @@ export function simulate(world: World, opts: SimulationOptions = {}): Simulation
 export function formatSimulation(r: SimulationReport): string {
   const lines = [
     `simulated ${r.nights} nights`,
-    `  ended by memory pledge: ${r.endedByPledge}, by endNight choice: ${r.endedByChoice}, stuck: ${r.stuck.length}, errors: ${r.errors.length}`,
+    `  ended by memory pledge: ${r.endedByPledge}, by endNight choice: ${r.endedByChoice}, by ending: ${r.endedByEnding}, stuck: ${r.stuck.length}, errors: ${r.errors.length}`,
     `  turns per night: min ${r.turns.min}, avg ${r.turns.avg.toFixed(1)}, max ${r.turns.max}`,
   ];
   if (r.stuck.length) lines.push(`  stuck at: ${[...new Set(r.stuck.map((s) => s.storylet))].join(", ")}`);

@@ -20,6 +20,11 @@ export const check: Rule = (world) => {
   for (const f of world.fragments) checkText(`fragment ${f.id}`, f.text);
   world.report.notes.forEach((n, i) => checkText(`report note #${i}`, n.text));
   world.morning.notes.forEach((n, i) => checkText(`morning note #${i}`, n.text));
+  world.endings?.endings.forEach((e) => {
+    checkText(`ending ${e.id} text`, e.text);
+    e.epilogues.forEach((ep, i) => checkText(`ending ${e.id} epilogue #${i}`, ep.text));
+  });
+  if (world.endings) for (const [k, v] of Object.entries(world.endings.story)) if (typeof v === "string") checkText(`endings story ${k}`, v);
   world.evidence.items.forEach((e) => {
     checkText(`evidence ${e.id} title`, e.title);
     checkText(`evidence ${e.id} text`, e.text);

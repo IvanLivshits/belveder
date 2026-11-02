@@ -177,6 +177,42 @@
       effects: [seen.client_voice = 1, met.office_voice = 1]
       goto: facade
 
+- id: office_name
+  location: office
+  priority: 9
+  when: [mem.true.name == 1, met.office_name == 0]
+  background: office_empty
+  portrait: vivian_recognize
+  title: Контора
+  text: |
+    Половина десятого. Она входит, и ты говоришь раньше, чем успеваешь подумать:
+
+    — Здравствуй, Ви.
+
+    Трость падает. Вивиан не нагибается за ней. Она смотрит на тебя так, будто ты сказал что-то на незнакомом языке, который она когда-то знала.
+  choices:
+    - text: Поднять трость и взять дело
+      free: true
+      effects: [seen.client_name = 1, met.office_name = 1]
+      goto: facade
+
+- id: office_secret
+  location: office
+  priority: 10
+  when: [mem.true.secret == 1, met.office_secret == 0]
+  background: office_empty
+  portrait: vivian_tears
+  title: Контора
+  text: |
+    Половина десятого. Мокрое пальто, трость, конверт.
+
+    Теперь ты знаешь, что она сделала той ночью. Она не знает, что ты знаешь. Она даже не знает, что сделала. Ты наливаешь ей кофе и не можешь поднять глаза.
+  choices:
+    - text: Взять деньги и дело
+      free: true
+      effects: [seen.client_secret = 1, met.office_secret = 1]
+      goto: facade
+
 - id: facade_night
   location: facade
   background: facade

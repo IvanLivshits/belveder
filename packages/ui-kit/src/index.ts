@@ -12,3 +12,6 @@ export * from "./Life";
 export * from "./MorningPage";
 export * from "./EvidencePage";
 export * from "./reading";
+export * from "./ConfirmSheet";
+export * from "./EndingPage";
+export * from "./StoryPage";

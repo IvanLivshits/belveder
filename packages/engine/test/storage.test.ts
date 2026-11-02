@@ -7,14 +7,14 @@ import { miniWorld } from "./mini-world";
 
 describe("storage codec", () => {
   test("profile round-trips, keeping explicit zeros (non-zero defaults)", () => {
-    const p: Profile = { v: 1, profile: { nights: 3, "mem.false.a": 0, "visited.floor2.tenant": 1 } };
+    const p: Profile = { v: 1, profile: { nights: 3, "mem.false.a": 0, "visited.floor2.tenant": 1 }, history: { nights: [], pledges: [] } };
     const doc = serializeProfile(p);
     expect(doc).toBe("b1;q.mem.false.a=0;q.nights=3;q.visited.floor2.tenant=1");
     expect(parseProfile(doc)).toEqual(p);
   });
 
   test("large profile splits into chunks under the CloudStorage limit and comes back intact", () => {
-    const profile: Profile = { v: 1, profile: {} };
+    const profile: Profile = { v: 1, profile: {}, history: { nights: [], pledges: [] } };
     for (let i = 0; i < 1500; i++) profile.profile[`visited.floor${i % 12}.door_${i}`] = (i % 7) + 1;
     const doc = serializeProfile(profile);
     expect(doc.length).toBeGreaterThan(CHUNK_SIZE * 3);

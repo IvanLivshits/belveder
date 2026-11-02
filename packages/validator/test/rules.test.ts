@@ -167,7 +167,7 @@ describe("validator rules", () => {
     expect(r.stuck).toEqual([]);
     expect(r.errors).toEqual([]);
     expect(r.neverShown).toEqual([]);
-    expect(r.endedByPledge + r.endedByChoice).toBe(100);
+    expect(r.endedByPledge + r.endedByChoice + r.endedByEnding).toBe(100);
     expect(r.endedByPledge).toBeGreaterThan(0);
     expect(r.neverTaken).toEqual([]);
   });
@@ -198,6 +198,34 @@ describe("evidence rule", () => {
     const clock = structuredClone(miniWorld) as WorldInput;
     clock.rules.clock = { quality: "nope", start: "22:00", step: 30 };
     expect(messages(rules["qualities"]!(WorldSchema.parse(clock), assets))).toMatch(/rules.clock: undeclared quality: nope/);
+  });
+});
+
+describe("endings rule", () => {
+  const withEnding = (patch: (w: WorldInput) => void) => broken((w) => { patch(w); });
+
+  test("every choice.ending exists, images exist, ids unique, endings.* declared", () => {
+    expect(messages(rules["endings"]!(miniWorld, assets))).toBe("");
+    expect(messages(rules["endings"]!(withEnding((w) => { w.storylets[4]!.choices[1]!.ending = "nope"; }), assets))).toMatch(/vault_pledge choice #1: unknown ending: nope/);
+    expect(messages(rules["endings"]!(withEnding((w) => { w.endings!.endings[0]!.image = "missing"; }), assets))).toMatch(/ending fire: unknown image asset: missing/);
+    expect(messages(rules["endings"]!(withEnding((w) => { w.endings!.endings.push({ id: "fire", title: "x", image: "bg", text: "x" }); }), assets))).toMatch(/duplicate ending id/);
+    expect(messages(rules["endings"]!(withEnding((w) => { w.qualities = w.qualities.filter((q) => q.id !== "endings.*"); }), assets))).toMatch(/engine writes endings.fire but it is not declared/);
+    expect(messages(rules["endings"]!(withEnding((w) => { w.storylets[4]!.choices[1]!.endNight = true; }), assets))).toMatch(/ending and endNight on the same choice/);
+    expect(messages(rules["endings"]!(withEnding((w) => { w.endings!.story.opening_slot = "nope"; }), assets))).toMatch(/unknown report slot: nope/);
+  });
+
+  test("epilogue conditions and rules.pledgedNightWhen go through the qualities rule; endings.* count as written", () => {
+    expect(messages(rules["qualities"]!(withEnding((w) => { w.endings!.endings[0]!.epilogues = [{ when: ["nope == 1"], text: "x" }]; }), assets))).toMatch(/ending fire epilogue #0: condition uses undeclared quality: nope/);
+    expect(messages(rules["qualities"]!(withEnding((w) => { w.rules.pledgedNightWhen = ["nope == 1"]; }), assets))).toMatch(/rules.pledgedNightWhen: condition uses undeclared quality: nope/);
+    expect(messages(rules["planned"]!(withEnding((w) => { w.storylets[1]!.when = ["endings.fire == 1"]; }), assets))).toBe("");
+    expect(messages(rules["placeholders"]!(withEnding((w) => { w.endings!.endings[0]!.text = "{nope}"; }), assets))).toMatch(/ending fire text: placeholder \{nope\}/);
+  });
+
+  test("simulation counts games finished by an ending and starts a new case after it", () => {
+    const r = simulate(broken((w) => { w.storylets[4]!.choices[1]!.when = []; }), { nights: 60, seed: 3 });
+    expect(r.endedByEnding).toBeGreaterThan(0);
+    expect(r.stuck).toEqual([]);
+    expect(r.errors).toEqual([]);
   });
 });
 

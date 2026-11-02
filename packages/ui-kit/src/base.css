@@ -204,3 +204,31 @@ button { font: inherit; }
   border: 6px solid #e8e2d3; border-bottom-width: 22px; background: #2a2622; box-shadow: 0 12px 30px rgba(0,0,0,0.6); overflow: hidden;
 }
 .evidence__photo img { display: block; width: 100%; height: 100%; object-fit: cover; filter: sepia(0.25) contrast(1.05); }
+
+/* ---- in-game confirmation ---- */
+.confirm { position: absolute; inset: 0; z-index: 5; display: flex; align-items: flex-end; background: rgba(6,7,10,0.72); animation: hint-in 0.2s ease-out; }
+.confirm__sheet { width: 100%; padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); border-top: 1px solid rgba(201,162,74,0.45); background: var(--panel); }
+.confirm__text { margin: 0 0 14px; font-size: 16px; line-height: 1.45; }
+
+/* ---- ending ---- */
+.ending { position: absolute; inset: 0; background: #000; }
+.ending__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ending__scroll { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.ending__spacer { height: 52%; }
+.ending__body {
+  min-height: 48%; padding: 28px 20px calc(24px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(6,7,10,0) 0%, rgba(6,7,10,0.9) 60px, rgba(6,7,10,0.97) 100%);
+}
+.ending__title { margin: 0 0 16px; font-size: 20px; letter-spacing: 0.12em; text-transform: uppercase; text-align: center; }
+.ending__text { margin: 0 0 12px; font-size: 16px; line-height: 1.5; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+.ending__epilogues { margin: 20px 0 0; padding-top: 14px; border-top: 1px solid rgba(201,162,74,0.3); }
+.ending__epilogue { margin: 0 0 10px; font-size: 14px; line-height: 1.45; color: var(--hint); font-style: italic; }
+
+/* ---- the case story ---- */
+.story__opening { margin: 0 0 20px; font-size: 16px; line-height: 1.5; font-style: italic; }
+.story__night { margin: 0 0 22px; padding-top: 14px; border-top: 1px dashed rgba(141,135,117,0.35); }
+.story__note { margin: 0 0 12px; font-size: 14px; line-height: 1.45; color: var(--hint); font-style: italic; }
+.story__litany { margin: 0 0 22px; padding-top: 14px; border-top: 1px dashed rgba(141,135,117,0.35); }
+.story__ending { margin: 0 0 16px; padding-top: 14px; border-top: 1px solid rgba(201,162,74,0.3); }
+.story__ending .report__text { margin-bottom: 12px; }
+.story__closing { margin: 20px 0 0; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; text-align: center; color: var(--hint); }
