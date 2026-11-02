@@ -96,9 +96,9 @@
   portrait: gorman_threat
   title: Лестница
   text: |
-    На пролёте курит человек в мокром плаще, значок на лацкане. Сержант Горман, тот самый, про которого говорила Долли. Он не прячет сигарету, когда видит тебя.
+    На пролёте курит человек в мокром плаще, значок на лацкане. Он не прячет сигарету, когда видит тебя.
 
-    — Кэллоуэй. Ты ищешь Хейла. Я тоже. Разница в том, что тебе за это платят, а я за это плачу. — Он кивает наверх. — Аудитор у себя?
+    — Сержант Горман. Кэллоуэй, верно? Ты ищешь Хейла. Я тоже. Разница в том, что тебе за это платят, а я за это плачу. — Пауза. — Аудитор с четвёртого у себя?
   choices:
     - text: Угостить сигаретой
       when: [cigarettes >= 1]
@@ -119,10 +119,45 @@
 
         Он не верит. Но наверх не идёт.
 
-- id: stairs_eddie
+- id: stairs_eddie_again
   location: stairwell
   priority: 5
-  when: [turn >= 3, seen.eddie == 0]
+  when: [turn >= 3, seen.eddie == 0, met.eddie == 1]
+  background: stairwell
+  portrait: eddie_scared
+  title: Лестница
+  text: |
+    Эдди. Опять бежит, опять с цилиндром, опять едва не сбивает тебя с ног. Останавливается, морщит лоб.
+
+    — Мистер, мы знакомы? — Пауза. — Нет. Показалось. У вас просто лицо такое.
+  choices:
+    - text: Дать сигарету и спросить, кому записка
+      when: [cigarettes >= 1]
+      effects: [seen.eddie = 1, met.eddie = 1, cigarettes -= 1, has.owner_note = 1, clues += 1]
+      outcome: |
+        Эдди прячет сигарету за ухо, к карандашу, и косится на лестницу.
+
+        — Наверх. Всегда наверх. — Он суёт тебе листок. — Я ничего не давал. Вы сами прочитали.
+
+        «Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»
+    - text: Выхватить цилиндр
+      effects: [seen.eddie = 1, met.eddie = 1, seen.eddie_hostile = 1, suspicion += 2, has.owner_note = 1, clues += 1]
+      outcome: |
+        Крышка поддаётся с третьего раза. «Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»
+
+        Эдди смотрит на тебя так, будто ты отобрал у него не записку, а билет на поезд.
+    - text: Отпустить
+      effects: [seen.eddie = 1, met.eddie = 1, debt.eddie += 1]
+      outcome: |
+        Эдди уже двумя пролётами ниже. Оттуда:
+
+        — Спасибо, мистер! Я запомню!
+
+
+- id: stairs_eddie
+  location: stairwell
+  priority: 4
+  when: [turn >= 3, seen.eddie == 0, met.eddie == 0]
   background: stairwell
   portrait: eddie_scared
   title: Лестница
@@ -131,7 +166,7 @@
   choices:
     - text: Дать сигарету и спросить, кому записка
       when: [cigarettes >= 1]
-      effects: [seen.eddie = 1, cigarettes -= 1, has.owner_note = 1, clues += 1]
+      effects: [seen.eddie = 1, met.eddie = 1, cigarettes -= 1, has.owner_note = 1, clues += 1]
       outcome: |
         Эдди прячет сигарету за ухо, к карандашу, и косится на лестницу.
 
@@ -139,13 +174,13 @@
 
         «Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»
     - text: Выхватить цилиндр
-      effects: [seen.eddie = 1, seen.eddie_hostile = 1, suspicion += 2, has.owner_note = 1, clues += 1]
+      effects: [seen.eddie = 1, met.eddie = 1, seen.eddie_hostile = 1, suspicion += 2, has.owner_note = 1, clues += 1]
       outcome: |
         Крышка поддаётся с третьего раза. «Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»
 
         Эдди смотрит на тебя так, будто ты отобрал у него не записку, а билет на поезд.
     - text: Отпустить
-      effects: [seen.eddie = 1, debt.eddie += 1]
+      effects: [seen.eddie = 1, met.eddie = 1, debt.eddie += 1]
       outcome: |
         Эдди уже двумя пролётами ниже. Оттуда:
 

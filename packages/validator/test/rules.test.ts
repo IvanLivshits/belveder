@@ -38,6 +38,23 @@ describe("validator rules", () => {
     expect(out).toMatch(/engine writes memories_returned on pledge/);
   });
 
+  test("self-exclusion: a question that retires its own card while siblings stay is a warning; one-shot cards and intros are not", () => {
+    const card = (choices: object[], intro = false) => broken((w) => {
+      w.storylets.push({ id: "q", location: "hall", priority: 9, when: ["seen.q == 0"], intro, background: "bg", text: "q", choices: choices as never });
+    });
+    const mixed = card([{ text: "ask", effects: ["seen.q = 1"] }, { text: "ask more", effects: ["heat += 1"] }, { text: "leave", goto: "room" }]);
+    expect(messages(rules["self-exclusion"]!(mixed, assets))).toMatch(/storylet q choice #0: effect "seen.q = 1" retires the card/);
+    const oneShot = card([{ text: "a", effects: ["seen.q = 1"] }, { text: "b", effects: ["seen.q = 1", "heat += 1"] }, { text: "leave", goto: "room" }]);
+    expect(messages(rules["self-exclusion"]!(oneShot, assets))).toBe("");
+    const exiting = card([{ text: "ask", effects: ["heat += 1"] }, { text: "leave", effects: ["seen.q = 1"], goto: "room" }]);
+    expect(messages(rules["self-exclusion"]!(exiting, assets))).toBe("");
+    expect(messages(rules["self-exclusion"]!(card([{ text: "ask", effects: ["seen.q = 1"] }, { text: "ask more" }], true), assets))).toBe("");
+    // bounds: `heat = 9` certainly breaks `heat < 5`; `heat += 1` is not certain and stays quiet
+    const bound = broken((w) => { w.storylets.push({ id: "b", location: "hall", when: ["heat < 5"], background: "bg", text: "b", choices: [{ text: "x", effects: ["heat = 9"] }, { text: "y", effects: ["heat += 1"] }] as never }); });
+    expect(messages(rules["self-exclusion"]!(bound, assets))).toMatch(/storylet b choice #0/);
+    expect(messages(rules["self-exclusion"]!(bound, assets))).not.toMatch(/choice #1/);
+  });
+
   test("qualities: undeclared quality in effect and rules", () => {
     const w = broken((w) => {
       w.storylets[0]!.choices[0]!.effects = ["ghost += 1"];

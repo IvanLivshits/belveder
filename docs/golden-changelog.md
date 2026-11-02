@@ -2,6 +2,7 @@
 
 Правило: каждое изменение хеша в `packages/*/test/golden/*.json` получает здесь одну строку в том же коммите. Коммит остаётся однострочным, объяснение живёт тут. Формат: `дата · коммит (тема, потому что хеш до коммита неизвестен) · golden · почему`. Новые строки сверху.
 
+- 2026-11-02 · feat(content): deep run pass, self-exclusion rule · `night-ring-2024`, `night-first-5`, `night-dawn-11` · встреча с Эдди на лестнице ставит `met.eddie = 1` в профиле (вторая встреча идёт карточкой `stairs_eddie_again`).
 - 2026-11-02 · feat(content): rough player pass, morning notes · `night-ring-2024`, `night-first-5` · движок ставит run-флаг `returned_tonight = 1` при возврате воспоминания (нужен строке-итогу утра).
 - 2026-11-02 · feat(content): rough player pass, morning notes · `night-dawn-11` · на четвёртом этаже лестница стала карточкой `stairs_top` («Ремонт. Владелец»), в логе другие id при том же маршруте.
 - 2026-11-02 · feat(content): newcomer pass, conditional footer · `night-ring-2024`, `night-first-5` · игра открывается карточкой `office_morning` («Открыть», бесплатно): в логе на шаг больше, в run `seen.office_morning`, в профиле `met.dolly` после `lobby_rules`; в первой ночи слот «Вход» стал `entry_hint` после подсказки Долли.

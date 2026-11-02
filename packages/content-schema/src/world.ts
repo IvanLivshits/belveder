@@ -49,6 +49,8 @@ export const StoryletSchema = z.object({
   priority: z.number().int().default(0),
   when: z.array(ConditionSchema).default([]),
   layout: LayoutSchema.default("scene"),
+  /** One-off intro card: its choices may flip the flag that excludes it (validator skips the self-exclusion warning). */
+  intro: z.boolean().default(false),
   background: Id,
   portrait: Id.optional(),
   title: z.string().optional(),

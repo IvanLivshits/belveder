@@ -36,7 +36,8 @@ function route(start: GameState, steps: string[]): GameState {
   let s = start;
   for (const text of steps) {
     if (s.phase === "outcome") s = continueOutcome(s, world);
-    if (currentScene(s, world).storylet.id === "stairs_eddie") { s = pick(s, "Отпустить"); s = continueOutcome(s, world); }
+    const id = currentScene(s, world).storylet.id;
+    if (id === "stairs_eddie" || id === "stairs_eddie_again") { s = pick(s, "Отпустить"); if (s.phase === "outcome") s = continueOutcome(s, world); }
     s = pick(s, text);
   }
   return s.phase === "outcome" ? continueOutcome(s, world) : s;
@@ -80,7 +81,7 @@ function walkUntilDawn(start: GameState): GameState {
   while (q(s, "turn") < 16 && guard++ < 80) {
     if (s.phase === "outcome") { s = continueOutcome(s, world); continue; }
     const id = currentScene(s, world).storylet.id;
-    if (id === "stairs_eddie") { s = pick(s, "Отпустить"); continue; }
+    if (id === "stairs_eddie" || id === "stairs_eddie_again") { s = pick(s, "Отпустить"); continue; }
     if (id === "stairs_top") { s = pick(s, "Вниз, на третий"); continue; }
     if (id === "lobby_hub" || id === "lobby_hub_first_night") { s = pick(s, "К лестнице"); continue; }
     if (id === "stairs") {
@@ -265,6 +266,50 @@ describe("belvedere: the rough player", () => {
     const empty = route(newNight(emptyProfile(), world, 3), ["Открыть", "Взять деньги и дело", "Войти через парадную", "Кивнуть", "Спросить, где он ночевал", "Уйти до рассвета (залог)"]);
     expect(morningNotes(route(empty, ["Заложить эту ночь"]), world)).toEqual(["Вчерашней ночи нет. Список тот же. Почему-то от этого не легче."]);
     expect(morningNotes(pledge(empty, world, "lantern"), world)).toEqual(["Одна строка зачёркнута. На её месте пусто, и пустота ноет, как зуб."]);
-    expect(morningNotes(play(emptyProfile(), 2024, PLAN_RING), world)).toEqual(["Одна строка написана другим почерком. Твоим, но другим."]);
+    expect(morningNotes(play(emptyProfile(), 2024, PLAN_RING), world)).toEqual(["Одна строка переписана. Ты не помнишь, когда успел."]);
+  });
+
+});
+
+describe("belvedere: deep run", () => {
+  const RING = () => profileOf(play(emptyProfile(), 2024, PLAN_RING));
+
+  test("regression: asking Vivian about the chapel keeps office_ring on screen and client_ring in the report", () => {
+    let n = newNight(RING(), world, 7);
+    expect(n.storyletId).toBe("office_ring");
+    n = pick(n, "Спросить, где они венчались");
+    expect(n.phase).toBe("outcome");
+    n = continueOutcome(n, world);
+    expect(n.storyletId).toBe("office_ring");
+    expect(q(n, "met.office_ring")).toBe(0);
+    n = route(n, ["Взять деньги и дело"]);
+    expect(q(n, "met.office_ring")).toBe(1);
+    n = route(n, ["Войти через парадную", "Молча пойти к лестнице", "Долли", "Уйти до рассвета (залог)", "Заложить эту ночь"]);
+    expect(currentReport(n, world).find((r) => r.slot === "client")?.fragment.id).toBe("client_ring");
+  });
+
+  test("Eddie on the stairs remembers nothing, but the second night uses stairs_eddie_again", () => {
+    const first = play(emptyProfile(), 2024, PLAN_RING);
+    expect(first.log.some((e) => e.storylet === "stairs_eddie")).toBe(true);
+    expect(q(first, "met.eddie")).toBe(1);
+    let n = route(newNight(profileOf(first), world, 7), ["Взять деньги и дело", "Войти через парадную", "Молча пойти к лестнице", "Лестница", "Вверх, на второй", "Лестница", "Вверх, на третий", "Лестница"]);
+    expect(currentScene(n, world).storylet.id).toBe("stairs_eddie_again");
+  });
+
+  test("office_cashbox opens once after the cashbox memory returns", () => {
+    // polite Sloan: a cigarette buys the story of the missing money and the pawn ticket
+    let s = route(newNight(emptyProfile(), world, 3), [...TO_FLOOR_4, "Кабинет аудитора", "Сесть без приглашения", "Угостить сигаретой", "Спросить, что связывает его с Хейлом"]);
+    expect(q(s, "seen.sloan_cashbox")).toBe(1);
+    expect(q(s, "has.pawn_ticket")).toBe(1);
+    s = route(s, ["Уйти", "Лестница", "Вниз, на третий", "Лестница", "Вниз, на второй", "Лестница", "Вниз, в вестибюль", "Долли", "Уйти до рассвета (залог)"]);
+    expect(pledgeOptions(s, world).filter((o) => o.canReturn).map((o) => o.id)).toEqual(["cashbox"]);
+    s = pledge(s, world, "cashbox");
+    expect(q(s, "mem.true.cashbox")).toBe(1);
+    const second = newNight(profileOf(s), world, 5);
+    expect(second.storyletId).toBe("office_cashbox");
+    const secondDone = route(second, ["Взять деньги и дело", "Войти через парадную", "Молча пойти к лестнице", "Долли", "Уйти до рассвета (залог)", "Заложить эту ночь"]);
+    expect(q(secondDone, "met.office_cashbox")).toBe(1);
+    const third = newNight(profileOf(secondDone), world, 6);
+    expect(third.storyletId).not.toBe("office_cashbox");
   });
 });

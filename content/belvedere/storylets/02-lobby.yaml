@@ -98,6 +98,47 @@
       goto: pledge
 
 # Хаб вестибюля после первого разговора и при возвращении сверху.
+- id: lobby_hub_trusted
+  location: lobby
+  priority: 1
+  when: [seen.lobby == 1, dolly_trust >= 2]
+  background: lobby
+  portrait: dolly_trust
+  title: Вестибюль
+  text: |
+    Долли вяжет и поглядывает на тебя поверх спиц. Вторая чашка на стойке ещё тёплая.
+
+    — Не стой столбом. Спрашивай или иди.
+  choices:
+    - text: Предложить сигарету
+      when: [seen.dolly_cig == 0, cigarettes >= 1]
+      effects: [seen.dolly_cig = 1, cigarettes -= 1, dolly_trust += 1]
+      outcome: |
+        Долли берёт сигарету и прячет её в карман фартука. Не закуривает. Так берут задаток.
+    - text: Спросить, сколько дают за имя
+      when: [seen.dolly_hale == 0]
+      effects: [seen.dolly_hale = 1, clues += 1]
+      outcome: |
+        — Смотря чьё. За своё дают мало. За чужое, если тебя им зовут, — столько, что хватает на всё.
+    - text: Попросить ключ от служебной двери на четвёртом
+      when: [dolly_trust >= 2, has.archive_key == 0]
+      effects: [has.archive_key = 1]
+      outcome: |
+        Долли, не глядя, снимает с гвоздя ключ с бумажной биркой «4 — архив».
+
+        — Слоун поменял замок. Он думает, у меня нет второго. Пусть думает.
+    - text: Попросить грузовой лифт
+      when: [dolly_trust >= 3]
+      free: true
+      goto: freight_lift
+    - text: К лестнице
+      free: true
+      goto: floor_01
+    - text: Уйти до рассвета (залог)
+      free: true
+      goto: pledge
+
+
 - id: lobby_hub
   location: lobby
   when: [seen.lobby == 1]

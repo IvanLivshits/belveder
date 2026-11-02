@@ -183,7 +183,7 @@
   location: pledge
   layout: pledge
   priority: 5
-  # turn < 16: на рассвете важнее объяснить, почему игрок внизу (pledge_first_dawn).
+  # turn < 16: на рассвете важнее объяснение pledge_first_dawn (правка агента).
   when: [nights == 0, turn < 16, has.ring == 0, seen.sloan_cashbox == 0, has.ledger_true == 0]
   background: lobby
   portrait: dolly_worry

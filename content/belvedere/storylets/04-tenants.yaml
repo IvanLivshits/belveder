@@ -24,7 +24,7 @@
 - id: eddie_intro
   location: tenant_02
   priority: 2
-  when: [visited.floor2.tenant == 1, seen.eddie_intro == 0]
+  when: [visited.floor2.tenant == 1, seen.eddie_intro == 0, met.eddie == 0]
   background: landing_02
   portrait: eddie_caught
   title: Прачечная
@@ -37,7 +37,7 @@
   choices:
     - text: Сделать вид, что не заметил
       free: true
-      effects: [seen.eddie_intro = 1, debt.eddie += 1]
+      effects: [seen.eddie_intro = 1, met.eddie = 1, debt.eddie += 1]
 
 - id: eddie_laundry
   location: tenant_02
@@ -149,7 +149,7 @@
   when: [visited.floor4.tenant == 1, seen.sloan_intro == 0]
   background: landing_04
   portrait: sloan
-  title: Кабинет Слоуна
+  title: Кабинет аудитора
   text: |
     Худой человек в нарукавниках не удивлён. Бухгалтеры удивляются только неровным столбцам. Он открывает ящик стола и тут же закрывает.
 
@@ -191,13 +191,13 @@
         — Никогда там не бывал. Я аудитор, а не любитель джаза.
 
         На его столе лежит спичечный коробок с синим фонарём на этикетке. Он видит, что ты видишь.
-    - text: Спросить про ночь, когда пропали деньги
+    - text: Спросить, что связывает его с Хейлом
       when: [debt.sloan >= 1, seen.sloan_cashbox == 0]
       effects: [seen.sloan_cashbox = 1, has.pawn_ticket = 1, clues += 1]
       outcome: |
         Слоун долго молчит, потом кладёт на стол бумажку.
 
-        — Это лежало в кассе наутро, поверх денег. Все четыре тысячи вернулись. А человек — нет.
+        — Год назад из кассы «Синего фонаря» пропали четыре тысячи. Я нашёл недостачу. А это лежало в кассе через месяц, поверх денег. Все четыре тысячи вернулись. А человек — нет.
 
         Квитанция ломбарда. «Предмет залога: имя». Подпись смазана дождём.
     - text: "Предложить сделку: молчание за настоящую копию"

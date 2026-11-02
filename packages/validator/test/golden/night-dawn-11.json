@@ -1,5 +1,5 @@
 {
-  "digest": "1452408b673db14f350f876eb3d9f294d8e055caaf01ad187e551c364b45437b",
+  "digest": "61a11fb09846b56aac5a5c5fe0576eb75edbafc7b053e5cb471d6a7afe773a7f",
   "snapshot": {
     "location": "pledge",
     "log": [
@@ -37,7 +37,7 @@
       },
       {
         "choice": 2,
-        "storylet": "stairs_eddie"
+        "storylet": "stairs_eddie_again"
       },
       {
         "choice": 2,
@@ -140,6 +140,7 @@
       "mem.true.ring": 1,
       "memories_returned": 1,
       "met.dolly": 1,
+      "met.eddie": 1,
       "met.office_ring": 1,
       "nights": 1,
       "visited.floor1.tenant": 1,

@@ -72,7 +72,7 @@
     - text: Спросить, где они венчались
       when: [seen.office_chapel == 0]
       free: true
-      effects: [seen.office_chapel = 1, clues += 1, met.office_ring = 1]
+      effects: [seen.office_chapel = 1, clues += 1]
       outcome: |
         — На Канал-стрит. — Пауза. — Откуда вы знаете, что мы венчались?
 
@@ -80,6 +80,46 @@
     - text: Взять деньги и дело
       free: true
       effects: [seen.client_ring = 1, met.office_ring = 1]
+      goto: facade
+
+- id: office_ledger
+  location: office
+  priority: 4
+  when: [mem.true.ledger == 1, met.office_ledger == 0]
+  background: office_empty
+  portrait: vivian
+  title: Контора
+  text: |
+    Половина десятого. Мокрое пальто, трость, конверт на столе.
+
+    Ты пересчитываешь деньги, не глядя, одними пальцами, как кассир в конце смены. Двести. Ты никогда не работал кассиром. Пальцы с тобой не согласны.
+  choices:
+    - text: Взять деньги и дело
+      free: true
+      effects: [seen.client_return = 1, met.office_ledger = 1]
+      goto: facade
+
+- id: office_cashbox
+  location: office
+  priority: 5
+  when: [mem.true.cashbox == 1, met.office_cashbox == 0]
+  background: office_empty
+  portrait: vivian_lie
+  title: Контора
+  text: |
+    Половина десятого. Она кладёт на стол конверт и, будто оправдываясь, счёт из больницы Святого Луки: «Операция. Оплачено полностью».
+
+    Ты знаешь сумму раньше, чем видишь её. Четыре тысячи.
+  choices:
+    - text: Спросить, кто оплатил операцию
+      when: [seen.office_hospital == 0]
+      free: true
+      effects: [seen.office_hospital = 1, clues += 1]
+      outcome: |
+        — Уолтер. — Она убирает счёт обратно в сумочку. — Он сказал, что занял у друзей. У Уолтера не было таких друзей.
+    - text: Взять деньги и дело
+      free: true
+      effects: [seen.client_cashbox = 1, met.office_cashbox = 1]
       goto: facade
 
 - id: facade_night
