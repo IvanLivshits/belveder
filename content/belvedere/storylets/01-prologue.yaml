@@ -67,7 +67,7 @@
   text: |
     Половина десятого. Мокрое пальто, трость у стола, тот же конверт. Она снимает перчатку, и ты видишь тонкое кольцо.
 
-    Вспоминается часовня на Канал-стрит: рис на мокрых ступенях, чья-то ладонь в твоей. Ты смотришь на свою руку. Кольца нет. Только светлая полоска на пальце, будто его сняли недавно.
+    Вспоминается часовня на Канал-стрит: рис на мокрых ступенях, чья-то ладонь в твоей. Ты зачем-то смотришь на свою руку. Просто так. Привычка, которой у тебя вчера не было.
   choices:
     - text: Спросить, где они венчались
       when: [seen.office_chapel == 0]
@@ -122,6 +122,61 @@
       effects: [seen.client_cashbox = 1, met.office_cashbox = 1]
       goto: facade
 
+- id: office_lantern
+  location: office
+  priority: 6
+  when: [mem.true.lantern == 1, met.office_lantern == 0]
+  background: office_empty
+  portrait: vivian_recognize
+  title: Контора
+  text: |
+    Половина десятого. Пока она снимает перчатки, ты насвистываешь что-то медленное, из тех мелодий, под которые в портовых клубах гасят свет.
+
+    Вивиан замирает.
+
+    — Откуда вы знаете эту песню? Её пели только в «Синем фонаре». Уолтер её… — Она не договаривает.
+  choices:
+    - text: Взять деньги и дело
+      free: true
+      effects: [seen.client_lantern = 1, met.office_lantern = 1]
+      goto: facade
+
+- id: office_hospital
+  location: office
+  priority: 7
+  when: [mem.true.hospital == 1, met.office_hospital == 0]
+  background: office_empty
+  portrait: vivian_tears
+  title: Контора
+  text: |
+    Половина десятого. Ты видишь, как она садится: сначала трость, потом левая рука на стол, правое бедро бережёт.
+
+    Ты знаешь, где под платьем шов. Знаешь, сколько в нём стежков. Ты стоял в коридоре, пока его накладывали.
+
+    — Вам нехорошо, мистер Кэллоуэй?
+  choices:
+    - text: Взять деньги и дело
+      free: true
+      effects: [seen.client_hospital = 1, met.office_hospital = 1]
+      goto: facade
+
+- id: office_voice
+  location: office
+  priority: 8
+  when: [mem.true.voice == 1, met.office_voice == 0]
+  background: office_empty
+  portrait: vivian
+  title: Контора
+  text: |
+    — Мистер Кэллоуэй?
+
+    Она зовёт второй раз. В первый раз ты не обернулся: тебе послышалось другое имя. Короче. Мягче. Сказанное так, как говорят дома.
+  choices:
+    - text: Взять деньги и дело
+      free: true
+      effects: [seen.client_voice = 1, met.office_voice = 1]
+      goto: facade
+
 - id: facade_night
   location: facade
   background: facade
@@ -131,8 +186,16 @@
 
     Дождь в Харроу идёт одиннадцать лет. Он не торопится.
   choices:
+    - text: Сосчитать окна ещё раз
+      when: [paths.thirteen == 1, seen.facade_windows == 0]
+      free: true
+      effects: [seen.facade_windows = 1]
+      outcome: |
+        Ты встаёшь под фонарь и считаешь медленно, загибая пальцы. Двенадцать рядов светлых окон. И над ними, под самой вывеской, ещё один ряд — тёмный, без единого огня.
+
+        Тринадцать.
     - text: Сосчитать окна, пока стоишь под козырьком
-      when: [seen.facade_windows == 0]
+      when: [paths.thirteen == 0, seen.facade_windows == 0]
       free: true
       effects: [seen.facade_windows = 1]
       outcome: |

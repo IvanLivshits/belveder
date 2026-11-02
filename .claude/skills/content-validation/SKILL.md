@@ -12,21 +12,22 @@ description: Что проверяет validator, как добавить нов
 
 | Правило | Что ловит | Уровень |
 |---|---|---|
-| `qualities` | условие или эффект на необъявленное качество, в том числе в `rules.*`, `report.notes`, `morning.notes` и `notebook`; `rules.start` указывает на несуществующую локацию | error |
+| `qualities` | условие или эффект на необъявленное качество, в том числе в `rules.*`, `report.notes`, `morning.notes` и `notebook`; `rules.clock.quality` не объявлено; `rules.start` указывает на несуществующую локацию | error |
 | `references` | `goto` выбора или перехвата на несуществующую локацию; `background`/`portrait` нет в `assets.json` | error |
 | `dead-ends` | локация без сторилетов (error); сторилет, у которого все choices условные (warning) | error / warning |
 | `reachability` | локация, недостижимая из `rules.start` по графу `goto` (условия игнорируются) | warning |
 | `report-slots` | слот отчёта без фрагментов или без фолбэка (фрагмента без условий) | error |
 | `layouts` | `layout: doors` не с тремя choices или дверь без `goto`; `layout: pledge` без `memories` в мире или без безусловного `endNight`-выбора | error |
-| `placeholders` | `{…}` в тексте сторилета, выбора, `outcome`, фрагмента, пометки отчёта или страницы блокнота, не являющийся объявленным качеством | error |
+| `placeholders` | `{…}` в тексте сторилета, выбора, `outcome`, фрагмента, пометки отчёта, страницы блокнота или карточки улики, не являющийся объявленным качеством | error |
 | `memories` | пара с повторным `id`, необъявленным, одинаковым или повторно использованным флагом, `returnWhen` на необъявленное качество; мир с парами без `pledged.*`, `returned.*`, `returned_tonight`, `memories_returned` | error |
 | `notebook` | повторный `id` страницы; `when` страницы или `life.footer` на run-качество (закрылись бы на следующую ночь); плейсхолдер в `life.states` кроме `{label_fake}`/`{label_real}` | error |
 | `self-exclusion` | выбор без `goto`/`endNight` ломает `when` своей карточки, а другие остающиеся выборы нет: после него карточка сменится посреди сцены и соседние вопросы пропадут. Не срабатывает, если флаг ставят все остающиеся выборы (карточка на один показ) или у карточки `intro: true` | warning |
 | `planned` | условие на качество, которое ничего не ставит (ни эффект, ни правило, ни движок) и у которого default 0. Обычно контент будущих этажей | warning |
+| `evidence` | повторный `id` карточки; `flag` на необъявленное качество; `image` нет в `assets.json`; мир с уликами без `found.*` | error |
 
 Тупики по состоянию (нет подходящего сторилета, нет доступных выборов) ловит симуляция, а не статическое правило: условия вида `seen.x == 0` / `seen.x == 1` или набор `floor == 1..4` дополняют друг друга, и статически это не видно. Поэтому «все выборы условные» — warning, а `stuck` в симуляции — error.
 
-Ожидаемые предупреждения в срезе этажей 1–4: `planned` на качества этажей 5–13 (`has.ruby_record`, `has.medical_file`, `debt.ruby`, `has.signature_photo`, `seen.vault13`), `pledge_caught` в «never shown» (подозрение в срезе не доходит до 10), `stairs` с условными выборами.
+Ожидаемые предупреждения в срезе этажей 1–8: `planned` только на пары `name` и `secret` (`has.signature_photo`, `seen.vault13`); `stairs`, `stairs_upper`, `stairs_top` с условными выборами (`floor` всегда 1–8). В «never shown» у случайного игрока за 200 ночей бывают `office_lantern`, `ruby_recognizes`, `auerbach_shock`, `stairs_gorman_collar`, `pledge_caught`: до них доходят направленные маршруты (тесты `belvedere-night.test.ts`), автор проверял 110 000 ночей.
 
 Каждое правило — функция `(world, assets) => Issue[]`, `Issue = { level, where, message }`.
 

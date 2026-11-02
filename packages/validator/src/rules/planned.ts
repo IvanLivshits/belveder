@@ -9,7 +9,8 @@ function writtenQualities(world: World): Set<string> {
   add(world.rules.onChoice);
   add(world.rules.onNightEnd);
   for (const s of world.storylets) for (const c of s.choices) add(c.effects);
-  const { pledgedPrefix, returnedPrefix, memoriesReturned } = RESERVED_QUALITIES;
+  const { pledgedPrefix, returnedPrefix, memoriesReturned, foundPrefix } = RESERVED_QUALITIES;
+  for (const item of world.evidence.items) out.add(foundPrefix + item.id);
   for (const m of world.memories) {
     out.add(m.fake); out.add(m.real);
     out.add(pledgedPrefix + m.id); out.add(returnedPrefix + m.id);

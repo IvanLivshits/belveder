@@ -10,12 +10,13 @@ import { check as memories } from "./memories";
 import { check as planned } from "./planned";
 import { check as notebook } from "./notebook";
 import { check as selfExclusion } from "./self-exclusion";
+import { check as evidence } from "./evidence";
 import type { Issue, Rule } from "./types";
 
 export type { Issue, Level, Rule } from "./types";
 
 export const rules: Record<string, Rule> = {
-  qualities, references, "dead-ends": deadEnds, reachability, "report-slots": reportSlots, layouts, placeholders, memories, planned, notebook, "self-exclusion": selfExclusion,
+  qualities, references, "dead-ends": deadEnds, reachability, "report-slots": reportSlots, layouts, placeholders, memories, planned, notebook, "self-exclusion": selfExclusion, evidence,
 };
 
 export function runRules(world: World, assets: AssetManifest): Issue[] {

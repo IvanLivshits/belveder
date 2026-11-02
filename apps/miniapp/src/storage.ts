@@ -146,6 +146,8 @@ function makeQueue(store: KV) {
 export interface UiMeta {
   hintsShown: string[];
   pagesRead: string[];
+  /** Evidence cards already opened in the folder (the red dot marks the rest). */
+  evidenceSeen: string[];
   /** Bumped by a progress reset: a copy with a higher epoch replaces, not merges, an older one.
    *  That is the one way a grow-only set can shrink across devices. */
   epoch: number;
@@ -155,31 +157,31 @@ const UI_VERSION = 1;
 const UI_ID_RE = /^[a-z][a-z0-9_.]*$/;
 
 export function serializeUi(ui: UiMeta): string {
-  return `u${UI_VERSION};e=${ui.epoch};h=${ui.hintsShown.join(",")};p=${ui.pagesRead.join(",")}`;
+  return `u${UI_VERSION};e=${ui.epoch};h=${ui.hintsShown.join(",")};p=${ui.pagesRead.join(",")};f=${ui.evidenceSeen.join(",")}`;
 }
 
 /** Grow-only sets: the union keeps every device's reads (G-Set); order is first-seen. */
 export function unionUi(a: UiMeta, b: UiMeta): UiMeta {
   if (a.epoch !== b.epoch) return a.epoch > b.epoch ? { ...a } : { ...b };
   const u = (x: string[], y: string[]) => [...new Set([...x, ...y])];
-  return { epoch: a.epoch, hintsShown: u(a.hintsShown, b.hintsShown), pagesRead: u(a.pagesRead, b.pagesRead) };
+  return { epoch: a.epoch, hintsShown: u(a.hintsShown, b.hintsShown), pagesRead: u(a.pagesRead, b.pagesRead), evidenceSeen: u(a.evidenceSeen, b.evidenceSeen) };
 }
 
 function sameUi(a: UiMeta, b: UiMeta): boolean {
   const same = (x: string[], y: string[]) => x.length === y.length && x.every((id) => y.includes(id));
-  return a.epoch === b.epoch && same(a.hintsShown, b.hintsShown) && same(a.pagesRead, b.pagesRead);
+  return a.epoch === b.epoch && same(a.hintsShown, b.hintsShown) && same(a.pagesRead, b.pagesRead) && same(a.evidenceSeen, b.evidenceSeen);
 }
 
-export const EMPTY_UI: UiMeta = { hintsShown: [], pagesRead: [], epoch: 0 };
+export const EMPTY_UI: UiMeta = { hintsShown: [], pagesRead: [], evidenceSeen: [], epoch: 0 };
 
-/** Unknown version or garbage decodes as empty: the worst case is a hint shown twice. */
+/** Unknown version or garbage decodes as empty: the worst case is a hint shown twice. A missing field (older doc) is an empty set. */
 export function parseUi(doc: string): UiMeta {
   const [ver, ...fields] = doc.split(";");
   if (ver !== `u${UI_VERSION}`) return EMPTY_UI;
   const field = (key: string) => fields.find((f) => f.startsWith(`${key}=`))?.slice(2) ?? "";
   const list = (key: string) => field(key).split(",").filter((id) => UI_ID_RE.test(id));
   const epoch = Number(field("e"));
-  return { hintsShown: list("h"), pagesRead: list("p"), epoch: Number.isInteger(epoch) && epoch >= 0 ? epoch : 0 };
+  return { hintsShown: list("h"), pagesRead: list("p"), evidenceSeen: list("f"), epoch: Number.isInteger(epoch) && epoch >= 0 ? epoch : 0 };
 }
 
 // ---- public API ----

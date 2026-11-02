@@ -173,6 +173,34 @@ describe("validator rules", () => {
   });
 });
 
+describe("evidence rule", () => {
+  const ev = (items: unknown[], found = true) => {
+    const w = structuredClone(miniWorld) as WorldInput;
+    if (found) w.qualities.push({ id: "found.*", scope: "profile" });
+    w.evidence = { items: items as never };
+    return WorldSchema.parse(w);
+  };
+  const item = { id: "a", flag: "seen.hall_a", image: "bg", title: "A", text: "a" };
+
+  test("declared flag, known image, unique ids, found.* declared", () => {
+    expect(messages(rules["evidence"]!(ev([item]), assets))).toBe("");
+    expect(messages(rules["evidence"]!(ev([{ ...item, flag: "nope" }]), assets))).toMatch(/evidence a: flag is not a declared quality: nope/);
+    expect(messages(rules["evidence"]!(ev([{ ...item, image: "missing" }]), assets))).toMatch(/unknown image asset: missing/);
+    expect(messages(rules["evidence"]!(ev([item, { ...item, flag: "heat" }]), assets))).toMatch(/duplicate evidence id/);
+    expect(messages(rules["evidence"]!(ev([item], false), assets))).toMatch(/engine writes found.a on discovery but it is not declared/);
+    expect(messages(rules["evidence"]!(ev([], false), assets))).toBe("");
+  });
+
+  test("found.* counts as written for the planned rule; rules.clock needs a declared quality", () => {
+    const w = ev([item]);
+    w.storylets[1]!.when = ["found.a == 1"];
+    expect(messages(rules["planned"]!(w, assets))).toBe("");
+    const clock = structuredClone(miniWorld) as WorldInput;
+    clock.rules.clock = { quality: "nope", start: "22:00", step: 30 };
+    expect(messages(rules["qualities"]!(WorldSchema.parse(clock), assets))).toMatch(/rules.clock: undeclared quality: nope/);
+  });
+});
+
 describe("expression syntax is rejected at build time", () => {
   test.each(["turn >> 16", "turn >= sixteen", "turn >= 16 || clues > 1", "process.exit()", "turn >= 1; drop", "Turn >= 1"])(
     "condition %p fails schema",

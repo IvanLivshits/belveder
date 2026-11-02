@@ -112,9 +112,19 @@ export const InterruptSchema = z.object({
 });
 export type Interrupt = z.infer<typeof InterruptSchema>;
 
+/** Wall clock derived from a quality: `start` + value × `step` minutes (wraps past midnight).
+ *  Display only; the cost of a move still comes from `rules.onChoice`. */
+export const ClockSchema = z.object({
+  quality: QualityIdSchema,
+  start: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "start must be HH:MM"),
+  step: z.number().int().positive(),
+});
+export type Clock = z.infer<typeof ClockSchema>;
+
 export const RulesSchema = z.object({
   /** Location of the first scene of every night. */
   start: Id,
+  clock: ClockSchema.optional(),
   /** Applied after every non-free choice, e.g. `turn += 1`. */
   onChoice: z.array(EffectSchema).default([]),
   interrupts: z.array(InterruptSchema).default([]),
@@ -137,10 +147,29 @@ export const MemoryPairSchema = z.object({
   returnWhen: z.array(ConditionSchema).default([]),
 });
 
-/** Quality ids the engine writes on its own; a world with memories must declare them. */
+/** One card of the evidence folder. `flag` is a run quality; the first time it becomes 1 the engine
+ *  sets profile `found.<id> = 1`, so the folder remembers every night's finds. */
+export const EvidenceItemSchema = z.object({
+  id: Id,
+  /** Position in the folder (not the order of discovery). */
+  order: z.number().int().default(0),
+  flag: QualityIdSchema,
+  /** Asset id; the card shows it as a photo. */
+  image: Id.optional(),
+  title: z.string().min(1),
+  /** Nick's note. */
+  text: z.string().min(1),
+});
+export type EvidenceItem = z.infer<typeof EvidenceItemSchema>;
+export const EvidenceSchema = z.object({ items: z.array(EvidenceItemSchema) });
+export type Evidence = z.infer<typeof EvidenceSchema>;
+
+/** Quality ids the engine writes on its own; a world with memories (or evidence) must declare them. */
 export const RESERVED_QUALITIES = {
   pledgedPrefix: "pledged.",
   returnedPrefix: "returned.",
+  /** Profile flag per evidence item: `found.<id>` once its run flag has been 1. */
+  foundPrefix: "found.",
   /** Run flag: a real memory came back this night (memories_returned counts the whole game). */
   returnedTonight: "returned_tonight",
   memoriesReturned: "memories_returned",
@@ -161,6 +190,7 @@ export const WorldSchema = z.object({
   storylets: z.array(StoryletSchema),
   fragments: z.array(ReportFragmentSchema),
   notebook: NotebookSchema.optional(),
+  evidence: EvidenceSchema.default({ items: [] }),
   /** Morning screen: `notes` work like report.notes, evaluated on the report state (run flags still set). */
   morning: z.object({ notes: z.array(ReportNoteSchema).default([]) }).default({ notes: [] }),
 });

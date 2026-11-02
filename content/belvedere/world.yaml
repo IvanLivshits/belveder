@@ -66,6 +66,8 @@ qualities:
   # Первые встречи: открывают страницы блокнота и одноразовые карточки.
   - { id: met.*, scope: profile, label: Знакомства, min: 0, max: 1 }
   - { id: paths.*, scope: profile, label: Открытые пути }
+  # Ставит движок: улика с run-флагом из evidence.yaml найдена хотя бы раз (папка улик).
+  - { id: found.*, scope: profile, label: Улики в деле, min: 0, max: 1 }
 
 locations:
   - { id: office, label: Контора Ника }
@@ -78,17 +80,31 @@ locations:
   - { id: floor_02, label: Площадка 2 }
   - { id: floor_03, label: Площадка 3 }
   - { id: floor_04, label: Площадка 4 }
-  - { id: tenant_02, label: Прачечная Эдди }
+  - { id: tenant_02, label: Прачечная }
   - { id: chute, label: Бельевой желоб }
   - { id: tenant_03, label: Квартира миссис Пул }
   - { id: service_03, label: Комната для новых жильцов }
-  - { id: tenant_04, label: Кабинет Слоуна }
+  - { id: tenant_04, label: Кабинет аудитора }
   - { id: service_04, label: Архив копий }
+  - { id: floor_05, label: Площадка 5 }
+  - { id: floor_06, label: Площадка 6 }
+  - { id: floor_07, label: Площадка 7 }
+  - { id: floor_08, label: Площадка 8 }
+  - { id: tenant_05, label: Студия фотографа }
+  - { id: service_05, label: Фотолаборатория }
+  - { id: tenant_06, label: Спортзал }
+  - { id: fire_escape, label: Пожарная лестница }
+  - { id: tenant_07, label: Квартира певицы }
+  - { id: service_07, label: Гримёрная }
+  - { id: tenant_08, label: Приёмная доктора }
+  - { id: service_08, label: Процедурная }
   - { id: pledge, label: Залог у Долли }
 
 rules:
   start: office
   onChoice: [turn += 1]
+  # Часы в HUD: 22:00 + ход × 30 минут (ход 4 — полночь, ход 6 — час ночи). Цена хода по-прежнему из onChoice.
+  clock: { quality: turn, start: "22:00", step: 30 }
   # Ночь кончается только выбором на экране залога (endNight).
   # Перехваты проверяются после каждого выбора, срабатывает первый подходящий.
   interrupts:
@@ -100,7 +116,7 @@ rules:
 # Ложное (fake) закладывается у Долли; если returnWhen выполнено этой ночью,
 # на его место встаёт настоящее (real). Ключи fake/real, а не false/true:
 # по YAML 1.2 `false:`/`true:` — булевы значения, не строки.
-# В срезе (этажи 1–4) достижимы ring, ledger, cashbox. Остальные объявлены заранее.
+# На этажах 1–8 достижимы все пары, кроме name и secret (объявлены заранее).
 memories:
   - id: ring
     fake: mem.false.marines

@@ -174,8 +174,8 @@ describe("ui meta", () => {
     const cloud = fakeKV();
     const localStore = fakeStorage();
     const local = localKV(localStore);
-    await saveDoc(local, "ui", encodeEnvelope({ rev: 5, savedAt: 50, body: serializeUi({ hintsShown: ["turn"], pagesRead: ["case", "pool"], epoch: 0 }) }));
-    await saveDoc(cloud.kv, "ui", encodeEnvelope({ rev: 6, savedAt: 55, body: serializeUi({ hintsShown: ["turn", "clues"], pagesRead: ["case", "sloan", "eddie"], epoch: 0 }) }));
+    await saveDoc(local, "ui", encodeEnvelope({ rev: 5, savedAt: 50, body: serializeUi({ hintsShown: ["turn"], pagesRead: ["case", "pool"], evidenceSeen: [], epoch: 0 }) }));
+    await saveDoc(cloud.kv, "ui", encodeEnvelope({ rev: 6, savedAt: 55, body: serializeUi({ hintsShown: ["turn", "clues"], pagesRead: ["case", "sloan", "eddie"], evidenceSeen: [], epoch: 0 }) }));
     const saves = createSaves(local, cloud.kv, () => 60);
     const ui = await saves.loadUi();
     expect(ui.pagesRead.sort()).toEqual(["case", "eddie", "pool", "sloan"]);
@@ -193,8 +193,8 @@ describe("ui meta", () => {
     const { serializeUi } = await import("../src/storage");
     const cloud = fakeKV();
     const local = localKV(fakeStorage());
-    await saveDoc(local, "ui", encodeEnvelope({ rev: 4, savedAt: 1, body: serializeUi({ hintsShown: [], pagesRead: ["case", "pool"], epoch: 0 }) }));
-    await saveDoc(cloud.kv, "ui", encodeEnvelope({ rev: 4, savedAt: 2, body: serializeUi({ hintsShown: [], pagesRead: ["case", "sloan"], epoch: 0 }) }));
+    await saveDoc(local, "ui", encodeEnvelope({ rev: 4, savedAt: 1, body: serializeUi({ hintsShown: [], pagesRead: ["case", "pool"], evidenceSeen: [], epoch: 0 }) }));
+    await saveDoc(cloud.kv, "ui", encodeEnvelope({ rev: 4, savedAt: 2, body: serializeUi({ hintsShown: [], pagesRead: ["case", "sloan"], evidenceSeen: [], epoch: 0 }) }));
     const saves = createSaves(local, cloud.kv, () => 9);
     expect((await saves.loadUi()).pagesRead.sort()).toEqual(["case", "pool", "sloan"]);
     await saves.flush();
@@ -214,7 +214,7 @@ describe("ui meta", () => {
     let down = true;
     const cloud = fakeKV({ fail: () => down });
     const local = localKV(fakeStorage());
-    await saveDoc(local, "ui", encodeEnvelope({ rev: 3, savedAt: 1, body: serializeUi({ hintsShown: ["turn"], pagesRead: ["case"], epoch: 0 }) }));
+    await saveDoc(local, "ui", encodeEnvelope({ rev: 3, savedAt: 1, body: serializeUi({ hintsShown: ["turn"], pagesRead: ["case"], evidenceSeen: [], epoch: 0 }) }));
     const saves = createSaves(local, cloud.kv);
     expect((await saves.loadUi()).pagesRead).toEqual(["case"]);
     await saves.flush();
@@ -224,12 +224,14 @@ describe("ui meta", () => {
 
   test("round-trips through the codec and the saves transport", async () => {
     const { parseUi, serializeUi } = await import("../src/storage");
-    const ui = { hintsShown: ["turn", "dolly_trust"], pagesRead: ["case", "new_tenants"], epoch: 2 };
+    const ui = { hintsShown: ["turn", "dolly_trust"], pagesRead: ["case", "new_tenants"], evidenceSeen: ["ring"], epoch: 2 };
     expect(parseUi(serializeUi(ui))).toEqual(ui);
-    expect(parseUi(serializeUi({ hintsShown: [], pagesRead: [], epoch: 0 }))).toEqual({ hintsShown: [], pagesRead: [], epoch: 0 });
-    expect(parseUi("u9;h=a;p=b")).toEqual({ hintsShown: [], pagesRead: [], epoch: 0 });
+    expect(parseUi(serializeUi({ hintsShown: [], pagesRead: [], evidenceSeen: [], epoch: 0 }))).toEqual({ hintsShown: [], pagesRead: [], evidenceSeen: [], epoch: 0 });
+    expect(parseUi("u9;h=a;p=b")).toEqual({ hintsShown: [], pagesRead: [], evidenceSeen: [], epoch: 0 });
+    // a doc written before the folder existed has no f= field
+    expect(parseUi("u1;e=1;h=turn;p=case")).toEqual({ hintsShown: ["turn"], pagesRead: ["case"], evidenceSeen: [], epoch: 1 });
     const saves = createSaves(localKV(fakeStorage()));
-    expect(await saves.loadUi()).toEqual({ hintsShown: [], pagesRead: [], epoch: 0 });
+    expect(await saves.loadUi()).toEqual({ hintsShown: [], pagesRead: [], evidenceSeen: [], epoch: 0 });
     saves.persistUi(ui);
     await saves.flush();
     expect(await saves.loadUi()).toEqual(ui);
@@ -243,22 +245,22 @@ describe("ui meta", () => {
     s = choose(s, miniWorld, 1);
     phone.persistProfile(profileOf(s));
     phone.persistRun(s);
-    phone.persistUi({ hintsShown: ["turn"], pagesRead: ["case", "pool"], epoch: 0 });
+    phone.persistUi({ hintsShown: ["turn"], pagesRead: ["case", "pool"], evidenceSeen: [], epoch: 0 });
     await phone.flush();
     // the desktop read another page before the reset and never synced
     const desktopStore = fakeStorage();
-    await saveDoc(localKV(desktopStore), "ui", encodeEnvelope({ rev: 1, savedAt: 1, body: serializeUi({ hintsShown: ["turn"], pagesRead: ["case", "sloan"], epoch: 0 }) }));
+    await saveDoc(localKV(desktopStore), "ui", encodeEnvelope({ rev: 1, savedAt: 1, body: serializeUi({ hintsShown: ["turn"], pagesRead: ["case", "sloan"], evidenceSeen: [], epoch: 0 }) }));
     await saveDoc(localKV(desktopStore), "profile", encodeEnvelope({ rev: 1, savedAt: 1, body: serializeProfile(profileWith(3)) }));
 
     const fresh = phone.resetAll();
-    expect(fresh).toEqual({ hintsShown: [], pagesRead: [], epoch: 1 });
+    expect(fresh).toEqual({ hintsShown: [], pagesRead: [], evidenceSeen: [], epoch: 1 });
     await phone.flush();
     expect(await phone.loadProfile()).toBeNull();
     expect(await phone.loadRun(profileWith(0))).toBeNull();
 
     const desktop = createSaves(localKV(desktopStore), cloud.kv);
     expect(await desktop.loadProfile()).toBeNull(); // cloud tombstone has the higher rev
-    expect(await desktop.loadUi()).toEqual({ hintsShown: [], pagesRead: [], epoch: 1 }); // epoch wins over the union
+    expect(await desktop.loadUi()).toEqual({ hintsShown: [], pagesRead: [], evidenceSeen: [], epoch: 1 }); // epoch wins over the union
     await desktop.flush();
     expect(cloud.map.get("ui_0")).toContain("|u1;e=1;h=;p=");
     expect(desktopStore.getItem("blv_ui_0")).toContain("|u1;e=1;h=;p=");

@@ -2,6 +2,8 @@ export interface QualityItem {
   label: string;
   value: number;
   max?: number | undefined;
+  /** Shown instead of the number/pips/bar, e.g. a wall-clock time derived from the value. */
+  display?: string | undefined;
 }
 
 /** Bounded qualities up to this size are drawn as pips; larger ones as a thin bar. */
@@ -14,10 +16,14 @@ export interface QualityBarProps {
   /** Unread dot on the notebook icon. */
   badge?: boolean | undefined;
   notebookLabel?: string | undefined;
+  /** Opens the evidence folder; the button is rendered only when given. */
+  onEvidence?: (() => void) | undefined;
+  evidenceBadge?: boolean | undefined;
+  evidenceLabel?: string | undefined;
 }
 
 /** Top HUD strip: label in small caps, value as pips, bar or number. Pure presentation, no quality names. */
-export function QualityBar({ items, onNotebook, badge, notebookLabel }: QualityBarProps) {
+export function QualityBar({ items, onNotebook, badge, notebookLabel, onEvidence, evidenceBadge, evidenceLabel }: QualityBarProps) {
   return (
     <div class="hud">
       {onNotebook && (
@@ -27,10 +33,19 @@ export function QualityBar({ items, onNotebook, badge, notebookLabel }: QualityB
           </svg>
         </button>
       )}
+      {onEvidence && (
+        <button class={`hud__book hud__folder${evidenceBadge ? " hud__book--badge" : ""}`} type="button" onClick={onEvidence} aria-label={evidenceLabel ?? "evidence"}>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 11h18" />
+          </svg>
+        </button>
+      )}
       {items.map((q) => (
         <span key={q.label} class="hud__item">
           <span class="hud__label">{q.label}</span>
-          {q.max === undefined ? (
+          {q.display !== undefined ? (
+            <b class="hud__num">{q.display}</b>
+          ) : q.max === undefined ? (
             <b class="hud__num">{q.value}</b>
           ) : q.max <= PIP_LIMIT ? (
             <span class="hud__pips" role="img" aria-label={`${q.value} из ${q.max}`}>

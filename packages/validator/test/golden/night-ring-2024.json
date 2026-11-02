@@ -1,5 +1,5 @@
 {
-  "digest": "7463423af7f30e7ca56beb67c17e1f19efb6976ed9fea4f36161e071d13ba862",
+  "digest": "7b9bcd442c3868749e3e3612adbd3bccda86c237cf983267b198edbe9a0049ac",
   "snapshot": {
     "location": "pledge",
     "log": [
@@ -40,7 +40,7 @@
         "storylet": "floor_02_doors"
       },
       {
-        "choice": 1,
+        "choice": 2,
         "storylet": "stairs"
       },
       {
@@ -52,7 +52,7 @@
         "storylet": "room_first"
       },
       {
-        "choice": 1,
+        "choice": 2,
         "storylet": "room_ring_found"
       },
       {
@@ -64,7 +64,7 @@
         "storylet": "stairs_eddie"
       },
       {
-        "choice": 4,
+        "choice": 6,
         "storylet": "stairs"
       },
       {
@@ -72,7 +72,7 @@
         "storylet": "floor_02_doors"
       },
       {
-        "choice": 5,
+        "choice": 3,
         "storylet": "stairs"
       },
       {
@@ -93,6 +93,7 @@
     "phase": "report",
     "profile": {
       "dolly_trust": 1,
+      "found.ring": 1,
       "mem.false.marines": 0,
       "mem.true.ring": 1,
       "memories_returned": 1,

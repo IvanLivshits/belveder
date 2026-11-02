@@ -88,6 +88,35 @@
 # Встречи (Горман, Эдди) перехватывают лестницу по priority и после выбора
 # уступают место обычной карточке: их флаг seen.* уже стоит.
 
+# Горман берёт за воротник: Подозрение 7+. Отсюда реально дойти до поимки (10).
+- id: stairs_gorman_collar
+  location: stairwell
+  priority: 9
+  when: [suspicion >= 7, seen.gorman_collar == 0]
+  background: stairwell
+  portrait: gorman_threat
+  title: Лестница
+  text: |
+    Горман выходит из-за поворота пролёта, будто стоял там всю ночь. Берёт тебя за лацкан, не сильно, по-хозяйски.
+
+    — Весь дом про тебя шепчется, Кэллоуэй. Мне это надоело раньше, чем дому.
+  choices:
+    - text: Откупиться двумя сигаретами
+      when: [cigarettes >= 2]
+      effects: [seen.gorman_collar = 1, cigarettes -= 2, suspicion -= 2]
+      outcome: |
+        Горман берёт обе, одну прячет за ухо.
+
+        — Ещё раз услышу твою фамилию до рассвета — отдам тебя Тони.
+    - text: Вырваться и уйти вниз
+      effects: [seen.gorman_collar = 1, suspicion += 3]
+      outcome: |
+        Ты вырываешься, оставляя у него в кулаке пуговицу, и слышишь за спиной его смех. Он не бежит следом. Ему некуда торопиться: из этого дома выходят только через вестибюль.
+    - text: Дать себя увести
+      effects: [seen.gorman_collar = 1, suspicion = 10]
+      outcome: |
+        Горман ведёт тебя вниз, держа за лацкан, как ведут пьяного. На площадке шестого его сменяет Тони. Молча.
+
 - id: stairs_gorman_again
   location: stairwell
   priority: 7
@@ -218,21 +247,70 @@
 
         — Спасибо, мистер! Я запомню!
 
+# Лестница: три текста по высоте, выборы зависят от floor.
 - id: stairs_top
   location: stairwell
   priority: 1
-  when: [floor == 4]
+  when: [floor == 8]
   background: stairwell
   title: Лестница
   text: |
-    Пролёт на пятый перегорожен козлами. На доске мелом: «Ремонт. Владелец». Сверху тянет холодом, и где-то очень высоко играет радио.
+    Пролёт на девятый перекрыт решёткой на висячем замке. За ней радио: мужской голос читает сводку погоды. Дождь, говорит голос. Опять дождь.
   choices:
-    - text: Вниз, на третий
-      effects: [floor = 3]
-      goto: floor_03
+    - text: Вниз, на седьмой
+      when: [floor == 8]
+      effects: [floor = 7]
+      goto: floor_07
     - text: Обратно на площадку
+      when: [floor == 8]
       free: true
+      goto: floor_08
+
+- id: stairs_upper
+  location: stairwell
+  priority: 1
+  when: [floor >= 5, floor <= 7]
+  background: stairwell_up
+  title: Лестница
+  text: |
+    Чем выше, тем суше ступени и тем дороже ковровая дорожка. Пахнет лаком, канифолью и больницей. Где-то наверху бубнит радио.
+  choices:
+    - text: Вверх, на шестой
+      when: [floor == 5]
+      effects: [floor = 6]
+      goto: floor_06
+    - text: Вниз, на четвёртый
+      when: [floor == 5]
+      effects: [floor = 4]
       goto: floor_04
+    - text: Обратно на площадку
+      when: [floor == 5]
+      free: true
+      goto: floor_05
+    - text: Вверх, на седьмой
+      when: [floor == 6]
+      effects: [floor = 7]
+      goto: floor_07
+    - text: Вниз, на пятый
+      when: [floor == 6]
+      effects: [floor = 5]
+      goto: floor_05
+    - text: Обратно на площадку
+      when: [floor == 6]
+      free: true
+      goto: floor_06
+    - text: Вверх, на восьмой
+      when: [floor == 7]
+      effects: [floor = 8]
+      goto: floor_08
+    - text: Вниз, на шестой
+      when: [floor == 7]
+      effects: [floor = 6]
+      goto: floor_06
+    - text: Обратно на площадку
+      when: [floor == 7]
+      free: true
+      goto: floor_07
 
 - id: stairs
   location: stairwell
@@ -245,37 +323,41 @@
       when: [floor == 1]
       effects: [floor = 2]
       goto: floor_02
+    - text: Обратно на площадку
+      when: [floor == 1]
+      free: true
+      goto: floor_01
     - text: Вверх, на третий
       when: [floor == 2]
       effects: [floor = 3]
       goto: floor_03
-    - text: Вверх, на четвёртый
-      when: [floor == 3]
-      effects: [floor = 4]
-      goto: floor_04
-    - text: Вниз, на третий
-      when: [floor == 4]
-      effects: [floor = 3]
-      goto: floor_03
-    - text: Вниз, на второй
-      when: [floor == 3]
-      effects: [floor = 2]
-      goto: floor_02
     - text: Вниз, в вестибюль
       when: [floor == 2]
       effects: [floor = 1]
       goto: floor_01
     - text: Обратно на площадку
-      when: [floor == 1]
-      free: true
-      goto: floor_01
-    - text: Обратно на площадку
       when: [floor == 2]
       free: true
+      goto: floor_02
+    - text: Вверх, на четвёртый
+      when: [floor == 3]
+      effects: [floor = 4]
+      goto: floor_04
+    - text: Вниз, на второй
+      when: [floor == 3]
+      effects: [floor = 2]
       goto: floor_02
     - text: Обратно на площадку
       when: [floor == 3]
       free: true
+      goto: floor_03
+    - text: Вверх, на пятый
+      when: [floor == 4]
+      effects: [floor = 5]
+      goto: floor_05
+    - text: Вниз, на третий
+      when: [floor == 4]
+      effects: [floor = 3]
       goto: floor_03
     - text: Обратно на площадку
       when: [floor == 4]

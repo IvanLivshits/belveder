@@ -98,7 +98,7 @@ button { font: inherit; }
 /* ---- HUD: a brass-lined strip of small-caps labels with pips ---- */
 .hud {
   position: absolute; top: 0; left: 0; right: 0; z-index: 1;
-  display: flex; flex-wrap: nowrap; justify-content: space-between; gap: 8px; align-items: flex-start;
+  display: flex; flex-wrap: nowrap; justify-content: space-between; gap: clamp(4px, 2cqw, 8px); align-items: flex-start;
   /* Always one row: sizes follow the column width (cqw), long labels get an ellipsis. */
   --hud-pip: clamp(4px, 1.4cqw, 6px);
   padding: calc(10px + env(safe-area-inset-top)) 16px 9px;
@@ -109,10 +109,11 @@ button { font: inherit; }
   content: ""; position: absolute; left: 16px; right: 16px; bottom: 4px; height: 1px;
   background: linear-gradient(90deg, transparent, rgba(201,162,74,0.45) 20%, rgba(201,162,74,0.45) 80%, transparent);
 }
-.hud__book { pointer-events: auto; position: relative; flex: none; align-self: center; width: 26px; height: 30px; padding: 0; margin: 0 -6px 0 -4px; border: 0; background: transparent; color: var(--accent); cursor: pointer; display: grid; place-items: center; }
+.hud__book { pointer-events: auto; position: relative; flex: none; align-self: center; width: 24px; height: 30px; padding: 0; margin: 0 -6px 0 -6px; border: 0; background: transparent; color: var(--accent); cursor: pointer; display: grid; place-items: center; }
+.hud__folder { margin-left: 0; }
 .hud__book--badge::after { content: ""; position: absolute; top: 2px; right: 2px; width: 7px; height: 7px; border-radius: 50%; background: #d9534f; box-shadow: 0 0 0 2px rgba(6,7,10,0.9); }
 .hud__item { display: flex; flex-direction: column; justify-content: space-between; height: 30px; min-width: 0; flex: 0 1 auto; }
-.hud__label { font-size: clamp(7px, 2.2cqw, 9px); letter-spacing: 0.07em; text-transform: uppercase; color: var(--hint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hud__label { font-size: clamp(7px, 2.2cqw, 9px); letter-spacing: clamp(0.02em, 0.25cqw, 0.07em); text-transform: uppercase; color: var(--hint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hud__num { display: block; font-size: 14px; line-height: 14px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
 .hud__num small { font-size: 10px; font-weight: 400; color: var(--hint); }
 .hud__pips { display: flex; gap: 2px; height: 14px; align-items: center; }
@@ -182,3 +183,24 @@ button { font: inherit; }
 .notebook__rule { margin: 6px 0 0; font-size: 13px; line-height: 1.4; color: var(--hint); }
 .notebook__rule .report__slot { margin-bottom: 2px; }
 .notebook__locked { margin: 8px 0 0; font-size: 12px; color: var(--hint); text-align: center; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* ---- evidence folder ---- */
+.evidence { display: flex; flex-direction: column; gap: 8px; }
+.evidence__card {
+  display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; width: 100%;
+  padding: 8px 12px 8px 8px; border: 1px solid rgba(201,162,74,0.35); border-radius: 8px;
+  background: rgba(255,255,255,0.03); color: var(--text); font: inherit; text-align: left; cursor: pointer;
+}
+.evidence__card:active { background: rgba(201,162,74,0.12); }
+.evidence__thumb { display: block; width: 44px; height: 44px; border: 2px solid #e8e2d3; border-bottom-width: 6px; background: #2a2622; box-shadow: 0 2px 6px rgba(0,0,0,0.5); overflow: hidden; }
+.evidence__thumb img { display: block; width: 100%; height: 100%; object-fit: cover; filter: sepia(0.25) contrast(1.05); }
+.evidence__name { font-size: 15px; line-height: 1.3; }
+.evidence__tag { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); white-space: nowrap; }
+.evidence__title { margin: 0 0 12px; font-size: 18px; letter-spacing: 0.06em; text-transform: uppercase; display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+.paper--evidence .report__text { margin-bottom: 12px; }
+/* The same photo-card frame as the evidence inset in a scene, flat on the paper. */
+.evidence__photo {
+  width: min(70%, 300px); aspect-ratio: 1; margin: 4px auto 20px; transform: rotate(-1.5deg);
+  border: 6px solid #e8e2d3; border-bottom-width: 22px; background: #2a2622; box-shadow: 0 12px 30px rgba(0,0,0,0.6); overflow: hidden;
+}
+.evidence__photo img { display: block; width: 100%; height: 100%; object-fit: cover; filter: sepia(0.25) contrast(1.05); }

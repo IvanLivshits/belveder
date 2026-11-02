@@ -1,7 +1,7 @@
 /** Pure view helpers: choice cost, max clamping, change detection, report notes, notebook. */
 import { describe, expect, test } from "bun:test";
 import { WorldSchema, type World, type WorldInput } from "@belvedere/content-schema";
-import { changedQualities, choiceCost, choose, clockQuality, continueOutcome, currentNotes, emptyProfile, lifeStatus, morningNotes, newNight, notebookView, pledge } from "../src";
+import { changedQualities, choiceCost, choose, clockQuality, clockTime, continueOutcome, currentNotes, emptyProfile, evidenceView, lifeStatus, morningNotes, newNight, notebookView, pledge, profileOf } from "../src";
 import { miniWorld } from "./mini-world";
 
 const variant = (patch: (w: WorldInput) => void): World => {
@@ -105,5 +105,51 @@ describe("report notes and notebook", () => {
     n = pledge(n, w, "b");
     expect(notebookView(n, w)!.life.lines[1]).toEqual({ pair: "b", status: "empty", text: "~~False B~~ — nothing" });
     expect(notebookView(s, miniWorld)).toBeNull();
+  });
+});
+
+describe("clock", () => {
+  test("start + value × step, wrapping past midnight; null without rules.clock", () => {
+    const s = newNight(emptyProfile(), miniWorld, 1);
+    expect(clockTime(s, miniWorld)).toBe("22:00");
+    expect(clockTime({ ...s, run: { turn: 3 } }, miniWorld)).toBe("23:30");
+    expect(clockTime({ ...s, run: { turn: 4 } }, miniWorld)).toBe("00:00");
+    expect(clockTime({ ...s, run: { turn: 7 } }, miniWorld)).toBe("01:30");
+    expect(clockTime(s, variant((w) => { delete w.rules.clock; }))).toBeNull();
+  });
+});
+
+describe("evidence folder", () => {
+  const w = variant((w) => {
+    w.qualities.push({ id: "found.*", scope: "profile", min: 0, max: 1 });
+    w.evidence = { items: [
+      { id: "hall", order: 20, flag: "seen.hall_a", image: "bg", title: "Hall", text: "a" },
+      { id: "hot", order: 10, flag: "heat", title: "Heat", text: "h" },
+      { id: "never", order: 30, flag: "night_pledged", title: "Never", text: "n" },
+    ] };
+  });
+
+  test("a run flag at 1 sets found.<id> in the profile; the view lists found cards in order, tonight's marked", () => {
+    let s = newNight(emptyProfile(), w, 1);
+    expect(evidenceView(s, w)).toEqual({ items: [], locked: 3 });
+    s = choose(s, w, 1); // wait: seen.hall_a = 1, heat = 1
+    expect(s.profile["found.hall"]).toBe(1);
+    expect(s.profile["found.hot"]).toBe(1);
+    expect(evidenceView(s, w).items.map((i) => [i.id, i.tonight])).toEqual([["hot", true], ["hall", true]]);
+    expect(evidenceView(s, w).items[1]).toEqual({ id: "hall", title: "Hall", image: "bg", text: "a", tonight: true });
+    expect(evidenceView(s, w).locked).toBe(1);
+    // the flag going back to 0 does not unfind the card
+    s = choose(s, w, 0); s = choose(s, w, 1); // room -> hidden: heat back to 0
+    expect(evidenceView(s, w).items.map((i) => [i.id, i.tonight])).toEqual([["hot", false], ["hall", true]]);
+    // next night: everything is remembered, nothing is from tonight
+    const n = newNight(profileOf(s), w, 2);
+    expect(evidenceView(n, w).items.map((i) => [i.id, i.tonight])).toEqual([["hot", false], ["hall", false]]);
+  });
+
+  test("a world without evidence has an empty folder and never writes found.*", () => {
+    let s = newNight(emptyProfile(), miniWorld, 1);
+    s = choose(s, miniWorld, 1);
+    expect(evidenceView(s, miniWorld)).toEqual({ items: [], locked: 0 });
+    expect(Object.keys(s.profile).filter((k) => k.startsWith("found."))).toEqual([]);
   });
 });

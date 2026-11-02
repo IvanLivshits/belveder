@@ -22,6 +22,7 @@ export const check: Rule = (world) => {
   checkEffects("rules.onChoice", world.rules.onChoice);
   world.rules.interrupts.forEach((i, n) => checkConds(`rules.interrupts #${n}`, i.when));
   checkEffects("rules.onNightEnd", world.rules.onNightEnd);
+  if (world.rules.clock && !declared(world.rules.clock.quality)) issues.push(error("rules.clock", `undeclared quality: ${world.rules.clock.quality}`));
   if (!world.locations.some((l) => l.id === world.rules.start)) {
     issues.push(error("rules.start", `unknown location: ${world.rules.start}`));
   }

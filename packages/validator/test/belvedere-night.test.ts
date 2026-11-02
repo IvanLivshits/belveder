@@ -2,7 +2,7 @@
  *  If content changes on purpose: UPDATE_GOLDEN=1 bun test, explain in the commit. */
 import { describe, expect, test } from "bun:test";
 import {
-  choiceCost, choose, continueOutcome, currentNotes, currentReport, currentScene, emptyProfile, getQuality, morningNotes, newNight, notebookView, pledge, pledgeOptions, profileOf,
+  choiceCost, choose, clockTime, continueOutcome, currentNotes, currentReport, currentScene, emptyProfile, evidenceView, getQuality, morningNotes, newNight, notebookView, pledge, pledgeOptions, profileOf,
   type GameState, type Profile,
 } from "@belvedere/engine";
 import { expectGolden } from "../../engine/test/golden-helper";
@@ -54,7 +54,7 @@ const PLAN_RING: Step[] = [
   "Открыть", "Взять деньги и дело", "Войти через парадную",
   "Кивнуть", "Предложить сигарету", "next", "К лестнице",
   "Лестница", "Вверх, на второй", "Лестница", "Вверх, на третий",
-  "Служебная дверь", "Обыскать кровать", "next", "Уйти",
+  "Служебная дверь", "Перебрать коробку", "next", "Уйти",
   "Лестница", "Отпустить", "next", "Вниз, на второй", "Лестница", "Вниз, в вестибюль",
   "Долли", "Уйти до рассвета (залог)",
   ["pledge", "ring"],
@@ -66,13 +66,17 @@ const PLAN_FIRST_NIGHT: Step[] = [
   "Поднять газету", "next", "Войти через парадную",
   "Спросить, давно ли она здесь", "next", "Спросить, где он ночевал", "next", "К лестнице",
   "Лестница", "Вверх, на второй", "Лестница", "Вверх, на третий",
-  "Служебная дверь", "Обыскать кровать", "next", "Уйти",
+  "Служебная дверь", "Перебрать коробку", "next", "Уйти",
   "Лестница", "Отпустить", "next", "Вниз, на второй", "Лестница", "Вниз, в вестибюль",
   "Долли", "Уйти до рассвета (залог)",
 ];
 
 /** Any night after the first: office -> facade -> wary Dolly -> pledge. */
 const PLAN_QUICK_EXIT: Step[] = ["Взять деньги и дело", "Войти через парадную", "Молча пойти к лестнице", "Долли", "Уйти до рассвета (залог)"];
+
+/** Stairwell labels by target floor, for climbing one flight at a time from a landing. */
+const UP = ["", "", "Вверх, на второй", "Вверх, на третий", "Вверх, на четвёртый", "Вверх, на пятый", "Вверх, на шестой", "Вверх, на седьмой", "Вверх, на восьмой"];
+const DOWN = ["", "Вниз, в вестибюль", "Вниз, на второй", "Вниз, на третий", "Вниз, на четвёртый", "Вниз, на пятый", "Вниз, на шестой", "Вниз, на седьмой"];
 
 /** Walks the stairs up and down until the turn limit; landings and the lobby hub lead back to the stairwell. */
 function walkUntilDawn(start: GameState): GameState {
@@ -82,11 +86,10 @@ function walkUntilDawn(start: GameState): GameState {
     if (s.phase === "outcome") { s = continueOutcome(s, world); continue; }
     const id = currentScene(s, world).storylet.id;
     if (id === "stairs_eddie" || id === "stairs_eddie_again") { s = pick(s, "Отпустить"); continue; }
-    if (id === "stairs_top") { s = pick(s, "Вниз, на третий"); continue; }
-    if (id === "lobby_hub" || id === "lobby_hub_first_night") { s = pick(s, "К лестнице"); continue; }
-    if (id === "stairs") {
+    if (id === "lobby_hub" || id === "lobby_hub_first_night" || id === "lobby_hub_trusted") { s = pick(s, "К лестнице"); continue; }
+    if (id === "stairs" || id === "stairs_upper" || id === "stairs_top") {
       const floor = q(s, "floor");
-      s = pick(s, floor < 4 ? ["", "Вверх, на второй", "Вверх, на третий", "Вверх, на четвёртый"][floor]! : "Вниз, на третий");
+      s = pick(s, floor < 4 ? UP[floor + 1]! : DOWN[floor - 1]!);
       continue;
     }
     s = pick(s, "Лестница"); // back from a landing to the stairwell
@@ -334,5 +337,176 @@ describe("belvedere: deep run", () => {
     expect(q(secondDone, "met.office_cashbox")).toBe(1);
     const third = newNight(profileOf(secondDone), world, 6);
     expect(third.storyletId).not.toBe("office_cashbox");
+  });
+});
+
+/** From a landing's doors to another landing by the stairs (Eddie is let go on the way).
+ *  `floor` is 0 until the first door of the night sets it, so the lobby landing counts as 1. */
+function climb(s: GameState, to: number): GameState {
+  let cur = s;
+  while (Math.max(1, q(cur, "floor")) !== to) {
+    const f = Math.max(1, q(cur, "floor"));
+    cur = route(cur, ["Лестница", f < to ? UP[f + 1]! : DOWN[f - 1]!]);
+  }
+  return cur;
+}
+/** A returning player Dolly trusts enough for the freight lift. */
+const TRUSTED: Profile = { v: 1, profile: { nights: 2, dolly_trust: 3, met: 1 } as Record<string, number> };
+const LIFT = ["Взять деньги и дело", "Войти через парадную", "Сесть и выпить чаю", "Попросить грузовой лифт"];
+const evidenceIds = (s: GameState) => evidenceView(s, world).items.map((i) => `${i.id}${i.tonight ? "*" : ""}`);
+
+describe("belvedere: floors 5–8 and the folder", () => {
+  test("clock: 22:00 at the start, 23:30 at turn 3, past midnight at turn 4", () => {
+    const s = newNight(emptyProfile(), world, 1);
+    expect(clockTime(s, world)).toBe("22:00");
+    expect(clockTime({ ...s, run: { turn: 3 } }, world)).toBe("23:30");
+    expect(clockTime({ ...s, run: { turn: 4 } }, world)).toBe("00:00");
+    expect(clockTime({ ...s, run: { turn: 16 } }, world)).toBe("06:00");
+  });
+
+  test("1 + 7: the ring from the box on the first night lands in the folder, remembered next night without 'tonight'", () => {
+    const s = play(emptyProfile(), 2024, PLAN_RING);
+    expect(q(s, "returned.ring")).toBe(1);
+    expect(q(s, "found.ring")).toBe(1);
+    expect(evidenceIds(s)).toEqual(["ring*"]);
+    const n = newNight(profileOf(s), world, 7);
+    expect(evidenceIds(n)).toEqual(["ring"]);
+    expect(evidenceView(n, world).locked).toBe(world.evidence.items.length - 1);
+    const card = evidenceView(n, world).items.find((i) => i.id === "ring")!;
+    expect(card.image).toBe("ev_ring");
+    expect(card.title).toBe("Обручальное кольцо");
+  });
+
+  test("2: Ruby by the stairs after 01:00, cigarette and record together: lantern returns; before 01:00 her door is locked", () => {
+    const first = play(emptyProfile(), 2024, PLAN_RING);
+    let s = play(profileOf(first), 11, PLAN_QUICK_EXIT.slice(0, 3)); // wary Dolly, silently to the stairs
+    s = climb(s, 7);
+    expect(q(s, "turn")).toBeGreaterThanOrEqual(6);
+    expect(currentScene(s, world).choices.find((c) => c.text === "Квартира певицы")?.available).toBe(true);
+    s = route(s, ["Квартира певицы", "Войти", "Угостить сигаретой", "Попросить поставить пластинку", "Взять пластинку"]);
+    expect(q(s, "has.ruby_record")).toBe(1);
+    expect(q(s, "debt.ruby")).toBe(2);
+    expect(q(s, "met.ruby")).toBe(1);
+    s = route(s, ["Уйти"]);
+    s = walkUntilDawn(s);
+    expect(currentScene(s, world).storylet.id).toBe("pledge_dawn");
+    expect(pledgeOptions(s, world).filter((m) => m.canReturn).map((m) => m.id).sort()).toEqual(["lantern", "voice"]);
+    s = pledge(s, world, "lantern");
+    expect(q(s, "returned.lantern")).toBe(1);
+    expect(q(s, "mem.true.lantern")).toBe(1);
+    expect(evidenceIds(s)).toContain("ruby_record*");
+
+    // the freight lift reaches the 7th at turn 2: the singer is not home yet
+    const early = route(newNight(TRUSTED, world, 3), [...LIFT, "На седьмой"]);
+    expect(q(early, "turn")).toBe(2);
+    const door = currentScene(early, world).choices.find((c) => c.text === "Квартира певицы")!;
+    expect(door.available).toBe(false);
+  });
+
+  test("3: the doctor before midnight by the freight lift; the file for a favour; after midnight the treatment room is empty", () => {
+    let s = route(newNight(TRUSTED, world, 5), [...LIFT, "На восьмой"]);
+    expect(q(s, "turn")).toBe(2);
+    expect(currentScene(s, world).storylet.id).toBe("floor_08_doors");
+    s = route(s, ["Приёмная доктора", "Сесть на кушетку", "Спросить, за что он не может спать", "Попросить карточку Вивиан Хейл"]);
+    expect(q(s, "has.medical_file")).toBe(1);
+    expect(q(s, "met.auerbach")).toBe(1);
+    s = route(s, ["Уйти", "Процедурная"]);
+    expect(q(s, "turn")).toBeGreaterThanOrEqual(4);
+    expect(currentScene(s, world).storylet.id).toBe("procedure_room");
+    s = route(s, ["Уйти"]);
+    s = climb(s, 1);
+    s = route(s, ["Долли", "Уйти до рассвета (залог)"]);
+    expect(pledgeOptions(s, world).find((m) => m.id === "hospital")?.canReturn).toBe(true);
+    s = pledge(s, world, "hospital");
+    expect(q(s, "returned.hospital")).toBe(1);
+    expect(evidenceIds(s)).toContain("medical_file*");
+
+    // before midnight the doctor is still in the treatment room
+    const early = route(newNight(TRUSTED, world, 5), [...LIFT, "На восьмой", "Процедурная"]);
+    expect(q(early, "turn")).toBe(3);
+    expect(currentScene(early, world).storylet.id).toBe("procedure_doctor");
+    // too late on foot: seven flights from the lobby pass midnight, and the doctor's door is locked
+    let late = route(newNight(TRUSTED, world, 5), [...LIFT.slice(0, 3), "К лестнице"]);
+    late = climb(late, 8);
+    expect(q(late, "turn")).toBeGreaterThanOrEqual(4);
+    expect(currentScene(late, world).choices.find((c) => c.text === "Приёмная доктора")?.available).toBe(false);
+  });
+
+  test("4: the fight with Tony throws Nick onto the fire escape, which stays open on the 6th from then on", () => {
+    let s = route(newNight(TRUSTED, world, 8), [...LIFT, "На шестой", "Спортзал", "Остаться стоять"]);
+    expect(currentScene(s, world).storylet.id).toBe("tony_gym");
+    const before = q(s, "turn");
+    s = route(s, ["Выйти на ринг"]);
+    expect(currentScene(s, world).storylet.id).toBe("fire_escape_climb");
+    expect(q(s, "paths.fire_escape")).toBe(1);
+    expect(q(s, "turn")).toBe(before + 2);
+    s = route(s, ["Наверх, к окну восьмого"]);
+    expect(currentScene(s, world).storylet.id).toBe("floor_08_doors");
+    s = climb(s, 6);
+    expect(currentScene(s, world).choices.find((c) => c.text === "Окно на пожарную лестницу")?.available).toBe(true);
+    s = route(s, ["Окно на пожарную лестницу"]);
+    expect(currentScene(s, world).storylet.id).toBe("fire_escape_climb");
+    s = walkUntilDawn(route(s, ["Назад, в окно шестого"]));
+    s = pick(s, "Заложить эту ночь");
+    expect(notebookView(s, world)!.pages.map((p) => p.id)).toContain("fire_escape");
+    // next night the window is open from the start
+    const n = route(newNight(profileOf(s), world, 9), [...LIFT, "На шестой"]);
+    expect(currentScene(n, world).choices.find((c) => c.text === "Окно на пожарную лестницу")?.available).toBe(true);
+  });
+
+  test("5: suspicion 7 on the stairs: Gorman takes Nick by the collar, letting him leads to pledge_caught", () => {
+    const profile: Profile = { v: 1, profile: { nights: 1 } };
+    let s = play(profile, 13, PLAN_QUICK_EXIT.slice(0, 3)); // silent: suspicion 1
+    s = climb(s, 2);
+    s = route(s, ["Прачечная", "Сделать вид, что не заметил", "Снять цилиндр с полки", "Уйти"]); // +2
+    s = climb(s, 4);
+    s = route(s, ["Кабинет аудитора", "Сесть без приглашения", "Надавить и потребовать книгу", "Уйти"]); // +1
+    s = route(s, ["Служебная дверь", "Вскрыть замок", "Уйти"]); // +2
+    expect(q(s, "suspicion")).toBe(6);
+    s = route(s, ["Лестница"]);
+    expect(currentScene(s, world).storylet.id).toBe("stairs_gorman");
+    s = route(s, ["Сказать, что аудитора нет"]); // +1
+    expect(q(s, "suspicion")).toBe(7);
+    expect(currentScene(s, world).storylet.id).toBe("stairs_gorman_collar");
+    s = route(s, ["Дать себя увести"]);
+    expect(q(s, "suspicion")).toBe(10);
+    expect(currentScene(s, world).storylet.id).toBe("pledge_caught");
+    s = pick(s, "Заложить эту ночь");
+    expect(s.phase).toBe("report");
+    expect(q(s, "seen.caught")).toBe(1);
+  });
+
+  test("6: thirteen rows of windows: Mei's favour opens the darkroom; next night the facade offers a recount", () => {
+    let s = route(newNight(TRUSTED, world, 21), [...LIFT, "На пятый", "Студия фотографа", "Посмотреть на снимки", "Помочь развесить снимки", "Уйти"]);
+    expect(q(s, "debt.mei")).toBe(1);
+    expect(q(s, "met.mei")).toBe(1);
+    s = route(s, ["Фотолаборатория"]);
+    expect(currentScene(s, world).storylet.id).toBe("darkroom");
+    s = route(s, ["Отпечатать «Фасад Белведера»", "Пересчитать ещё раз"]);
+    expect(q(s, "has.facade_photo")).toBe(1);
+    expect(q(s, "paths.thirteen")).toBe(1);
+    expect(evidenceIds(s)).toContain("facade_photo*");
+    s = route(s, ["Уйти"]);
+    s = climb(s, 1);
+    s = route(s, ["Долли", "Уйти до рассвета (залог)"]);
+    s = pick(s, "Заложить эту ночь");
+    if (s.phase === "outcome") s = continueOutcome(s, world);
+    expect(notebookView(s, world)!.pages.map((p) => p.id)).toContain("thirteen");
+
+    const n = route(newNight(profileOf(s), world, 22), ["Взять деньги и дело"]);
+    const texts = currentScene(n, world).choices.filter((c) => c.available).map((c) => c.text);
+    expect(texts).toContain("Сосчитать окна ещё раз");
+    expect(texts).not.toContain("Сосчитать окна, пока стоишь под козырьком");
+    // without the darkroom the facade still offers the first count
+    const fresh = route(newNight(TRUSTED, world, 22), ["Взять деньги и дело"]);
+    expect(currentScene(fresh, world).choices.filter((c) => c.available).map((c) => c.text)).toContain("Сосчитать окна, пока стоишь под козырьком");
+  });
+
+  test("the darkroom also opens with Eddie's key, for two favours in the laundry", () => {
+    let s = route(newNight(TRUSTED, world, 31), [...LIFT, "На второй", "Прачечная", "Сделать вид, что не заметил", "Спросить, куда он хочет уехать", "Спросить про ключ от фотолаборатории", "Уйти"]);
+    expect(q(s, "has.darkroom_key")).toBe(1);
+    s = climb(s, 5);
+    s = route(s, ["Фотолаборатория"]);
+    expect(currentScene(s, world).storylet.id).toBe("darkroom");
   });
 });

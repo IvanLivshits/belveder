@@ -24,7 +24,7 @@ export const miniWorld: World = WorldSchema.parse({
     { id: "b", fake: "mem.false.b", real: "mem.true.b", label_fake: "False B", label_real: "True B", returnWhen: ["heat >= 9"] },
   ],
   // Turn 4 sends the player to the vault (pledge screen); the night only ends there.
-  rules: { start: "hall", onChoice: ["turn += 1"], interrupts: [{ when: ["turn >= 4"], goto: "vault" }], onNightEnd: ["nights += 1"] },
+  rules: { start: "hall", onChoice: ["turn += 1"], clock: { quality: "turn", start: "22:00", step: 30 }, interrupts: [{ when: ["turn >= 4"], goto: "vault" }], onNightEnd: ["nights += 1"] },
   report: { slots: [{ id: "summary", label: "Summary" }] },
   storylets: [
     {

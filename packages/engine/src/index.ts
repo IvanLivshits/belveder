@@ -12,3 +12,5 @@ export * from "./storage";
 export * from "./cost";
 export * from "./hints";
 export * from "./notebook";
+export * from "./evidence";
+export * from "./clock";

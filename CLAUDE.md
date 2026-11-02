@@ -21,7 +21,7 @@
 - `packages/ui-kit` — Preact-компоненты без логики игры.
 - `apps/miniapp` — тонкий адаптер: рендер, ввод, Telegram API, сохранение.
 - `apps/bot` — `/start` с кнопкой открытия Mini App.
-- `content/belvedere` — мир как данные (`world.yaml`, `storylets/*.yaml`, `report-fragments/*.yaml`, `notebook.yaml` — блокнот Ника).
+- `content/belvedere` — мир как данные (`world.yaml`, `storylets/*.yaml`, `report-fragments/*.yaml`, `notebook.yaml` — блокнот Ника, `evidence.yaml` — папка улик).
 - `assets/` — WebP по id из `assets.json`. В контенте только id, никаких путей.
 - `docs/architecture.md` — архитектура, `docs/world-bible.md` — библия мира, `docs/backlog.md` — всё, что вне MVP, `docs/golden-changelog.md` — строка на каждое изменение golden-хеша.
 

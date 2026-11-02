@@ -1,6 +1,7 @@
 import { RESERVED_QUALITIES, type World } from "@belvedere/content-schema";
 import { evaluateAll } from "./conditions";
 import { applyEffects } from "./effects";
+import { recordEvidence } from "./evidence";
 import { resetRun } from "./qualities";
 import { buildReport } from "./report";
 import { seedRng } from "./rng";
@@ -57,6 +58,7 @@ export function choose(state: GameState, world: World, index: number): GameState
   let next: GameState = { ...state, log: [...state.log, { storylet: storylet.id, choice: index }] };
   next = applyEffects(next, world, choice.effects);
   if (!choice.free) next = applyEffects(next, world, world.rules.onChoice);
+  next = recordEvidence(next, world);
 
   if (choice.outcome !== undefined) return { ...next, phase: "outcome", pendingChoice: index };
   return resolveChoice(next, world, index);

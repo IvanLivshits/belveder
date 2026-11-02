@@ -1,9 +1,9 @@
 import {
-  changedQualities, choiceCost, choose, continueOutcome, currentNotes, currentOutcome, currentReport, currentScene, emptyProfile, getQuality,
+  changedQualities, choiceCost, choose, clockTime, continueOutcome, currentNotes, currentOutcome, currentReport, currentScene, emptyProfile, evidenceView, getQuality,
   morningNotes, newNight, notebookView, pledge, profileOf, type GameState, type Profile,
 } from "@belvedere/engine";
 import { RESERVED_QUALITIES } from "@belvedere/content-schema";
-import { Backdrop, ChoiceList, DoorPicker, Hint, MorningPage, NotebookPage, PledgePicker, QualityBar, ReportPage, SceneCard, TitleScreen, type LifeLineItem } from "@belvedere/ui-kit";
+import { Backdrop, ChoiceList, DoorPicker, EvidencePage, Hint, MorningPage, NotebookPage, PledgePicker, QualityBar, ReportPage, SceneCard, TitleScreen, type LifeLineItem } from "@belvedere/ui-kit";
 import { useCallback, useEffect, useState } from "preact/hooks";
 import { loadContent, type Content } from "./content";
 import { saves } from "./saves";
@@ -13,6 +13,8 @@ import { confirmDialog, haptic, setBackButton, setSettingsButton } from "./teleg
 type Life = { title: string; intro: string; footer: string | null; lines: LifeLineItem[] };
 type Screen =
   | { kind: "loading" } | { kind: "error"; message: string } | { kind: "title" } | { kind: "night" } | { kind: "notebook" }
+  /** Evidence folder: the list, or one open card. */
+  | { kind: "evidence"; item: string | null }
   /** Between the report and the next night: the life page with tonight's changes. */
   | { kind: "morning"; life: Life; notes: string[] };
 
@@ -54,11 +56,15 @@ export function App() {
     })();
   }, []);
 
-  // Telegram BackButton: notebook -> night, night -> title (the run stays saved).
+  // Telegram BackButton: evidence card -> folder -> night, notebook -> night, night -> title (the run stays saved).
+  const backKey = screen.kind === "evidence" ? `evidence:${screen.item ?? ""}` : screen.kind;
   useEffect(() => setBackButton(
-    screen.kind === "night" || screen.kind === "notebook",
-    () => setScreen(screen.kind === "notebook" ? { kind: "night" } : { kind: "title" }),
-  ), [screen.kind]);
+    screen.kind === "night" || screen.kind === "notebook" || screen.kind === "evidence",
+    () => setScreen(
+      screen.kind === "evidence" ? (screen.item === null ? { kind: "night" } : { kind: "evidence", item: null })
+        : screen.kind === "notebook" ? { kind: "night" } : { kind: "title" },
+    ),
+  ), [backKey]);
   const dismissHint = useCallback(() => setHints((h) => h.slice(1)), []);
 
   // Wipes every device: tombstones go to the cloud, other clients pick them up on their next load.
@@ -140,6 +146,26 @@ export function App() {
     );
   }
 
+  if (screen.kind === "evidence") {
+    const ev = evidenceView(state, world);
+    return (
+      <div class="screen">
+        <EvidencePage
+          title="Улики"
+          items={ev.items.map((i) => ({ ...i, image: i.image ? src(i.image) : undefined }))}
+          locked={ev.locked}
+          selected={screen.item}
+          onSelect={(item) => setScreen({ kind: "evidence", item })}
+          onBack={() => setScreen({ kind: "night" })}
+          tonightLabel="сегодня"
+          lockedLabel={(n) => `Ещё улик: ${n}`}
+          backLabel="Назад"
+          texture={texture}
+        />
+      </div>
+    );
+  }
+
   if (state.phase === "report") {
     const entries = currentReport(state, world).map((r) => ({ slot: r.slot, label: r.label, text: r.text }));
     // The morning page is built from the report state, while tonight's pledged.*/returned.* flags are still set.
@@ -186,9 +212,25 @@ export function App() {
     saves.persistRun(next);
     saves.persistProfile(profileOf(next));
   };
+  // The clock quality shows wall-clock time ("23:30") with "Ход 3/16" as its small-caps label.
+  const time = clockTime(state, world);
   const hud = world.qualities
     .filter((q) => q.visible)
-    .map((q) => ({ label: q.label ?? q.id, value: getQuality(state, world, q.id), max: q.max }));
+    .map((q) => {
+      const value = getQuality(state, world, q.id);
+      const label = q.label ?? q.id;
+      if (time !== null && q.id === world.rules.clock?.quality) return { label: `${label} ${value}${q.max !== undefined ? `/${q.max}` : ""}`, value, display: time };
+      return { label, value, max: q.max };
+    });
+  const ev = world.evidence.items.length > 0 ? evidenceView(state, world) : null;
+  const evidenceUnread = ev !== null && ev.items.some((i) => !ui.evidenceSeen.includes(i.id));
+  const openEvidence = ev
+    ? () => {
+        const ids = ev.items.map((i) => i.id);
+        if (ids.some((id) => !ui.evidenceSeen.includes(id))) saveUi({ ...ui, evidenceSeen: [...new Set([...ui.evidenceSeen, ...ids])] });
+        setScreen({ kind: "evidence", item: null });
+      }
+    : undefined;
   const nb = notebookView(state, world);
   const unread = nb !== null && nb.pages.some((p) => !ui.pagesRead.includes(p.id));
   const openNotebook = nb
@@ -198,7 +240,7 @@ export function App() {
         setScreen({ kind: "notebook" });
       }
     : undefined;
-  const bar = <QualityBar items={hud} onNotebook={openNotebook} badge={unread} notebookLabel="Блокнот" />;
+  const bar = <QualityBar items={hud} onNotebook={openNotebook} badge={unread} notebookLabel="Блокнот" onEvidence={openEvidence} evidenceBadge={evidenceUnread} evidenceLabel="Улики" />;
 
   if (state.phase === "outcome") {
     const out = currentOutcome(state, world);

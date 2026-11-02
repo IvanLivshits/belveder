@@ -184,7 +184,7 @@
   text: |
     Долли сдвигает решётку. Кабина пахнет машинным маслом и чужими чемоданами. Она кладёт ладонь на рычаг.
 
-    — Куда? Выше четвёртого сегодня не повезу. Там ремонт, и не мой.
+    — Куда? Выше восьмого не повезу. Там уже не мои этажи.
   choices:
     - text: На второй
       effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 2]
@@ -195,6 +195,18 @@
     - text: На четвёртый
       effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 4]
       goto: floor_04
+    - text: На пятый
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 5]
+      goto: floor_05
+    - text: На шестой
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 6]
+      goto: floor_06
+    - text: На седьмой
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 7]
+      goto: floor_07
+    - text: На восьмой
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 8]
+      goto: floor_08
     - text: Передумать
       free: true
       goto: lobby
@@ -204,24 +216,47 @@
   background: lobby
   title: Почтовые ящики
   text: |
-    Сто сорок латунных ящиков, у каждого окошко и фамилия на картонке. Пыль везде, кроме одного.
-
-    «Н. Кэллоуэй, 3-В».
-
-    У тебя контора на Портовой. Ты никогда здесь не жил.
+    Сто сорок латунных ящиков, у каждого окошко и фамилия на картонке. Пыль везде, кроме одного: 3-В, без фамилии.
   choices:
-    - text: Открыть свой ящик
+    - text: Открыть ящик 3-В
       when: [seen.mailbox_open == 0]
-      effects: [seen.mailbox_open = 1, seen.mailbox_name = 1, clues += 1]
+      effects: [seen.mailbox_open = 1, seen.mailbox_paid = 1, clues += 1]
       outcome: |
         Ящик не заперт. Внутри один листок, почерк ровный, как по линейке:
 
-        «Аренда комнаты 3-В оплачена до конца дела. Не благодарите. — В.»
+        «Аренда комнаты 3-В оплачена до конца дела. — В.»
+
+        Какого дела, не сказано.
     - text: Поискать ящик Хейла
       when: [seen.mailbox_hale == 0]
       effects: [seen.mailbox_hale = 1]
       outcome: |
         Ящика с фамилией Хейл нет. Есть один пустой, с картонкой без букв. На латуни ещё видны дырочки от кнопок.
+    - text: Вернуться на площадку
+      free: true
+      goto: floor_01
+
+# Позже на ящике 3-В появляется фамилия. Её туда кто-то вставил, пока Ник терял память.
+- id: mailboxes_named
+  location: mailboxes
+  priority: 1
+  when: [memories_returned >= 2]
+  background: lobby
+  title: Почтовые ящики
+  text: |
+    Сто сорок латунных ящиков. На 3-В появилась картонка. Свежая, буквы ещё блестят:
+
+    «Н. Кэллоуэй».
+
+    У тебя контора на Портовой. Ты никогда здесь не жил.
+  choices:
+    - text: Открыть ящик
+      when: [seen.mailbox_open == 0]
+      effects: [seen.mailbox_open = 1, seen.mailbox_name = 1, clues += 1]
+      outcome: |
+        «Аренда комнаты 3-В оплачена до конца дела. Не благодарите. — В.»
+
+        Тот же почерк. Только теперь ты знаешь, чьё это дело.
     - text: Вернуться на площадку
       free: true
       goto: floor_01

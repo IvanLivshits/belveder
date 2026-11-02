@@ -10,3 +10,4 @@ export * from "./Hint";
 export * from "./NotebookPage";
 export * from "./Life";
 export * from "./MorningPage";
+export * from "./EvidencePage";
