@@ -133,4 +133,4 @@ pages:
 1. Открой файл локации в `storylets/` или создай новый.
 2. Убедись, что качества есть в `world.yaml`, картинки — в `assets/assets.json`.
 3. `bun run validate`. Исправь ошибки: битые id, тупики, недостижимость.
-4. `bun test`. Если golden изменился — объясни в коммите (см. `engine-change`).
+4. `bun test`. Если golden изменился — строка в `docs/golden-changelog.md` в том же коммите (см. `engine-change`).

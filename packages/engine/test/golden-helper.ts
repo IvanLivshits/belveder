@@ -1,5 +1,5 @@
 /** Test-only: compares a value's canonical digest with test/golden/<name>.json.
- *  UPDATE_GOLDEN=1 bun test  rewrites the files; explain the change in the commit. */
+ *  UPDATE_GOLDEN=1 bun test  rewrites the files; add a line per changed golden to docs/golden-changelog.md. */
 import { expect } from "bun:test";
 import { canonicalJson, digest } from "../src";
 

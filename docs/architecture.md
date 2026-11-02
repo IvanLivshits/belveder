@@ -69,7 +69,7 @@ grammY на вебхуке через `Bun.serve`. `/start` → кнопка `we
 
 ## Проверки
 
-- `bun test` — сценарные прогоны с golden digest (engine на мини-мире, validator на реальном мире), тесты кодека и правил.
+- `bun test` — сценарные прогоны с golden digest (engine на мини-мире, validator на реальном мире), тесты кодека и правил. Каждое изменение хеша — строка в `docs/golden-changelog.md`.
 - `bun run validate` — правила контента + симуляция случайных ночей (тупики = ошибка).
 - `bun run typecheck` — `tsc -b` по project references.
 

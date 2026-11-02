@@ -23,7 +23,7 @@
 - `apps/bot` — `/start` с кнопкой открытия Mini App.
 - `content/belvedere` — мир как данные (`world.yaml`, `storylets/*.yaml`, `report-fragments/*.yaml`, `notebook.yaml` — блокнот Ника).
 - `assets/` — WebP по id из `assets.json`. В контенте только id, никаких путей.
-- `docs/architecture.md` — архитектура, `docs/world-bible.md` — библия мира, `docs/backlog.md` — всё, что вне MVP.
+- `docs/architecture.md` — архитектура, `docs/world-bible.md` — библия мира, `docs/backlog.md` — всё, что вне MVP, `docs/golden-changelog.md` — строка на каждое изменение golden-хеша.
 
 ## Правила (подробно в `.claude/skills/`)
 
@@ -33,4 +33,4 @@
 Картинки — `asset-pipeline`. Telegram — `telegram-miniapp`.
 
 Код и идентификаторы на английском, тексты игры и документация на русском.
-Коммиты маленькие: `feat:`, `fix:`, `chore:`, `test:`, `docs:`.
+Коммиты маленькие и однострочные (до 50 символов, без трейлеров): `feat:`, `fix:`, `chore:`, `test:`, `docs:`. Изменил golden — добавь строку в `docs/golden-changelog.md` в том же коммите.
