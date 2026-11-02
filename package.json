@@ -8,7 +8,7 @@
     "dev": "bun run --cwd apps/miniapp dev",
     "build": "bun run content:build && bun run --cwd apps/miniapp build",
     "test": "bun test",
-    "typecheck": "tsc -b",
+    "typecheck": "bun run content:build && tsc -b",
     "content:build": "bun run packages/validator/src/build-content.ts content/belvedere content/belvedere/build/world.json",
     "validate": "bun run content:build && bun run packages/validator/src/cli.ts content/belvedere/build/world.json assets/assets.json",
     "assets": "python3 -I tools/assets/convert.py",
