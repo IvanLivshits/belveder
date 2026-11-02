@@ -20,7 +20,9 @@ button { font: inherit; }
 /* Desktop Telegram / browser: keep the phone-shaped column so 9:16 art is never cropped to a strip. */
 @media (min-width: 560px) {
   body { background: #06070a; }
-  .screen { max-width: 480px; margin: 0 auto; box-shadow: 0 0 80px rgba(0,0,0,0.7); }
+  #app { min-height: var(--app-height); display: grid; place-items: center; }
+  /* Column width follows the window height so the 9:16 art is never cropped to a strip; height follows the width. */
+  .screen { width: min(100%, 480px, calc(var(--app-height) * 9 / 16)); height: auto; aspect-ratio: 9 / 16; box-shadow: 0 0 80px rgba(0,0,0,0.7); }
 }
 
 /* ---- backdrop: 9:16 image, rain, lamp flicker ---- */
