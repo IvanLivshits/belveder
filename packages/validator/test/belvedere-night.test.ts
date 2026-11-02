@@ -308,6 +308,17 @@ describe("belvedere: deep run", () => {
     expect(noCar.storyletId).toBe("stairs_gorman");
   });
 
+  test("Sloan tells of the missing money, then hands a fake ledger: the report pits the two Sloans against each other", () => {
+    let s = route(newNight(emptyProfile(), world, 3), [...TO_FLOOR_4, "Кабинет аудитора", "Сесть без приглашения", "Угостить сигаретой", "Спросить, что связывает его с Хейлом", "Надавить и потребовать книгу"]);
+    expect(q(s, "seen.sloan_cashbox")).toBe(1);
+    expect(q(s, "has.ledger_fake")).toBe(1);
+    s = route(s, ["Уйти", "Лестница", "Вниз, на третий", "Лестница", "Вниз, на второй", "Лестница", "Вниз, в вестибюль", "Долли", "Уйти до рассвета (залог)", "Заложить эту ночь"]);
+    const report = Object.fromEntries(currentReport(s, world).map((r) => [r.slot, r.fragment.id]));
+    expect(report["finding"]).toBe("finding_ticket");
+    expect(report["twist"]).toBe("twist_fake_vs_ticket");
+    expect(Object.values(report)).not.toContain("twist_fake_ledger");
+  });
+
   test("office_cashbox opens once after the cashbox memory returns", () => {
     // polite Sloan: a cigarette buys the story of the missing money and the pawn ticket
     let s = route(newNight(emptyProfile(), world, 3), [...TO_FLOOR_4, "Кабинет аудитора", "Сесть без приглашения", "Угостить сигаретой", "Спросить, что связывает его с Хейлом"]);

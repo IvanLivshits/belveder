@@ -111,7 +111,8 @@
 - id: finding_fake_ledger
   slot: finding
   priority: 1
-  when: [has.ledger_fake == 1, has.ledger_true == 0]
+  # Не показывать, если Слоун уже рассказал про пропажу: Ник знает, что недостача была.
+  when: [has.ledger_fake == 1, has.ledger_true == 0, seen.sloan_cashbox == 0]
   text: "Копия книги «Синего фонаря». Март сходится до цента. Я записал: растраты не было. Значит, Хейл ушёл не от долга, а к чему-то."
 - id: finding_ring
   slot: finding
@@ -152,8 +153,13 @@
 - id: twist_fake_ledger
   slot: twist
   priority: 1
-  when: [has.ledger_fake == 1, has.ledger_true == 0]
+  when: [has.ledger_fake == 1, has.ledger_true == 0, seen.sloan_cashbox == 0]
   text: "Я поверил книге. Чистые цифры, никакой недостачи. Если Хейл ничего не крал, ему незачем было прятаться. Значит, его спрятали."
+- id: twist_fake_vs_ticket
+  slot: twist
+  priority: 2
+  when: [has.ledger_fake == 1, has.ledger_true == 0, seen.sloan_cashbox == 1]
+  text: "Слоун отдал мне книгу, где недостачи нет, и тут же рассказал, как недостачу нашёл. Один из двух Слоунов врёт. Бухгалтеры не врут по ошибке."
 - id: twist_mailbox
   slot: twist
   priority: 1
