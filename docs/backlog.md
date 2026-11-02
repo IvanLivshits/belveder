@@ -14,3 +14,4 @@
 - При поимке (`suspicion >= 10`) залог выбирает Владелец, а не игрок; точка: `layout: pledge` с автоматическим выбором пары.
 - `OR` в условиях: пара `voice` по библии — «должок Руби 2 или запись эфира Беннета»; точка: `expressions.ts` и `evaluateAll`.
 - Голос Уолтера во фрагментах отчёта при `memories_returned >= 4`.
+- Время вместо номера хода в HUD: `22:00 + turn × 30 мин` через `rules.clock: { quality, start, step }`; сейчас часы — качество из `rules.onChoice` (`clockQuality`), точка: `engine/cost.ts` и `QualityBar`.

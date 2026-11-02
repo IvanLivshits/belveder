@@ -29,6 +29,11 @@ pledge(state, world, pairId)    → state   # fake = 0, pledged.<id> = 1; return
 currentScene(state, world)      → { storylet, text, choices[{index, text, available}], memories[{index, label}] }
 currentOutcome(state, world)    → { storylet, text }
 currentReport(state, world)     → [{ slot, label, fragment, text }]
+currentNotes(state, world)      → string[]   # report.notes с истинными when
+pledgeOptions(state, world)     → [{ id, label, canReturn }]   # canReturn: returnWhen выполнено прямо сейчас
+choiceCost(state, world, choice)→ number     # прирост «часов» (качество из rules.onChoice) от эффектов + onChoice; free → 0
+changedQualities(prev, next)    → string[]   # что изменилось между состояниями; приложение показывает hint при первом изменении
+notebookView(state, world)      → { pages[], locked, life{lines[{pair, status: fake|empty|real, text}]} }
 ```
 
 Тексты проходят через `renderText`: `{quality_id}` заменяется значением из состояния.
@@ -42,7 +47,7 @@ currentReport(state, world)     → [{ slot, label, fragment, text }]
 
 ## Контент (`content/belvedere`)
 
-`world.yaml` (качества, локации, правила, слоты отчёта) + `storylets/*.yaml` + `report-fragments/*.yaml`. Условия и эффекты — строки `quality op int`, валидируются regex-ом в zod и парсятся движком. Формат: `.claude/skills/storylet-authoring`.
+`world.yaml` (качества с необязательным `hint`, локации, правила, слоты и `notes` отчёта) + `storylets/*.yaml` + `report-fragments/*.yaml` + `notebook.yaml` (страницы-справочник с `when` только по profile-качествам и шаблоны страницы «Что я о себе знаю»). Первая ночь (`nights == 0`) — обучение: правила объясняют персонажи в карточках `storylets/00-first-night.yaml`. Условия и эффекты — строки `quality op int`, валидируются regex-ом в zod и парсятся движком. Формат: `.claude/skills/storylet-authoring`.
 
 Сборка `bun run content:build` → `build/world.json` (не коммитится). Валидируется дважды: validator при сборке (CI) и zod при загрузке в приложении.
 
@@ -50,7 +55,7 @@ currentReport(state, world)     → [{ slot, label, fragment, text }]
 
 Кодек в `engine/storage.ts` (чистый, тестируется без браузера): компактный текст `b1;q.<id>=<n>;…`, только ненулевые качества, разбиение на чанки ≤ 4000 символов с заголовком `<version>:<count>|`.
 
-Транспорт в `apps/miniapp/src/storage.ts`: два хранилища, localStorage всегда и Telegram CloudStorage внутри Telegram (ключи `profile_N`, `run_N`). Документ обёрнут в конверт `rev=<n>;at=<ms>|…`, где `rev` монотонно растёт при каждой записи. Запись fire-and-forget: локально сразу, в облако через очередь с одной записью в полёте и схлопыванием до последней версии. Ошибки облака глотаются, интерфейс их не ждёт. Чтение берёт копию с бóльшим `rev` (при равенстве облачную) и досинхронизирует отставшую сторону, если та читалась. Удаление run — tombstone с пустым телом.
+Транспорт в `apps/miniapp/src/storage.ts`: два хранилища, localStorage всегда и Telegram CloudStorage внутри Telegram (ключи `profile_N`, `run_N`, `ui_N`). Документ `ui` — что интерфейс уже показал: подсказки качеств (`hintsShown`) и прочитанные страницы блокнота (`pagesRead`); это не качества мира, движок о них не знает. Документ обёрнут в конверт `rev=<n>;at=<ms>|…`, где `rev` монотонно растёт при каждой записи. Запись fire-and-forget: локально сразу, в облако через очередь с одной записью в полёте и схлопыванием до последней версии. Ошибки облака глотаются, интерфейс их не ждёт. Чтение берёт копию с бóльшим `rev` (при равенстве облачную) и досинхронизирует отставшую сторону, если та читалась. Удаление run — tombstone с пустым телом.
 
 После каждого выбора сохраняются и run (seed, позиция RNG, локация, лог), и profile. После отчёта run удаляется. На титуле при наличии run — «Продолжить ночь».
 

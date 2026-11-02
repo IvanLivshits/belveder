@@ -12,6 +12,7 @@ description: Как менять packages/engine: чистые функции, s
 - Рандом только через `rng.ts` (mulberry32): состояние RNG лежит в `state.rng`, каждое использование возвращает новое значение. Одинаковый seed + одинаковые действия = одинаковое состояние, байт в байт.
 - Движок не знает о мире: имена качеств, локаций, сторилетов приходят из `world`. Глобальные правила (`onChoice`, `interrupts`, `onNightEnd`) — тоже данные из `world.rules`. Единственные id, которые движок пишет сам, — `RESERVED_QUALITIES` из content-schema (`pledged.<id>`, `returned.<id>`, `memories_returned`): это имена механики, а не мира, и validator требует их объявления.
 - Нет `Date`, `Math.random`, `console`, `fetch`, `window`.
+- Всё, что нужно экрану, — чистые «view»-функции от состояния: `currentScene`, `currentOutcome`, `currentReport`, `currentNotes`, `pledgeOptions`, `choiceCost`, `changedQualities`, `notebookView`. Память интерфейса (какая подсказка уже показана, какая страница прочитана) живёт в приложении, не в `GameState`.
 
 ## Тесты
 
