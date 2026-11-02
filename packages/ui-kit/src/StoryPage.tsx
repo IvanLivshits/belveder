@@ -1,6 +1,6 @@
 export type StorySectionItem =
   | { kind: "opening"; text: string }
-  | { kind: "night"; night: number; entries: { slot: string; label: string; text: string }[] }
+  | { kind: "night"; night: number; paragraphs: string[] }
   | { kind: "pledged_note"; text: string }
   | { kind: "litany"; intro: string; text: string }
   | { kind: "ending"; title: string; paragraphs: string[] }
@@ -26,13 +26,8 @@ export function StoryPage({ title, sections, nightLabel, nextLabel, onNext, text
           case "opening": return <p key={i} class="story__opening">{s.text}</p>;
           case "night": return (
             <section key={i} class="story__night">
-              <h2 class="notebook__title">{nightLabel(s.night)}</h2>
-              {s.entries.map((e) => (
-                <div key={e.slot} class="report__entry">
-                  <span class="report__slot">{e.label}</span>
-                  <p class="report__text">{e.text}</p>
-                </div>
-              ))}
+              <h2 class="story__night-title">{nightLabel(s.night)}</h2>
+              {s.paragraphs.map((p, j) => <p key={j} class="report__text story__para">{p}</p>)}
             </section>
           );
           case "pledged_note": return <p key={i} class="story__note">{s.text}</p>;

@@ -19,6 +19,8 @@ export type Phase = "scene" | "outcome" | "report" | "ending";
 
 /** One finished night, kept in the profile for the final story. */
 export interface NightRecord {
+  /** The night's real number: the quality `rules.onNightEnd` increments, plus one (see `nightQuality`). */
+  night: number;
   /** The night was pawned as a whole (`rules.pledgedNightWhen` held): left out of the story. */
   pledged: boolean;
   /** Memory pair pawned that night, if any. */

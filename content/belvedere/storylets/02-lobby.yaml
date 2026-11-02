@@ -51,7 +51,7 @@
 - id: lobby_late
   location: lobby
   priority: 3
-  when: [seen.lobby == 0, nights >= 8]
+  when: [seen.lobby == 0, nights >= 8, met.dolly_late == 0]
   background: lobby
   portrait: dolly_worry
   title: Вестибюль
@@ -61,11 +61,11 @@
     — Ночей за тобой уже {nights}, а пальто всё то же. Пальто уже узнаёт меня само.
   choices:
     - text: Спросить, откуда она знает
-      effects: [seen.lobby = 1, seen.dolly_late = 1, dolly_trust += 1]
+      effects: [seen.lobby = 1, seen.dolly_late = 1, dolly_trust += 1, met.dolly_late = 1]
       outcome: |
         — Я считаю. Кто-то в этом доме должен считать. — Она смотрит на шахту лифта. — Фенн с десятого тоже считает. Только он считает часы, а я — тебя.
     - text: Просто кивнуть и пройти
-      effects: [seen.lobby = 1]
+      effects: [seen.lobby = 1, met.dolly_late = 1]
 
 # Хаб первой ночи: Долли напоминает, куда идти и когда вернуться.
 - id: lobby_hub_first_night

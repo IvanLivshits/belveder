@@ -1,10 +1,11 @@
 {
-  "digest": "84187a22b8a7d04f22e684745431006cb5f1c835d2a4017aa2ba4a36fa269a03",
+  "digest": "b6a37478cc0a82c2cad92c4b8338e2f992bb6a0be054547fcbfa3085ae0532f2",
   "snapshot": {
     "ending": null,
     "history": {
       "nights": [
         {
+          "night": 1,
           "pair": "ring",
           "pledged": false,
           "report": {

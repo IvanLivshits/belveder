@@ -203,6 +203,8 @@ export const RESERVED_QUALITIES = {
   foundPrefix: "found.",
   /** Profile flag per ending reached: `endings.<id>`; the only qualities a new case keeps. */
   endingPrefix: "endings.",
+  /** Run flag set before the report of the night that ended with an ending. */
+  endingNight: "ending_night",
   /** Run flag: a real memory came back this night (memories_returned counts the whole game). */
   returnedTonight: "returned_tonight",
   memoriesReturned: "memories_returned",

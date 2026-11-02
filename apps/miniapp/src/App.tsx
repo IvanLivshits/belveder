@@ -293,7 +293,8 @@ export function App() {
   }
 
   const scene = currentScene(state, world);
-  const items = scene.choices.map((c) => ({ index: c.index, text: c.text, available: c.available, cost: costLabel(choiceCost(state, world, c.choice)) }));
+  // No cost on an ending: time after the finale does not matter.
+  const items = scene.choices.map((c) => ({ index: c.index, text: c.text, available: c.available, cost: c.choice.ending !== undefined ? undefined : costLabel(choiceCost(state, world, c.choice)) }));
   // An ending choice asks first; there is no way back after it.
   const onChoose = (index: number) => (scene.storylet.choices[index]?.ending !== undefined ? setConfirm(index) : advance(choose(state, world, index)));
   const confirmSheet = confirm !== null && (

@@ -502,6 +502,21 @@ describe("belvedere: floors 5–8 and the folder", () => {
     expect(currentScene(fresh, world).choices.filter((c) => c.available).map((c) => c.text)).toContain("Сосчитать окна, пока стоишь под козырьком");
   });
 
+  test("lobby_late greets a veteran once: the second night after it, Dolly is just wary again", () => {
+    let s = route(newNight({ v: 1, profile: { nights: 8 } }, world, 81), ["Взять деньги и дело", "Войти через парадную"]);
+    expect(currentScene(s, world).storylet.id).toBe("lobby_late");
+    s = route(s, ["Просто кивнуть и пройти"]);
+    expect(q(s, "met.dolly_late")).toBe(1);
+    const n = route(newNight(profileOf(s), world, 82), ["Взять деньги и дело", "Войти через парадную"]);
+    expect(currentScene(n, world).storylet.id).toBe("lobby_wary");
+  });
+
+  test("a save from before the story numbers its next night by the nights counter", () => {
+    const s = play({ v: 1, profile: { nights: 5, dolly_trust: 1 } }, 7, PLAN_QUICK_EXIT.slice(0, 3));
+    const d = pick(walkUntilDawn(s), "Заложить эту ночь");
+    expect(d.history.nights.map((n) => n.night)).toEqual([6]);
+  });
+
   test("the darkroom also opens with Eddie's key, for two favours in the laundry", () => {
     let s = route(newNight(TRUSTED, world, 31), [...LIFT, "На второй", "Прачечная", "Сделать вид, что не заметил", "Спросить, куда он хочет уехать", "Спросить про ключ от фотолаборатории", "Уйти"]);
     expect(q(s, "has.darkroom_key")).toBe(1);
@@ -648,9 +663,21 @@ describe("belvedere: the campaign and the five endings", () => {
     expect(opening.text).toBe(currentReport(night1(), world).find((r) => r.slot === "client")!.text);
     const litany = story.sections.find((x) => x.kind === "litany") as { text: string };
     expect(litany.text.split(" ").length).toBeGreaterThan(40);
-    const nights = story.sections.filter((x) => x.kind === "night") as { night: number; entries: { label: string }[] }[];
+    const nights = story.sections.filter((x) => x.kind === "night") as { night: number; paragraphs: string[] }[];
     expect(nights.map((n) => n.night)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    expect(nights[0]!.entries.map((e) => e.label)).toEqual(["Клиентка", "Вход", "Свидетели", "Находка", "Поворот", "Цена"]);
+    // prose only: no slot labels, and the first night does not repeat the opening
+    expect(nights[0]!.paragraphs.length).toBe(5);
+    expect(nights[0]!.paragraphs).not.toContain(opening.text);
+    expect(nights[1]!.paragraphs.length).toBe(6);
+    const labels = world.report.slots.map((sl) => sl.label!);
+    for (const n of nights) for (const p of n.paragraphs) expect(labels).not.toContain(p);
+    expect(nights.some((n) => "entries" in n)).toBe(false);
+    // the report of the final night knows it was the final one
+    const report = Object.fromEntries(currentReport(s, world).map((r) => [r.slot, r.fragment.id]));
+    expect(report["twist"]).toBe("twist_final");
+    expect(report["price"]).toBe("price_final");
+    expect(q(s, "ending_night")).toBe(1);
+    expect(nights[8]!.paragraphs.at(-1)).toBe(currentReport(s, world).find((r) => r.slot === "price")!.text);
     // a new case keeps only the endings seen
     const fresh = newCase(profileOf(s));
     expect(fresh.profile).toEqual({ "endings.signature_truth": 1 });
@@ -675,7 +702,9 @@ describe("belvedere: the campaign and the five endings", () => {
     expect(q(s, "turn")).toBe(12);
     expect(s.phase).toBe("ending");
     expect(s.ending).toBe("case_closed");
-    expect(endingView(s, world).epilogues.length).toBe(1); // the redemption epilogue needs endings.redemption
+    // the plain epilogue plus the one for three memories back; the redemption epilogue needs endings.redemption
+    expect(endingView(s, world).epilogues.length).toBe(2);
+    expect(endingView(s, world).epilogues[1]).toMatch(/Я написал в отчёте «не понял»/);
   });
 
   test("redemption: with the name back, the real ledger and Sloan's deal, the name is bought back", () => {

@@ -1,10 +1,11 @@
 {
-  "digest": "539dcb715c38d23c66f0d5d02bb4a1a91e7dcfc40f21f90ec5d02c0d104679f0",
+  "digest": "798acb1d719831d0a036556a1b545ddc2305dbaa576dbc9a84d6f53bf7f13f0a",
   "snapshot": {
     "ending": "signature_truth",
     "history": {
       "nights": [
         {
+          "night": 1,
           "pair": "ring",
           "pledged": false,
           "report": {
@@ -18,6 +19,7 @@
           "values": {}
         },
         {
+          "night": 2,
           "pair": "lantern",
           "pledged": false,
           "report": {
@@ -31,6 +33,7 @@
           "values": {}
         },
         {
+          "night": 3,
           "pair": "hospital",
           "pledged": false,
           "report": {
@@ -44,6 +47,7 @@
           "values": {}
         },
         {
+          "night": 4,
           "pair": "voice",
           "pledged": false,
           "report": {
@@ -57,6 +61,7 @@
           "values": {}
         },
         {
+          "night": 5,
           "pair": "ledger",
           "pledged": false,
           "report": {
@@ -70,6 +75,7 @@
           "values": {}
         },
         {
+          "night": 6,
           "pair": "cashbox",
           "pledged": false,
           "report": {
@@ -83,6 +89,7 @@
           "values": {}
         },
         {
+          "night": 7,
           "pair": "name",
           "pledged": false,
           "report": {
@@ -96,6 +103,7 @@
           "values": {}
         },
         {
+          "night": 8,
           "pair": "secret",
           "pledged": false,
           "report": {
@@ -109,13 +117,14 @@
           "values": {}
         },
         {
+          "night": 9,
           "pledged": false,
           "report": {
             "client": "client_default",
             "entry": "entry_default",
             "finding": "finding_default",
-            "price": "price_default",
-            "twist": "twist_default",
+            "price": "price_final",
+            "twist": "twist_final",
             "witnesses": "witnesses_default"
           },
           "values": {}
@@ -201,12 +210,13 @@
       "client": "client_default",
       "entry": "entry_default",
       "finding": "finding_default",
-      "price": "price_default",
-      "twist": "twist_default",
+      "price": "price_final",
+      "twist": "twist_final",
       "witnesses": "witnesses_default"
     },
     "rng": 9,
     "run": {
+      "ending_night": 1,
       "turn": 1
     },
     "seed": 9,

@@ -40,8 +40,8 @@ export function endingView(state: GameState, world: World): EndingView {
 
 export type StorySection =
   | { kind: "opening"; text: string }
-  /** One night's report page; `night` counts every night, pawned ones included. */
-  | { kind: "night"; night: number; entries: { slot: string; label: string; text: string }[] }
+  /** One night's report as plain prose: one paragraph per slot, no slot labels; `night` is the night's real number. */
+  | { kind: "night"; night: number; paragraphs: string[] }
   | { kind: "pledged_note"; text: string }
   | { kind: "litany"; intro: string; text: string }
   | { kind: "ending"; title: string; paragraphs: string[] }
@@ -78,16 +78,20 @@ export function storyView(profile: Profile, world: World, endingId: string): { t
         if (text) sections.push({ kind: "opening", text });
         break;
       }
-      case "nights":
+      case "nights": {
+        // The first night's opening slot is already the story's opening, so its page skips it.
+        const hasOpening = story.parts.includes("opening");
         history.nights.forEach((rec, i) => {
           if (rec.pledged) return;
-          const entries = slots.flatMap(({ id, label }) => {
+          const paragraphs = slots.flatMap(({ id }) => {
+            if (hasOpening && i === 0 && id === openingSlot) return [];
             const text = fragmentText(world, profile, rec, id);
-            return text === null ? [] : [{ slot: id, label: label ?? id, text }];
+            return text === null ? [] : [text];
           });
-          sections.push({ kind: "night", night: i + 1, entries });
+          sections.push({ kind: "night", night: rec.night, paragraphs });
         });
         break;
+      }
       case "pledged_note":
         if (history.nights.some((n) => n.pledged)) sections.push({ kind: "pledged_note", text: renderText(story.pledged_note, bags, world) });
         break;

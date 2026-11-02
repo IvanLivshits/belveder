@@ -18,6 +18,7 @@ export const miniWorld: World = WorldSchema.parse({
     { id: "returned_tonight", scope: "run" },
     { id: "memories_returned", scope: "profile" },
     { id: "endings.*", scope: "profile" },
+    { id: "ending_night", scope: "run" },
   ],
   locations: [{ id: "hall" }, { id: "room" }, { id: "vault" }],
   memories: [

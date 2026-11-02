@@ -43,6 +43,8 @@ qualities:
   - { id: pledged.*, scope: run, label: Заложено этой ночью, min: 0, max: 1 }
   - { id: returned.*, scope: run, label: Вернулось этой ночью, min: 0, max: 1 }
   - { id: returned_tonight, scope: run, label: Вернулось этой ночью, min: 0, max: 1 }
+  # Ставит движок перед отчётом ночи, которая кончилась концовкой (фрагменты twist_final, price_final).
+  - { id: ending_night, scope: run, label: Ночь концовки, min: 0, max: 1 }
 
   - { id: nights, scope: profile, label: Ночей, min: 0 }
   - id: dolly_trust

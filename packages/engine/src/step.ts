@@ -1,5 +1,6 @@
 import { RESERVED_QUALITIES, placeholders, qualityMatches, type World } from "@belvedere/content-schema";
 import { evaluateAll } from "./conditions";
+import { nightQuality } from "./cost";
 import { applyEffects } from "./effects";
 import { recordEvidence } from "./evidence";
 import { resetRun } from "./qualities";
@@ -53,15 +54,18 @@ function endNight(state: GameState, world: World, pair?: string): GameState {
     }
   }
   const pledged = world.rules.pledgedNightWhen !== undefined && evaluateAll(state, world, world.rules.pledgedNightWhen);
-  const record: NightRecord = { pledged, ...(pair !== undefined ? { pair } : {}), report, values };
+  const counter = nightQuality(world);
+  const night = counter === null ? state.history.nights.length + 1 : getQuality(state, world, counter) + 1;
+  const record: NightRecord = { night, pledged, ...(pair !== undefined ? { pair } : {}), report, values };
   const withEnd = applyEffects({ ...state, rng }, world, world.rules.onNightEnd);
   return { ...withEnd, phase: "report", report, history: { nights: [...state.history.nights, record], pledges: state.history.pledges } };
 }
 
-/** An ending choice: `endings.<id> = 1`, then the night closes like any other (report, onNightEnd,
+/** An ending choice: `endings.<id> = 1` and run `ending_night = 1`, then the night closes like any other (report, onNightEnd,
  *  history) and the phase becomes "ending". The profile keeps everything until `newCase`. */
 function finishGame(state: GameState, world: World, ending: string): GameState {
-  const flagged = setQuality(state, world, RESERVED_QUALITIES.endingPrefix + ending, 1);
+  let flagged = setQuality(state, world, RESERVED_QUALITIES.endingPrefix + ending, 1);
+  flagged = setQuality(flagged, world, RESERVED_QUALITIES.endingNight, 1); // the report may tell this night apart
   return { ...endNight(flagged, world), phase: "ending", ending };
 }
 

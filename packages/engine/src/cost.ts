@@ -13,6 +13,15 @@ export function clockQuality(world: World): string | null {
   return null;
 }
 
+/** The quality that `rules.onNightEnd` increments, i.e. the night counter; null if there is none. */
+export function nightQuality(world: World): string | null {
+  for (const e of world.rules.onNightEnd) {
+    const { quality, op } = parseEffect(e);
+    if (op === "+=") return quality;
+  }
+  return null;
+}
+
 /** Nominal change of the clock quality a choice would cause: its own effects plus
  *  `rules.onChoice` unless the choice is free. Ignores min/max clamping on purpose:
  *  the label says what the choice asks for, not what the night has left. */

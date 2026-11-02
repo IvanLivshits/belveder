@@ -1,5 +1,5 @@
 /** Endings: every `choice.ending` names an ending from endings.yaml, ending ids are unique,
- *  images exist in assets.json, and the `endings.*` flags the engine writes are declared. */
+ *  images exist in assets.json, and the `endings.*` and `ending_night` qualities the engine writes are declared. */
 import { RESERVED_QUALITIES, qualityMatches } from "@belvedere/content-schema";
 import { error, type Issue, type Rule } from "./types";
 
@@ -21,6 +21,9 @@ export const check: Rule = (world, assets) => {
       if (!ids.has(c.ending)) issues.push(error(where, `unknown ending: ${c.ending}`));
       if (c.endNight) issues.push(error(where, "ending and endNight on the same choice"));
     });
+  }
+  if ((world.endings?.endings.length ?? 0) > 0 && !declared(RESERVED_QUALITIES.endingNight)) {
+    issues.push(error("endings", `engine writes ${RESERVED_QUALITIES.endingNight} before the final report but it is not declared`));
   }
   const story = world.endings?.story;
   if (story) {

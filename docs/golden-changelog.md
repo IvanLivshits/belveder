@@ -2,6 +2,8 @@
 
 Правило: каждое изменение хеша в `packages/*/test/golden/*.json` получает здесь одну строку в том же коммите. Коммит остаётся однострочным, объяснение живёт тут. Формат: `дата · коммит (тема, потому что хеш до коммита неизвестен) · golden · почему`. Новые строки сверху.
 
+- 2026-11-02 · fix: ending night report, story as prose · `campaign-signature-truth` · ночь концовки получает run-флаг `ending_night = 1` перед отчётом («Поворот» и «Цена» стали `twist_final`/`price_final`); записи ночей хранят реальный номер ночи.
+- 2026-11-02 · fix: ending night report, story as prose · `mini-night-42`, `night-ring-2024`, `night-first-5`, `night-dawn-11` · в записи ночи (`history.nights[]`) появилось поле `night` — значение счётчика из `rules.onNightEnd` плюс один; маршруты те же.
 - 2026-11-02 · feat: floors 9–12, endings, the case story · `campaign-signature-truth` · новый: кампания из восьми ночей в одном профиле (все пары возвращаются), девятая ночь кончается концовкой «Подпись. Правда»; снимок хранит историю ночей.
 - 2026-11-02 · feat: floors 9–12, endings, the case story · `mini-night-42`, `night-ring-2024`, `night-first-5`, `night-dawn-11` · в `GameState` появились `history` (записи ночей для «Дела Хейла»: заложена ли, пара, id фрагментов, значения плейсхолдеров) и `ending`; маршруты и лог те же.
 - 2026-11-02 · feat: floors 5–8, evidence folder, clock · `night-ring-2024`, `night-first-5` · комната для новых жильцов переделана: кольцо лежит в коробке «Забыто» («Перебрать коробку» вместо «Обыскать кровать»), индексы выборов сдвинулись; движок пишет profile-флаг `found.ring = 1` (папка улик).

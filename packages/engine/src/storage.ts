@@ -55,20 +55,23 @@ function decodeDoc(doc: string): Map<string, string> {
 }
 
 // ---- history (the final story's raw material) ----
-// `h=` nights separated by `,`; one night is `<0|1>/<pair>/<slot:frag+…>/<quality:value+…>`.
+// `h=` nights separated by `,`; one night is `<0|1>/<pair>/<slot:frag+…>/<quality:value+…>/<night number>`.
 // `pl=` pawned pair ids in order. Both optional: docs from before the story decode as empty.
 
 function encodeNight(n: NightRecord): string {
   const report = Object.keys(n.report).sort().map((s) => `${s}:${n.report[s]}`).join("+");
   const values = Object.keys(n.values).sort().map((q) => `${q}:${n.values[q]}`).join("+");
-  return `${n.pledged ? 1 : 0}/${n.pair ?? ""}/${report}/${values}`;
+  return `${n.pledged ? 1 : 0}/${n.pair ?? ""}/${report}/${values}/${n.night}`;
 }
 
-function decodeNight(src: string): NightRecord {
-  const [pledged, pair, report, values] = src.split("/");
+function decodeNight(src: string, index: number): NightRecord {
+  const [pledged, pair, report, values, night] = src.split("/");
   if (pledged === undefined || pair === undefined || report === undefined || values === undefined) throw new Error(`bad night record: ${src}`);
+  const n = night === undefined || night === "" ? index + 1 : Number(night);
+  if (!Number.isInteger(n)) throw new Error(`bad night number: ${night}`);
   const pairs = (list: string) => (list === "" ? [] : list.split("+")).map((kv) => { const i = kv.indexOf(":"); return [kv.slice(0, i), kv.slice(i + 1)] as const; });
   const rec: NightRecord = {
+    night: n,
     pledged: pledged === "1",
     report: Object.fromEntries(pairs(report)),
     values: Object.fromEntries(pairs(values).map(([k, v]) => { const n = Number(v); if (!Number.isInteger(n)) throw new Error(`bad value: ${kv(k, v)}`); return [k, n]; })),
@@ -88,7 +91,7 @@ function encodeHistory(h: History): string[] {
 function historyFrom(fields: Map<string, string>): History {
   const h = fields.get("h"), pl = fields.get("pl");
   return {
-    nights: h === undefined || h === "" ? [] : h.split(",").map(decodeNight),
+    nights: h === undefined || h === "" ? [] : h.split(",").map((src, i) => decodeNight(src, i)),
     pledges: pl === undefined || pl === "" ? [] : pl.split(","),
   };
 }
