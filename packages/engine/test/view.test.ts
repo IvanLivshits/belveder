@@ -1,7 +1,7 @@
 /** Pure view helpers: choice cost, max clamping, change detection, report notes, notebook. */
 import { describe, expect, test } from "bun:test";
 import { WorldSchema, type World, type WorldInput } from "@belvedere/content-schema";
-import { changedQualities, choiceCost, choose, clockQuality, clockTime, continueOutcome, currentNotes, emptyProfile, evidenceView, lifeStatus, morningNotes, newNight, notebookView, pledge, profileOf } from "../src";
+import { changedQualities, choiceCost, choose, clockQuality, clockTime, continueOutcome, currentNotes, emptyProfile, evidenceView, isTense, lifeStatus, morningNotes, newNight, notebookView, pledge, profileOf } from "../src";
 import { miniWorld } from "./mini-world";
 
 const variant = (patch: (w: WorldInput) => void): World => {
@@ -151,5 +151,26 @@ describe("evidence folder", () => {
     s = choose(s, miniWorld, 1);
     expect(evidenceView(s, miniWorld)).toEqual({ items: [], locked: 0 });
     expect(Object.keys(s.profile).filter((k) => k.startsWith("found."))).toEqual([]);
+  });
+});
+
+describe("tension", () => {
+  const tense = variant((w) => { w.rules.tensionWhen = ["heat >= 1"]; });
+
+  test("follows the quality that the rule names", () => {
+    let s = newNight(emptyProfile(), tense, 1);
+    expect(isTense(s, tense)).toBe(false);
+    s = choose(s, tense, 1); // "wait": heat += 1
+    expect(isTense(s, tense)).toBe(true);
+  });
+
+  test("a new night starts calm again", () => {
+    const s = choose(newNight(emptyProfile(), tense, 1), tense, 1);
+    expect(isTense(newNight(profileOf(s), tense, 2), tense)).toBe(false);
+  });
+
+  test("without the rule it is never tense", () => {
+    const s = choose(newNight(emptyProfile(), miniWorld, 1), miniWorld, 1);
+    expect(isTense(s, miniWorld)).toBe(false);
   });
 });
