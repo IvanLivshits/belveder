@@ -98,8 +98,12 @@ export function App() {
   }, []);
   // Telegram's gear opens the same reset; in a browser the link lives at the bottom of the notebook.
   useEffect(() => setSettingsButton(content !== null, () => void reset()), [content, reset]);
-  // The music follows the run: tense while rules.tensionWhen holds, calm on the title and the morning page.
-  const tense = content !== null && state !== null && isTense(state, content.world);
+  // The music follows the run: tense while rules.tensionWhen holds, but only while the night is being played
+  // (scene or outcome, on the night, notebook or evidence screens). The title, the report, the morning page,
+  // the ending and the case story are always calm, even when a saved night is still in state.
+  const playing = (screen.kind === "night" || screen.kind === "notebook" || screen.kind === "evidence")
+    && (state?.phase === "scene" || state?.phase === "outcome");
+  const tense = playing && content !== null && state !== null && isTense(state, content.world);
   useEffect(() => setTension(tense), [tense]);
 
   if (screen.kind === "loading") return <div class="screen" />;
