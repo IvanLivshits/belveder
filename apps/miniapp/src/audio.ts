@@ -41,11 +41,15 @@ function readEnabled(): boolean {
   try { return localStorage.getItem(STORAGE_KEY) !== "off"; } catch { return true; }
 }
 
-/** Starts or suspends the mixer to match: ready, tapped at least once, not muted, app visible. */
-function apply(): void {
+/**
+ * Starts or suspends the mixer to match: ready, tapped at least once, not muted, app visible.
+ * The very first start must happen inside a tap handler (`inGesture`): if the engine finishes
+ * loading after the tap, starting here would leave the audio context locked (iOS) while `running` is already true.
+ */
+function apply(inGesture = false): void {
   const e = engine;
   if (!e) return;
-  const shouldRun = gestured && enabled && !document.hidden;
+  const shouldRun = gestured && enabled && !document.hidden && (began || inGesture);
   try {
     if (shouldRun && !running) {
       if (!began) {
@@ -102,14 +106,17 @@ export function initAudio(): void {
   loading = true;
   const unlock = () => {
     gestured = true;
-    window.removeEventListener("click", unlock, true);
-    window.removeEventListener("touchend", unlock, true);
-    apply();
+    apply(true);
+    // Keep listening until the engine has really started inside a tap; it may still be loading on the first one.
+    if (began) {
+      window.removeEventListener("click", unlock, true);
+      window.removeEventListener("touchend", unlock, true);
+    }
   };
   // Capture phase: runs before the button's own handler, so a first tap on "Начать" already has sound.
   window.addEventListener("click", unlock, true);
   window.addEventListener("touchend", unlock, true);
-  document.addEventListener("visibilitychange", apply);
+  document.addEventListener("visibilitychange", () => apply());
   load().catch((err) => console.warn("audio: disabled", err));
 }
 
