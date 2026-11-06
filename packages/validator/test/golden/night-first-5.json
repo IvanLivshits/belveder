@@ -1,5 +1,5 @@
 {
-  "digest": "b6a37478cc0a82c2cad92c4b8338e2f992bb6a0be054547fcbfa3085ae0532f2",
+  "digest": "9dad7b2f116f1778c73e0a6ccaba07eb286486699cd878c0e0580d4636215ea3",
   "snapshot": {
     "ending": null,
     "history": {
@@ -14,8 +14,9 @@
             "finding": "finding_ring",
             "price": "price_marines",
             "twist": "twist_ring_returned",
-            "witnesses": "witnesses_eddie"
+            "witnesses": "witnesses_eddie_room"
           },
+          "rumor": "pool_pie",
           "values": {}
         }
       ],
@@ -31,6 +32,10 @@
       },
       {
         "choice": 0,
+        "storylet": "office_first_night"
+      },
+      {
+        "choice": 1,
         "storylet": "office_first_night"
       },
       {
@@ -54,7 +59,7 @@
         "storylet": "lobby_first_night"
       },
       {
-        "choice": 2,
+        "choice": 4,
         "storylet": "lobby_hub_first_night"
       },
       {
@@ -62,16 +67,38 @@
         "storylet": "floor_01_doors"
       },
       {
-        "choice": 0,
+        "choice": -1,
+        "floor": 2,
         "storylet": "stairs"
+      },
+      {
+        "choice": 0,
+        "storylet": "floor_02_doors"
+      },
+      {
+        "choice": 0,
+        "storylet": "eddie_intro"
+      },
+      {
+        "choice": 0,
+        "storylet": "eddie_laundry"
+      },
+      {
+        "choice": 9,
+        "storylet": "eddie_laundry"
       },
       {
         "choice": 2,
         "storylet": "floor_02_doors"
       },
       {
-        "choice": 2,
+        "choice": -1,
+        "floor": 3,
         "storylet": "stairs"
+      },
+      {
+        "choice": 1,
+        "storylet": "stairs_pool_pie"
       },
       {
         "choice": 1,
@@ -86,23 +113,12 @@
         "storylet": "room_ring_found"
       },
       {
-        "choice": 2,
+        "choice": 3,
         "storylet": "floor_03_doors"
       },
       {
-        "choice": 2,
-        "storylet": "stairs_eddie"
-      },
-      {
-        "choice": 6,
-        "storylet": "stairs"
-      },
-      {
-        "choice": 2,
-        "storylet": "floor_02_doors"
-      },
-      {
-        "choice": 3,
+        "choice": -1,
+        "floor": 1,
         "storylet": "stairs"
       },
       {
@@ -110,7 +126,7 @@
         "storylet": "floor_01_doors"
       },
       {
-        "choice": 3,
+        "choice": 5,
         "storylet": "lobby_hub_first_night"
       },
       {
@@ -122,14 +138,22 @@
     "pendingChoice": null,
     "phase": "report",
     "profile": {
+      "found.laundry_tag": 1,
+      "found.matchbook": 1,
+      "found.note_12": 1,
       "found.ring": 1,
+      "knows.club": 1,
+      "knows.invitation": 1,
+      "knows.room": 1,
       "mem.false.marines": 0,
       "mem.true.ring": 1,
       "memories_returned": 1,
       "met.dolly": 1,
       "met.eddie": 1,
+      "met.vivian": 1,
       "nights": 1,
       "visited.floor1.tenant": 1,
+      "visited.floor2.tenant": 1,
       "visited.floor3.service": 1
     },
     "report": {
@@ -138,25 +162,37 @@
       "finding": "finding_ring",
       "price": "price_marines",
       "twist": "twist_ring_returned",
-      "witnesses": "witnesses_eddie"
+      "witnesses": "witnesses_eddie_room"
     },
     "rng": 5,
     "run": {
-      "clues": 2,
+      "clues": 3,
       "debt.eddie": 1,
       "floor": 1,
+      "has.laundry_tag": 1,
+      "has.matchbook": 1,
+      "has.note_12": 1,
       "has.ring": 1,
       "pledged.ring": 1,
       "returned.ring": 1,
       "returned_tonight": 1,
+      "rumor.pool_pie": 1,
       "seen.client_first": 1,
-      "seen.dolly_hint": 1,
+      "seen.dolly_ask": 1,
+      "seen.dolly_invite": 1,
       "seen.eddie": 1,
+      "seen.eddie_intro": 1,
+      "seen.eddie_room": 1,
       "seen.facade_paper": 1,
       "seen.lobby": 1,
       "seen.lobby_rules": 1,
       "seen.office_belvedere": 1,
+      "seen.office_daytime": 1,
       "seen.office_morning": 1,
+      "seen.pool_declined": 1,
+      "seen.pool_invited": 1,
+      "seen.room_open": 1,
+      "seen.went_up": 1,
       "turn": 8
     },
     "seed": 5,

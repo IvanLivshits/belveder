@@ -1,5 +1,6 @@
 import type { World } from "@belvedere/content-schema";
 import { evaluateAll } from "./conditions";
+import { leadsView, vouchersView } from "./leads";
 import { getQuality } from "./qualities";
 import type { GameState } from "./state";
 import { renderText } from "./text";
@@ -24,15 +25,17 @@ export function lifeStatus(state: Bags, world: World, pairId: string): LifeStatu
 }
 
 /** Notebook contents for the renderer: open pages (conditions hold), how many are still
- *  closed, and the life page built from memory pairs (footer null until its `when` holds).
- *  Null when the world has no notebook. */
-export function notebookView(state: Bags, world: World) {
+ *  closed, the life page built from memory pairs (footer null until its `when` holds), the leads
+ *  (open first, then closed) and the vouchers page (null until it opens). Null when the world has no notebook. */
+export function notebookView(state: Bags & Pick<GameState, "history">, world: World) {
   const nb = world.notebook;
   if (!nb) return null;
   const open = nb.pages.filter((p) => evaluateAll(state, world, p.when));
   return {
     pages: open.map((p) => ({ id: p.id, title: p.title, text: renderText(p.text, state, world), rule: renderText(p.rule, state, world) })),
     locked: nb.pages.length - open.length,
+    leads: leadsView(state, world),
+    vouchers: vouchersView(state, world),
     life: {
       title: nb.life.title,
       intro: nb.life.intro,

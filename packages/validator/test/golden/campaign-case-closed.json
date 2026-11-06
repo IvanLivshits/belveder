@@ -1,0 +1,253 @@
+{
+  "digest": "b1883fbc72db8ef9aae1eeff236de135d885bcdb0d542e0cee13f36044a485f9",
+  "snapshot": {
+    "ending": "case_closed",
+    "history": {
+      "nights": [
+        {
+          "night": 1,
+          "pair": "ring",
+          "pledged": false,
+          "report": {
+            "client": "client_first",
+            "entry": "entry_cig",
+            "finding": "finding_ring",
+            "price": "price_marines",
+            "twist": "twist_ring_returned",
+            "witnesses": "witnesses_eddie_room"
+          },
+          "rumor": "pool_pie",
+          "values": {}
+        },
+        {
+          "night": 2,
+          "pair": "ledger",
+          "pledged": false,
+          "report": {
+            "client": "client_ring",
+            "entry": "entry_kept",
+            "finding": "finding_true_ledger",
+            "price": "price_senator_dog",
+            "twist": "twist_ledger_returned",
+            "witnesses": "witnesses_sloan"
+          },
+          "rumor": "pool_pie",
+          "values": {}
+        },
+        {
+          "night": 3,
+          "pair": "cashbox",
+          "pledged": false,
+          "report": {
+            "client": "client_return",
+            "entry": "entry_tea",
+            "finding": "finding_ticket",
+            "price": "price_sheriff",
+            "twist": "twist_cashbox_returned",
+            "witnesses": "witnesses_sloan"
+          },
+          "rumor": "gorman_inside",
+          "values": {}
+        },
+        {
+          "night": 4,
+          "pledged": false,
+          "report": {
+            "client": "client_cashbox",
+            "entry": "entry_default",
+            "finding": "finding_pass",
+            "price": "price_final",
+            "twist": "twist_final",
+            "witnesses": "witnesses_pool_dinner"
+          },
+          "rumor": "pool_pie",
+          "values": {}
+        }
+      ],
+      "pledges": [
+        "ring",
+        "ledger",
+        "cashbox"
+      ],
+      "vouchers": [
+        "vouch.sloan",
+        "vouch.eddie",
+        "vouch.pool"
+      ]
+    },
+    "location": "tenant_12",
+    "log": [
+      {
+        "choice": 1,
+        "storylet": "office_cashbox"
+      },
+      {
+        "choice": 3,
+        "storylet": "facade_night"
+      },
+      {
+        "choice": 1,
+        "storylet": "lobby_pie"
+      },
+      {
+        "choice": 5,
+        "storylet": "lobby_hub_trusted"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_01_doors"
+      },
+      {
+        "choice": -1,
+        "floor": 3,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 0,
+        "storylet": "stairs_pool_pie"
+      },
+      {
+        "choice": 0,
+        "storylet": "pool_dinner"
+      },
+      {
+        "choice": 5,
+        "storylet": "pool_table"
+      },
+      {
+        "choice": 3,
+        "storylet": "floor_03_doors"
+      },
+      {
+        "choice": -1,
+        "floor": 11,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 2,
+        "storylet": "stairs_eddie"
+      },
+      {
+        "choice": 0,
+        "storylet": "floor_11_doors"
+      },
+      {
+        "choice": 1,
+        "storylet": "cordelia_desk"
+      },
+      {
+        "choice": 5,
+        "storylet": "cordelia_desk"
+      },
+      {
+        "choice": 2,
+        "storylet": "floor_11_doors"
+      },
+      {
+        "choice": -1,
+        "floor": 12,
+        "storylet": "stairs"
+      },
+      {
+        "choice": 0,
+        "storylet": "stairs_chalk"
+      },
+      {
+        "choice": 0,
+        "storylet": "floor_12_doors"
+      },
+      {
+        "choice": 0,
+        "storylet": "owner_first"
+      },
+      {
+        "choice": 2,
+        "storylet": "owner_office"
+      }
+    ],
+    "pendingChoice": null,
+    "phase": "ending",
+    "profile": {
+      "dolly_trust": 4,
+      "endings.case_closed": 1,
+      "found.cordelia_pass": 1,
+      "found.laundry_tag": 1,
+      "found.ledger_true": 1,
+      "found.matchbook": 1,
+      "found.note_12": 1,
+      "found.pawn_ticket": 1,
+      "found.ring": 1,
+      "knows.club": 1,
+      "knows.invitation": 1,
+      "knows.matchbook": 1,
+      "knows.room": 1,
+      "knows.shortage": 1,
+      "mem.false.marines": 0,
+      "mem.false.senator_dog": 0,
+      "mem.false.sheriff": 0,
+      "mem.true.cashbox": 1,
+      "mem.true.ledger": 1,
+      "mem.true.ring": 1,
+      "memories_returned": 3,
+      "met.cordelia": 1,
+      "met.dolly": 1,
+      "met.eddie": 1,
+      "met.gorman": 1,
+      "met.office_cashbox": 1,
+      "met.office_ledger": 1,
+      "met.office_ring": 1,
+      "met.owner": 1,
+      "met.pool": 1,
+      "met.sloan": 1,
+      "met.sloan_deal": 1,
+      "met.vivian": 1,
+      "nights": 4,
+      "paths.freight_lift": 1,
+      "visited.floor1.tenant": 4,
+      "visited.floor11.tenant": 1,
+      "visited.floor12.tenant": 1,
+      "visited.floor2.tenant": 2,
+      "visited.floor3.service": 1,
+      "visited.floor4.tenant": 2,
+      "vouch.eddie": 1,
+      "vouch.pool": 1,
+      "vouch.sloan": 1,
+      "vouches": 3
+    },
+    "report": {
+      "client": "client_cashbox",
+      "entry": "entry_default",
+      "finding": "finding_pass",
+      "price": "price_final",
+      "twist": "twist_final",
+      "witnesses": "witnesses_pool_dinner"
+    },
+    "rng": 1831565817,
+    "run": {
+      "clues": 2,
+      "debt.eddie": 1,
+      "ending_night": 1,
+      "floor": 12,
+      "has.cordelia_pass": 1,
+      "has.laundry_tag": 1,
+      "has.matchbook": 1,
+      "has.note_12": 1,
+      "rumor.pool_pie": 1,
+      "seen.client_cashbox": 1,
+      "seen.cordelia_vouched": 1,
+      "seen.dolly_ask": 1,
+      "seen.eddie": 1,
+      "seen.eddie_ran": 1,
+      "seen.lobby": 1,
+      "seen.pool_dinner": 1,
+      "seen.pool_intro": 1,
+      "seen.pool_invited": 1,
+      "seen.stairs_chalk": 1,
+      "seen.went_up": 1,
+      "turn": 15
+    },
+    "seed": 4,
+    "storyletId": "owner_office",
+    "v": 1
+  }
+}

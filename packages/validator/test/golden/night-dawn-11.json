@@ -1,5 +1,5 @@
 {
-  "digest": "27ade64fc2297667427985fd20ba4148505a3c1a058de33e44196c13894e4fea",
+  "digest": "a45f96f8337d866b324caf139c0ba10143f8d73b8c3bd288ca64a2d9c5a57e38",
   "snapshot": {
     "ending": null,
     "history": {
@@ -14,8 +14,9 @@
             "finding": "finding_ring",
             "price": "price_marines",
             "twist": "twist_ring_returned",
-            "witnesses": "witnesses_eddie"
+            "witnesses": "witnesses_eddie_room"
           },
+          "rumor": "pool_pie",
           "values": {}
         }
       ],
@@ -42,115 +43,71 @@
         "storylet": "floor_01_doors"
       },
       {
-        "choice": 0,
+        "choice": -1,
+        "floor": 3,
         "storylet": "stairs"
       },
       {
-        "choice": 2,
-        "storylet": "floor_02_doors"
-      },
-      {
-        "choice": 2,
-        "storylet": "stairs"
-      },
-      {
-        "choice": 2,
+        "choice": 3,
         "storylet": "floor_03_doors"
       },
       {
-        "choice": 2,
-        "storylet": "stairs_eddie_again"
-      },
-      {
-        "choice": 5,
+        "choice": -1,
+        "floor": 1,
         "storylet": "stairs"
       },
       {
         "choice": 2,
-        "storylet": "floor_04_doors"
+        "storylet": "floor_01_doors"
       },
       {
-        "choice": 9,
+        "choice": -1,
+        "floor": 3,
         "storylet": "stairs"
       },
       {
-        "choice": 2,
+        "choice": 3,
         "storylet": "floor_03_doors"
       },
       {
-        "choice": 5,
+        "choice": -1,
+        "floor": 1,
         "storylet": "stairs"
       },
       {
         "choice": 2,
-        "storylet": "floor_04_doors"
+        "storylet": "floor_01_doors"
       },
       {
-        "choice": 9,
+        "choice": -1,
+        "floor": 3,
         "storylet": "stairs"
       },
       {
-        "choice": 2,
+        "choice": 3,
         "storylet": "floor_03_doors"
       },
       {
-        "choice": 5,
+        "choice": -1,
+        "floor": 1,
         "storylet": "stairs"
       },
       {
         "choice": 2,
-        "storylet": "floor_04_doors"
+        "storylet": "floor_01_doors"
       },
       {
-        "choice": 9,
+        "choice": -1,
+        "floor": 3,
         "storylet": "stairs"
       },
       {
-        "choice": 2,
+        "choice": 3,
         "storylet": "floor_03_doors"
       },
       {
-        "choice": 5,
-        "storylet": "stairs"
-      },
-      {
-        "choice": 2,
-        "storylet": "floor_04_doors"
-      },
-      {
-        "choice": 9,
-        "storylet": "stairs"
-      },
-      {
-        "choice": 2,
-        "storylet": "floor_03_doors"
-      },
-      {
-        "choice": 5,
-        "storylet": "stairs"
-      },
-      {
-        "choice": 2,
-        "storylet": "floor_04_doors"
-      },
-      {
-        "choice": 9,
-        "storylet": "stairs"
-      },
-      {
-        "choice": 2,
-        "storylet": "floor_03_doors"
-      },
-      {
-        "choice": 5,
-        "storylet": "stairs"
-      },
-      {
-        "choice": 2,
-        "storylet": "floor_04_doors"
-      },
-      {
-        "choice": 9,
+        "choice": -1,
+        "floor": 1,
         "storylet": "stairs"
       }
     ],
@@ -158,26 +115,37 @@
     "phase": "scene",
     "profile": {
       "dolly_trust": 1,
+      "found.laundry_tag": 1,
+      "found.matchbook": 1,
+      "found.note_12": 1,
       "found.ring": 1,
+      "knows.club": 1,
+      "knows.invitation": 1,
+      "knows.room": 1,
       "mem.false.marines": 0,
       "mem.true.ring": 1,
       "memories_returned": 1,
       "met.dolly": 1,
       "met.eddie": 1,
       "met.office_ring": 1,
+      "met.vivian": 1,
       "nights": 1,
       "visited.floor1.tenant": 1,
+      "visited.floor2.tenant": 1,
       "visited.floor3.service": 1
     },
     "report": {},
-    "rng": 11,
+    "rng": 1831565824,
     "run": {
-      "debt.eddie": 1,
-      "floor": 3,
+      "floor": 1,
+      "has.laundry_tag": 1,
+      "has.matchbook": 1,
+      "has.note_12": 1,
+      "rumor.lights": 1,
       "seen.client_ring": 1,
-      "seen.eddie": 1,
       "seen.lobby": 1,
       "seen.lobby_silent": 1,
+      "seen.went_up": 1,
       "suspicion": 1,
       "turn": 16
     },

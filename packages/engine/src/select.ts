@@ -1,14 +1,14 @@
-import type { Storylet, World } from "@belvedere/content-schema";
+import type { Choice, Storylet, World } from "@belvedere/content-schema";
 import { evaluateAll } from "./conditions";
 import { nextInt, type RngState } from "./rng";
 import type { GameState } from "./state";
 
 type Bags = Pick<GameState, "run" | "profile">;
 
-/** Storylets eligible at a location, highest priority only. */
-export function candidates(state: Bags, world: World, location: string): Storylet[] {
+/** Storylets eligible at a location, highest priority only; `accept` narrows the pool further. */
+export function candidates(state: Bags, world: World, location: string, accept: (s: Storylet) => boolean = () => true): Storylet[] {
   const eligible = world.storylets.filter(
-    (s) => s.location === location && evaluateAll(state, world, s.when),
+    (s) => s.location === location && accept(s) && evaluateAll(state, world, s.when),
   );
   if (eligible.length === 0) return [];
   const top = Math.max(...eligible.map((s) => s.priority));
@@ -21,8 +21,9 @@ export function selectStorylet(
   world: World,
   location: string,
   rng: RngState,
+  accept?: (s: Storylet) => boolean,
 ): [storylet: Storylet | undefined, rng: RngState] {
-  const pool = candidates(state, world, location);
+  const pool = candidates(state, world, location, accept);
   if (pool.length <= 1) return [pool[0], rng];
   const [i, next] = nextInt(rng, pool.length);
   return [pool[i], next];
@@ -35,4 +36,15 @@ export function choicesOf(state: Bags, world: World, storylet: Storylet) {
     index,
     available: evaluateAll(state, world, choice.when),
   }));
+}
+
+/** The doors of a `layout: doors` card: choices with the same goto are variants of one door.
+ *  A door shows its first open variant, or the first one (locked) when none is open. */
+export function doorsOf<T extends { choice: Choice; available: boolean }>(choices: readonly T[]): T[] {
+  const doors = new Map<string | undefined, T>();
+  for (const c of choices) {
+    const shown = doors.get(c.choice.goto);
+    if (shown === undefined || (!shown.available && c.available)) doors.set(c.choice.goto, c);
+  }
+  return [...doors.values()];
 }

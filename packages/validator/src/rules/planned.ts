@@ -8,6 +8,10 @@ function writtenQualities(world: World): Set<string> {
   const add = (effects: readonly string[]) => effects.forEach((e) => out.add(parseEffect(e).quality));
   add(world.rules.onChoice);
   add(world.rules.onNightEnd);
+  add(world.rules.onNightStart);
+  for (const m of world.rules.migrations) add(m.effects);
+  if (world.stairs) { add(world.stairs.onTravel); out.add(world.stairs.quality); }
+  for (const r of world.rumors) out.add(RESERVED_QUALITIES.rumorPrefix + r.id);
   for (const s of world.storylets) for (const c of s.choices) add(c.effects);
   const { pledgedPrefix, returnedPrefix, memoriesReturned, foundPrefix, endingPrefix, endingNight } = RESERVED_QUALITIES;
   for (const item of world.evidence.items) out.add(foundPrefix + item.id);
@@ -35,8 +39,11 @@ export const check: Rule = (world) => {
   };
   for (const s of world.storylets) {
     checkConds(`storylet ${s.id}`, s.when);
+    s.lines?.forEach((l, i) => checkConds(`storylet ${s.id} line #${i}`, l.when));
     s.choices.forEach((c, i) => checkConds(`storylet ${s.id} choice #${i}`, c.when));
   }
+  world.stairs?.locks.forEach((l, i) => l.open_any.forEach((group) => checkConds(`stairs.locks #${i}`, group)));
+  world.stairs?.costMods.forEach((m, i) => checkConds(`stairs.costMods #${i}`, m.when));
   for (const f of world.fragments) checkConds(`fragment ${f.id}`, f.when);
   world.memories.forEach((m) => checkConds(`memory pair ${m.id}`, m.returnWhen));
   world.rules.interrupts.forEach((i, n) => checkConds(`rules.interrupts #${n}`, i.when));

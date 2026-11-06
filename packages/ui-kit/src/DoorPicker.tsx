@@ -1,4 +1,4 @@
-import type { ChoiceItem } from "./ChoiceList";
+import { Clip, type ChoiceItem } from "./ChoiceList";
 
 export interface DoorPickerProps {
   /** Exactly three in content order: tenant door, service door, stairs. */
@@ -35,6 +35,7 @@ export function DoorPicker({ doors, onChoose }: DoorPickerProps) {
           disabled={!d.available}
           onClick={() => d.available && onChoose(d.index)}
         >
+          {d.available && d.lead && <Clip />}
           <Icon name={d.available ? ORDER[i] ?? "door" : "lock"} />
           <span>{d.text}</span>
           <span class="door__cost">{(d.available && d.cost) || "\u00a0"}</span>

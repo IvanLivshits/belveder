@@ -1,14 +1,9 @@
 import { RESERVED_QUALITIES, type StoryPartKind, type World } from "@belvedere/content-schema";
 import { evaluateAll } from "./conditions";
 import { EngineError, emptyHistory, type GameState, type NightRecord, type Profile } from "./state";
-import { renderText } from "./text";
+import { paragraphs, renderText } from "./text";
 
 type Bags = Pick<GameState, "run" | "profile">;
-
-/** Paragraphs are separated by blank lines in content. */
-export function paragraphs(text: string): string[] {
-  return text.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
-}
 
 export interface EndingView {
   id: string;

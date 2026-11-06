@@ -67,13 +67,13 @@ describe("mini world night", () => {
   test("outcome pauses the move, applies effects first, then goto", () => {
     let s = newNight(emptyProfile(), miniWorld, 3);
     s = choose(s, miniWorld, 0); // to room
-    expect(currentScene(s, miniWorld).text).toBe("X heat=0");
+    expect(currentScene(s, miniWorld).lines.map((l) => l.text)).toEqual(["X heat=0"]);
     s = choose(s, miniWorld, 2);
     expect(s.phase).toBe("outcome");
     expect(s.location).toBe("room"); // goto not yet applied
     expect(s.run["heat"]).toBe(2);
     expect(s.run["turn"]).toBe(2); // onChoice applied before the outcome screen
-    expect(currentOutcome(s, miniWorld).text).toBe("Heat is now 2, trust 0.");
+    expect(currentOutcome(s, miniWorld).lines.map((l) => l.text)).toEqual(["Heat is now 2, trust 0."]);
     expect(() => choose(s, miniWorld, 0)).toThrow(/outside a scene/);
     s = continueOutcome(s, miniWorld);
     expect(s.phase).toBe("scene");

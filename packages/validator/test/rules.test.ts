@@ -92,9 +92,9 @@ describe("validator rules", () => {
     expect(messages(rules["report-slots"]!(w, assets))).toMatch(/no unconditional fallback/);
   });
 
-  test("layouts: doors need three choices; pledge needs memories and a night pledge", () => {
+  test("layouts: doors need three doors; pledge needs memories and a night pledge", () => {
     const w = broken((w) => { w.storylets[1]!.layout = "doors"; });
-    expect(messages(rules["layouts"]!(w, assets))).toMatch(/needs 3 choices/);
+    expect(messages(rules["layouts"]!(w, assets))).toMatch(/needs 3 doors \(distinct goto\), has 1/);
     const noMem = broken((w) => { w.memories = []; });
     expect(messages(rules["layouts"]!(noMem, assets))).toMatch(/world.memories is empty/);
     const noNight = broken((w) => { w.storylets.find((s) => s.id === "vault_pledge")!.choices[0]!.endNight = false; });

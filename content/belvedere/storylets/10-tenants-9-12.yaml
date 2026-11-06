@@ -102,6 +102,14 @@
       effects: [seen.cordelia_want = 1, debt.cordelia += 1]
       outcome: |
         — Ничего. Я продала это давно. Список желаний, написанный в девятнадцать лет. — Она поправляет печать на сантиметр. — Раньше это было облегчением. Теперь это пугает.
+    # v2: три поручительства — пропуск без хитростей.
+    - text: Сказать, что за тебя поручились
+      when: [vouches >= 3, has.cordelia_pass == 0]
+      effects: [has.cordelia_pass = 1, seen.cordelia_vouched = 1, clues += 1]
+      outcome: |
+        Мисс Шоу развязывает ленту раньше, чем ты договариваешь.
+
+        — Знаю. Мне прислали три записки. Владелец не любит ждать тех, за кого поручились.
     - text: Предложить ей сигарету, чтобы она захотела хотя бы её
       when: [seen.cordelia_want == 1, cigarettes >= 1, has.cordelia_pass == 0]
       effects: [cigarettes -= 1, has.cordelia_pass = 1, clues += 1]

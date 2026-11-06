@@ -1,6 +1,6 @@
 /** Plays N nights with random choices (seeded) and reports coverage and stuck states. */
 import type { World } from "@belvedere/content-schema";
-import { choose, continueOutcome, currentScene, emptyProfile, newCase, newNight, nextInt, pledge, profileOf, seedRng, type GameState, type Profile } from "@belvedere/engine";
+import { choose, continueOutcome, currentScene, emptyProfile, newCase, newNight, nextInt, pledge, profileOf, seedRng, travel, type GameState, type Profile } from "@belvedere/engine";
 
 export interface SimulationReport {
   nights: number;
@@ -54,7 +54,9 @@ export function simulate(world: World, opts: SimulationOptions = {}): Simulation
         const scene = currentScene(s, world);
         shown.add(scene.storylet.id);
         const open = scene.choices.filter((c) => c.available);
-        const options = open.length + scene.memories.length;
+        // On the stairs: every open floor, plus the way back to the landing.
+        const walks = scene.stairs ? [...scene.stairs.floors.filter((f) => f.locked === null).map((f) => f.floor), ...(scene.stairs.back ? [scene.stairs.back.floor] : [])] : [];
+        const options = open.length + scene.memories.length + walks.length;
         if (options === 0) { r.stuck.push({ seed, storylet: scene.storylet.id }); break; }
         const [i, next] = nextInt(rng, options);
         rng = next;
@@ -64,6 +66,8 @@ export function simulate(world: World, opts: SimulationOptions = {}): Simulation
           s = choose(s, world, pick.index);
           if (s.phase === "report") r.endedByChoice++;
           if (s.phase === "ending") r.endedByEnding++;
+        } else if (i >= open.length + scene.memories.length) {
+          s = travel(s, world, walks[i - open.length - scene.memories.length]!);
         } else {
           const m = scene.memories[i - open.length]!;
           taken.add(`${scene.storylet.id}#mem:${m.id}`);
