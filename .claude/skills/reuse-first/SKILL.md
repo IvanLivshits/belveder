@@ -20,10 +20,14 @@ description: Алгоритм «перед тем как написать код
 | Выбрать сторилет для локации | `engine/select.ts: selectStorylet()` |
 | Детерминированный рандом | `engine/rng.ts` |
 | Собрать отчёт за ночь | `engine/report.ts: buildReport()`, для рендера `step.ts: currentReport()` |
-| Данные для экрана сцены | `engine/step.ts: currentScene()` |
+| Данные для экрана сцены | `engine/step.ts: currentScene()` (реплики, выборы со скрепкой, двери, этажи лестницы) |
+| Реплики карточки или ответа, лента места | `engine/lines.ts: sceneLines()`, `replyLines()`, `openFeed()`, `extendFeed()` |
+| Слух этой ночи | `engine/rumors.ts: currentRumor()` |
+| Зацепки, скрепки, поручители | `engine/leads.ts: leadsView()`, `leadTargets()`, `vouchersView()` |
+| Этажи лестницы с ценой и замками | `engine/stairs.ts: stairsView()`; сам переход — `step.ts: travel()` |
 | Сериализовать состояние / профиль | `engine/storage.ts` (кодек, чанки) + `apps/miniapp/src/storage.ts` (транспорт KV) |
 | Загрузить контент из YAML | `validator/load.ts: loadWorldDir()` |
-| Фон с дождём, карточка сцены, список выборов, три двери, HUD качеств, страница отчёта, титул | `ui-kit` |
+| Фон с дождём, карточка сцены с лентой, список выборов, три двери, сетка этажей, HUD качеств, блокнот с вкладками, страница отчёта, титул | `ui-kit` |
 | Telegram API | `apps/miniapp/src/telegram.ts` — единственное место |
 | Схема любой сущности контента | `content-schema` |
 

@@ -7,18 +7,19 @@ description: Как менять packages/engine: чистые функции, s
 
 ## Принципы
 
-- Всё в engine — чистые функции: `step(state, action, world) -> state`. Действия: `choose`, `continue` (уйти с экрана последствия), `pledge` (заложить воспоминание), `newNight`. Ни одной мутации входа, ни одного побочного эффекта.
-- Фазы состояния: `scene` → (`outcome` →) `scene` … → `report` или `ending`. Эффекты выбора применяются до фазы `outcome`; после неё: `ending` → конец игры (`endings.<id> = 1`, отчёт, история, фаза `ending`), `endNight` → отчёт, иначе первый подходящий `interrupts[].goto`, иначе `goto` выбора. Ночь заканчивается только `endNight`, залогом воспоминания или концовкой. На каждом конце ночи в `state.history` добавляется запись для рассказа (`NightRecord`), профиль несёт её между ночами.
+- Всё в engine — чистые функции: `step(state, action, world) -> state`. Действия: `choose`, `continue` (уйти с экрана ответа), `pledge` (заложить воспоминание), `travel` (переход по лестнице), `newNight`. Ни одной мутации входа, ни одного побочного эффекта.
+- Фазы состояния: `scene` → (`outcome` →) `scene` … → `report` или `ending`. Эффекты выбора применяются сразу; ход разрешается так: `ending` → конец игры (`endings.<id> = 1`, отчёт, история, фаза `ending`), `endNight` → отчёт, иначе первый подходящий `interrupts[].goto`, иначе `goto` выбора, иначе остаёмся (после встречи на лестнице — идём на площадку целевого этажа). Фаза `outcome` бывает только у выбора с `reply`/`outcome`, который уводит из локации или кончает ночь: ответ надо дочитать до смены места. Ответ без перехода хода не останавливает. Ночь заканчивается только `endNight`, залогом воспоминания или концовкой. На каждом конце ночи в `state.history` добавляется запись для рассказа (`NightRecord`), профиль несёт её между ночами.
 - Рандом только через `rng.ts` (mulberry32): состояние RNG лежит в `state.rng`, каждое использование возвращает новое значение. Одинаковый seed + одинаковые действия = одинаковое состояние, байт в байт.
-- Движок не знает о мире: имена качеств, локаций, сторилетов приходят из `world`. Глобальные правила (`onChoice`, `interrupts`, `onNightEnd`) — тоже данные из `world.rules`. Единственные id, которые движок пишет сам, — `RESERVED_QUALITIES` из content-schema (`pledged.<id>`, `returned.<id>`, `returned_tonight`, `memories_returned`, `found.<id>` для улик, `endings.<id>` и `ending_night` для концовок): это имена механики, а не мира, и validator требует их объявления.
+- Движок не знает о мире: имена качеств, локаций, сторилетов приходят из `world`. Глобальные правила (`onChoice`, `interrupts`, `onNightEnd`) — тоже данные из `world.rules`. Единственные id, которые движок пишет сам, — `RESERVED_QUALITIES` из content-schema (`pledged.<id>`, `returned.<id>`, `returned_tonight`, `memories_returned`, `found.<id>` для улик, `endings.<id>` и `ending_night` для концовок, `rumor.<id>` для слуха дня): это имена механики, а не мира, и validator требует их объявления. Качество этажа и локации лестницы движок тоже берёт из мира (`world.stairs`), а не знает сам.
 - Нет `Date`, `Math.random`, `console`, `fetch`, `window`.
-- Всё, что нужно экрану, — чистые «view»-функции от состояния: `currentScene`, `currentOutcome`, `currentReport`, `currentNotes`, `pledgeOptions`, `choiceCost`, `changedQualities`, `notebookView`, `evidenceView`, `clockTime`, `endingView`, `storyView`; `newCase` даёт профиль следующего дела. Память интерфейса (какая подсказка уже показана, какая страница прочитана, какая улика открыта) живёт в приложении, не в `GameState`.
+- Всё, что нужно экрану, — чистые «view»-функции от состояния: `currentScene`, `currentOutcome`, `currentReport`, `currentNotes`, `progressNotes`, `pledgeOptions`, `choiceCost`, `changedQualities`, `notebookView`, `leadsView`, `stairsView`, `currentRumor`, `evidenceView`, `clockTime`, `endingView`, `storyView`; `newCase` даёт профиль следующего дела. Лента реплик — тоже чистые функции (`openFeed`, `extendFeed(feed, prev, next)`), но сама лента в `GameState` не лежит. Память интерфейса (лента места, какая подсказка уже показана, какая страница или зацепка прочитана, какая улика открыта) живёт в приложении.
 
 ## Тесты
 
 Главный вид тестов — сценарные прогоны:
 
 - `packages/engine/test/night.test.ts` — мини-мир внутри теста (`test/mini-world.ts`), проверяет сам движок.
+- `packages/engine/test/loop.test.ts` — «башня» (`test/tower-world.ts`): реплики и лента, слух дня, зацепки и поручители, лестница со встречами, начало ночи.
 - `packages/validator/test/belvedere-night.test.ts` — реальный `content/belvedere`, проверяет мир.
 
 1. Сценарий = seed + список индексов выборов + мир.
