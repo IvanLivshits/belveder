@@ -1,9 +1,7 @@
 import type { World } from "@belvedere/content-schema";
-import { evaluateAll } from "./conditions";
+import { evaluateAll, type Bags } from "./conditions";
 import { nextInt, type RngState } from "./rng";
-import { EngineError, type GameState } from "./state";
-
-type Bags = Pick<GameState, "run" | "profile">;
+import { EngineError } from "./state";
 
 /** For every slot picks the highest-priority eligible fragment; ties via RNG. */
 export function buildReport(

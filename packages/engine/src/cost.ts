@@ -1,8 +1,6 @@
 import { parseEffect, type Choice, type World } from "@belvedere/content-schema";
 import { getQuality } from "./qualities";
-import type { GameState } from "./state";
-
-type Bags = Pick<GameState, "run" | "profile">;
+import type { Bags } from "./conditions";
 
 /** The quality that `rules.onChoice` increments, i.e. what a move costs; null if there is none. */
 export function clockQuality(world: World): string | null {

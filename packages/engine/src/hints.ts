@@ -1,8 +1,6 @@
 import type { World } from "@belvedere/content-schema";
 import { getQuality } from "./qualities";
-import type { GameState } from "./state";
-
-type Bags = Pick<GameState, "run" | "profile">;
+import type { Bags } from "./conditions";
 
 /** Ids of qualities whose value differs between two states, sorted. Bags drop defaults,
  *  so the union of keys on both sides covers every change. The app decides what to do

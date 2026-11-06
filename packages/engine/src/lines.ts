@@ -1,10 +1,8 @@
 import type { Choice, Line, Storylet, World } from "@belvedere/content-schema";
-import { evaluateAll } from "./conditions";
+import { evaluateAll, type Bags } from "./conditions";
 import { currentRumor } from "./rumors";
 import { findStorylet, type GameState, type LogEntry } from "./state";
 import { paragraphs, renderText } from "./text";
-
-type Bags = Pick<GameState, "run" | "profile">;
 
 /** narrator: no label, muted. inner: the inner voice, italic. speech: a character, label in its colour. written: a note instead of speech. */
 export type LineStyle = "narrator" | "inner" | "speech" | "written";

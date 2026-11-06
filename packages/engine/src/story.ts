@@ -1,9 +1,7 @@
 import { RESERVED_QUALITIES, type StoryPartKind, type World } from "@belvedere/content-schema";
-import { evaluateAll } from "./conditions";
+import { evaluateAll, type Bags } from "./conditions";
 import { EngineError, emptyHistory, type GameState, type NightRecord, type Profile } from "./state";
 import { paragraphs, renderText } from "./text";
-
-type Bags = Pick<GameState, "run" | "profile">;
 
 export interface EndingView {
   id: string;
