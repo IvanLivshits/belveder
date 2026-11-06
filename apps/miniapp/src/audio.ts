@@ -2,6 +2,7 @@
 
 import type createFMOD from "./fmod/fmodstudio";
 import type { FMOD } from "./fmod/fmodstudio";
+import { onActiveChange } from "./telegram";
 import bankMaster from "./banks/Master.bank?url";
 import bankStrings from "./banks/Master.strings.bank?url";
 import wasmUrl from "./fmod/fmodstudio.wasm?url";
@@ -30,6 +31,8 @@ let loading = false;
 /** Browsers play sound only after a tap; set by the first one. */
 let gestured = false;
 let enabled = readEnabled();
+/** The app is on screen: visible page and, in Telegram, not minimised (see onActiveChange). */
+let active = !document.hidden;
 let tense = false;
 /** The events have been started at least once. */
 let began = false;
@@ -49,7 +52,7 @@ function readEnabled(): boolean {
 function apply(inGesture = false): void {
   const e = engine;
   if (!e) return;
-  const shouldRun = gestured && enabled && !document.hidden && (began || inGesture);
+  const shouldRun = gestured && enabled && active && (began || inGesture);
   try {
     if (shouldRun && !running) {
       if (!began) {
@@ -116,7 +119,7 @@ export function initAudio(): void {
   // Capture phase: runs before the button's own handler, so a first tap on "Начать" already has sound.
   window.addEventListener("click", unlock, true);
   window.addEventListener("touchend", unlock, true);
-  document.addEventListener("visibilitychange", () => apply());
+  onActiveChange((on) => { active = on; apply(); });
   load().catch((err) => console.warn("audio: disabled", err));
 }
 
