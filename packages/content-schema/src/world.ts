@@ -195,7 +195,7 @@ export const RulesSchema = z.object({
   migrations: z.array(MigrationSchema).default([]),
   clock: ClockSchema.optional(),
   /** Presentation only, like `clock`: while all hold, the app plays the tense music (`isTense` in engine). */
-  tensionWhen: z.array(ConditionSchema).optional(),
+  tensionWhen: z.array(ConditionSchema).min(1).optional(),
   /** Evaluated on the report state: when all hold, the night is recorded as pawned and left out of the final story. */
   pledgedNightWhen: z.array(ConditionSchema).optional(),
   /** Applied after every non-free choice, e.g. `turn += 1`. */
