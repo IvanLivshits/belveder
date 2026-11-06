@@ -1,5 +1,5 @@
 {
-  "digest": "a45f96f8337d866b324caf139c0ba10143f8d73b8c3bd288ca64a2d9c5a57e38",
+  "digest": "63c3847d3bcd7e0d40c54c967423dcbbf451b0cb42d7de142d30e87c2ee6e5a1",
   "snapshot": {
     "ending": null,
     "history": {
@@ -120,6 +120,7 @@
       "found.note_12": 1,
       "found.ring": 1,
       "knows.club": 1,
+      "knows.denver": 1,
       "knows.invitation": 1,
       "knows.room": 1,
       "mem.false.marines": 0,

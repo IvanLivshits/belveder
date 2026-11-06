@@ -58,6 +58,12 @@ leads:
     target: tenant_04
     done: [found.ledger_true == 1]
     answer: "Настоящая книга: недостача погашена в ночь на 15 марта."
+  - id: denver
+    when: [knows.denver == 1]
+    text: "Эдди хочет в Денвер, смотреть на горы. Билет стоит денег. У меня в кармане аванс Вивиан."
+    target: tenant_02
+    done: [vouch.eddie == 1]
+    answer: "Отдал. Эдди не помнит, что рассказывал мне про Денвер."
   - id: vouchers
     when: [knows.invitation == 1]
     text: "Кто за меня поручится? Нужны трое."

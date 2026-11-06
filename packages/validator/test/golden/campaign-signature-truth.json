@@ -1,5 +1,5 @@
 {
-  "digest": "09875b276ecac28a797dd8111deeee5890c3ebf595cf373673e83d7029d365d1",
+  "digest": "950cc179ce76c43162ded640e0649eb766db70271bdcd78bf08571e59cd038f0",
   "snapshot": {
     "ending": "signature_truth",
     "history": {
@@ -181,6 +181,7 @@
       "found.signature_photo": 1,
       "found.vivian_envelope": 1,
       "knows.club": 1,
+      "knows.denver": 1,
       "knows.invitation": 1,
       "knows.matchbook": 1,
       "knows.room": 1,

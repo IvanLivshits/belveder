@@ -1,5 +1,5 @@
 {
-  "digest": "63256772d2990d7d0787eb87c137965eeca92d6446700816e3bb8cdf74a6645e",
+  "digest": "34aca458b6c74ba4d71d37bde012a81a163a76659457bfd61576846c110cd831",
   "snapshot": {
     "ending": null,
     "history": {
@@ -76,6 +76,10 @@
         "storylet": "eddie_laundry"
       },
       {
+        "choice": 5,
+        "storylet": "eddie_laundry"
+      },
+      {
         "choice": 9,
         "storylet": "eddie_laundry"
       },
@@ -136,6 +140,7 @@
       "found.note_12": 1,
       "found.ring": 1,
       "knows.club": 1,
+      "knows.denver": 1,
       "knows.invitation": 1,
       "knows.room": 1,
       "mem.false.marines": 0,
@@ -161,7 +166,7 @@
     "run": {
       "cigarettes": 2,
       "clues": 3,
-      "debt.eddie": 1,
+      "debt.eddie": 2,
       "floor": 1,
       "has.laundry_tag": 1,
       "has.matchbook": 1,
@@ -176,6 +181,7 @@
       "seen.dolly_cig": 1,
       "seen.dolly_invite": 1,
       "seen.eddie": 1,
+      "seen.eddie_dream": 1,
       "seen.eddie_intro": 1,
       "seen.eddie_room": 1,
       "seen.lobby": 1,
@@ -185,7 +191,7 @@
       "seen.pool_invited": 1,
       "seen.room_open": 1,
       "seen.went_up": 1,
-      "turn": 9
+      "turn": 10
     },
     "seed": 2024,
     "storyletId": "pledge_first_night",

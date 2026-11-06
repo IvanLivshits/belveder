@@ -1,5 +1,5 @@
 {
-  "digest": "b1883fbc72db8ef9aae1eeff236de135d885bcdb0d542e0cee13f36044a485f9",
+  "digest": "9d5ecb23cdc47b47b6d18c6fe4d7419dfdca94ac866d3fc631c2cea861d9dfb1",
   "snapshot": {
     "ending": "case_closed",
     "history": {
@@ -178,6 +178,7 @@
       "found.pawn_ticket": 1,
       "found.ring": 1,
       "knows.club": 1,
+      "knows.denver": 1,
       "knows.invitation": 1,
       "knows.matchbook": 1,
       "knows.room": 1,

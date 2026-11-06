@@ -73,37 +73,40 @@
       reply:
         - { who: eddie, text: "Все наверх. Ему. И одна про вас. Я не давал, вы сами нашли." }
         - { who: narrator, text: "«Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»" }
+    # Грубый путь — только когда угостить нечем.
     - do: Снять цилиндр с полки
-      when: [has.owner_note == 0]
+      when: [cigarettes == 0, has.owner_note == 0]
       effects: [seen.eddie = 1, seen.eddie_hostile = 1, suspicion += 2, has.owner_note = 1, clues += 1]
       reply:
         - { who: narrator, text: "«Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»" }
         - { who: gut, text: "Ему пятнадцать. Он только что решил, что ты такой же, как все тут." }
+    # Про Денвер Ник узнаёт один раз (knows.denver). Аванс можно отдать только в другую ночь:
+    # Эдди не помнит разговора, и это часть вуали.
     - say: Куда хочешь уехать?
-      when: [seen.eddie_dream == 0]
-      effects: [seen.eddie = 1, seen.eddie_dream = 1, debt.eddie += 1]
+      when: [knows.denver == 0]
+      effects: [seen.eddie = 1, seen.eddie_dream = 1, knows.denver = 1, debt.eddie += 1]
       reply:
         - { who: eddie, text: "В Денвер. Отец говорил, оттуда видно горы." }
         - { who: eddie, text: "Лица его не помню, а горы помню. Смешно, да?" }
-    - do: Отдать ему аванс Вивиан на билет
-      when: [seen.eddie_dream == 1, vouch.eddie == 0]
-      effects: [vouch.eddie = 1, vouches += 1, has.advance_given = 1, debt.eddie += 1]
+    # Услуги Эдди (аванс, ключ, желоб) — не больше одной за ночь: seen.eddie_favor.
+    - do: Отдать ему аванс на билет до Денвера
+      when: [knows.denver == 1, seen.eddie_dream == 0, vouch.eddie == 0, seen.eddie_favor == 0]
+      effects: [vouch.eddie = 1, vouches += 1, has.advance_given = 1, debt.eddie += 1, seen.eddie_favor = 1]
       reply:
-        - { who: narrator, text: "Двести долларов. Эдди долго не берёт конверт." }
-        - { who: eddie, text: "Мистер… Это же билет. Это два билета." }
+        - { who: eddie, text: "Откуда вы знаете про Денвер? Я никому… Мистер, это же два билета." }
         - { who: eddie, text: "Наверху спросят, кто вы, — я скажу. Я им почту ношу, мне верят." }
-    - say: Есть ключ от фотолаборатории?
-      when: [debt.eddie >= 2, has.darkroom_key == 0]
-      effects: [has.darkroom_key = 1]
+    - say: Есть ключ от лаборатории Мэй?
+      when: [met.mei == 1, debt.eddie >= 2, has.darkroom_key == 0, seen.eddie_favor == 0]
+      effects: [has.darkroom_key = 1, seen.eddie_favor = 1]
       reply:
         - { who: narrator, text: "Эдди снимает с гвоздя ключ с красной биркой." }
         - { who: eddie, text: "Мэй забывает его в карманах, я нахожу при стирке. Не вернёте — она и не узнает." }
     - say: Куда ведёт желоб?
-      when: [debt.eddie >= 2, paths.laundry_chute == 0]
-      effects: [seen.eddie = 1, paths.laundry_chute = 1]
+      when: [nights >= 1, debt.eddie >= 1, paths.laundry_chute == 0, seen.eddie_favor == 0]
+      effects: [seen.eddie = 1, paths.laundry_chute = 1, seen.eddie_favor = 1]
       reply:
         - { who: eddie, text: "В подвал, к Сайласу. Быстро, но только вниз." }
-        - { who: eddie, text: "Не сегодня, мистер. Вы ещё не всё наверху посмотрели." }
+        - { who: eddie, text: "Заслонку я вам открою. Только Сайласу не говорите, что от меня." }
     - do: Уйти
       free: true
       goto: floor_02
@@ -194,13 +197,13 @@
         - { who: pool, text: "Сына. Служит на флоте, пишет редко." }
         - { who: pool, text: "Скоро придёт. Они все приходят, если накрыть стол." }
     - say: Кто жил в 3-В?
-      when: [knows.room == 1, seen.pool_room == 0]
+      when: [knows.room == 1, seen.pool_room == 0, seen.pool_dinner == 0]
       effects: [seen.pool_room = 1, clues += 1]
       reply:
         - { who: pool, text: "Уолтер. Вежливый, всегда вытирал ноги." }
         - { who: pool, text: "Съехал однажды утром и не попрощался. Они все так съезжают." }
     - do: Сесть и поесть
-      when: [seen.pool_meal == 0]
+      when: [seen.pool_meal == 0, seen.pool_dinner == 0]
       effects: [seen.pool_meal = 1, knows.room = 1, turn += 1]
       reply:
         - { who: narrator, text: "Суп с луком, горячий, как в детстве, которого ты не помнишь." }

@@ -234,7 +234,7 @@
   lines:
     - { who: narrator, text: "На третьем открывается дверь. Пахнет корицей." }
     - { who: pool, text: "Мистер! Пирог как раз из печи. Я поставила вторую тарелку." }
-    - { who: gut, text: "Ужин у неё — час, не меньше. А Долли просила зайти.", when: [seen.dolly_ask == 1] }
+    - { who: gut, text: "Ужин у неё — час, не меньше. А Долли просила зайти.", when: [seen.dolly_ask == 1, turn <= 5] }
   choices:
     - say: Иду
       effects: [seen.pool_invited = 1, floor = 3]
