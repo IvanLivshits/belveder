@@ -169,7 +169,7 @@
     - { who: ruby, text: "«Третий столик слева. Ты всегда сидел там и считал выручку в уме, пока я пела»." }
   choices:
     - say: Я помню
-      effects: [seen.ruby_recognized = 1, met.ruby_recognized = 1, seen.ruby_said_remember = 1, knows.ruby_coffee = 1, debt.ruby += 1, clues += 1]
+      effects: [seen.ruby_recognized = 1, met.ruby_recognized = 1, seen.ruby_said_remember = 1, met.ruby_voice = 1, knows.ruby_coffee = 1, debt.ruby += 1, clues += 1]
       reply:
         - { who: narrator, text: "Руби закрывает лицо руками. Плечи трясутся без звука." }
         - { who: ruby, text: "«Уолтер». Дважды подчёркнуто." }
@@ -216,14 +216,14 @@
     # Поручительство: послушать пластинку с ней, если этой ночью её не крали из гримёрной.
     - say: Поставите пластинку?
       when: [seen.ruby_listen == 0, seen.record_stolen == 0, vouch.ruby == 0]
-      effects: [seen.ruby_listen = 1, debt.ruby += 1, turn += 1, vouch.ruby = 1, vouches += 1, seen.ruby_vouched = 1]
+      effects: [seen.ruby_listen = 1, met.ruby_voice = 1, debt.ruby += 1, turn += 1, vouch.ruby = 1, vouches += 1, seen.ruby_vouched = 1]
       reply:
         - { who: narrator, text: "Из патефона поёт её голос: тёплый, низкий, живой. Руби слушает с закрытыми глазами." }
         - { who: gut, text: "Этот голос ты слышал раньше. Не на пластинке. Ближе." }
         - { who: ruby, text: "«Возьми её. И если наверху спросят — я за тебя напишу. Крупно»." }
     - say: Поставите пластинку?
       when: [seen.ruby_listen == 0, seen.record_stolen == 0, vouch.ruby == 1]
-      effects: [seen.ruby_listen = 1, debt.ruby += 1, turn += 1]
+      effects: [seen.ruby_listen = 1, met.ruby_voice = 1, debt.ruby += 1, turn += 1]
       reply:
         - { who: narrator, text: "Из патефона поёт её голос: тёплый, низкий, живой. Руби слушает с закрытыми глазами." }
         - { who: gut, text: "Этот голос ты слышал раньше. Не на пластинке. Ближе." }

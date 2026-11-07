@@ -1,5 +1,5 @@
 {
-  "digest": "f0eda70a9a2f1ed10b4ddabd04131709498daca156dc8926b7bd5e1598832b20",
+  "digest": "0d0fd784cfffba55edf7c4de181f4ee2f24b7ea5424ffac102172dbdf1d9aed9",
   "snapshot": {
     "ending": "case_closed",
     "history": {
@@ -168,7 +168,7 @@
     "pendingChoice": null,
     "phase": "ending",
     "profile": {
-      "content_version": 17,
+      "content_version": 20,
       "dolly_trust": 5,
       "endings.case_closed": 1,
       "found.cordelia_pass": 1,

@@ -569,16 +569,16 @@ describe("belvedere: knowledge", () => {
   });
 });
 
-describe("belvedere: saves from before v15, v16 and v17", () => {
+describe("belvedere: saves from before v15, v16, v17 and v20", () => {
   test("the recognition scenes are marked as seen for a profile whose memory had already returned; a fresh profile is stamped first", () => {
     const old: Profile = { v: 1, profile: { nights: 5, "mem.true.name": 1, "mem.true.lantern": 1 } };
     const s = newNight(old, world, 1);
-    expect(q(s, "content_version")).toBe(17);
+    expect(q(s, "content_version")).toBe(20);
     expect(q(s, "met.pool_walter")).toBe(1);
     expect(q(s, "met.ruby_recognized")).toBe(1);
     expect(q(s, "met.auerbach_shocked")).toBe(0); // the hospital has not returned
     const fresh = newNight(emptyProfile(), world, 1);
-    expect(q(fresh, "content_version")).toBe(17);
+    expect(q(fresh, "content_version")).toBe(20);
     expect(q(fresh, "met.pool_walter")).toBe(0);
     // a profile the new content has already seen keeps its scenes when a memory returns later
     const stamped: Profile = { v: 1, profile: { nights: 5, content_version: 15, "mem.true.name": 1 } };
@@ -588,7 +588,7 @@ describe("belvedere: saves from before v15, v16 and v17", () => {
   test("v16: a save that had found the Proprietor's note knows it for good and has met Eddie on the stairs", () => {
     const old: Profile = { v: 1, profile: { nights: 3, content_version: 15, "found.owner_note": 1 } };
     const s = newNight(old, world, 1);
-    expect(q(s, "content_version")).toBe(17);
+    expect(q(s, "content_version")).toBe(20);
     expect(q(s, "knows.owner_note")).toBe(1);
     expect(q(s, "met.eddie_stairs")).toBe(1);
     const without: Profile = { v: 1, profile: { nights: 3, content_version: 15 } };
@@ -596,9 +596,17 @@ describe("belvedere: saves from before v15, v16 and v17", () => {
     // v17 only stamps: an old save starts counting the nights it gives away from zero
     const v16: Profile = { v: 1, profile: { nights: 9, content_version: 16, dolly_trust: 5 } };
     const n = newNight(v16, world, 1);
-    expect(q(n, "content_version")).toBe(17);
+    expect(q(n, "content_version")).toBe(20);
     expect(q(n, "nights_lost")).toBe(0);
     expect(q(n, "dolly_trust")).toBe(5);
+  });
+
+  test("v20: a save that already heard Ruby (her record in the folder, or the recognition scene) has met her voice", () => {
+    const heard = (extra: Record<string, number>) => q(newNight({ v: 1, profile: { nights: 4, content_version: 17, ...extra } }, world, 1), "met.ruby_voice");
+    expect(heard({ "found.ruby_record": 1 })).toBe(1);
+    expect(heard({ "met.ruby_recognized": 1 })).toBe(1);
+    expect(heard({})).toBe(0);
+    expect(heard({ content_version: 20, "found.ruby_record": 1 })).toBe(0); // already on v20: nothing is set behind its back
   });
 });
 
@@ -1108,26 +1116,46 @@ describe("belvedere: the campaign and the five endings", () => {
     expect(p.profile["vouches"]).toBe(4);
   });
 
-  test("v18: a ready envelope carries its pair's hint; the father's voice points at Ruby's two napkins", () => {
+  test("v18: a ready envelope carries its pair's hint; the father's voice points at Ruby's record", () => {
     let s = waitForRuby(route(quiet(after(5), 57), [...IN, "Попросить грузовой лифт", "На седьмой"]));
     s = toPledge(route(s, ["Квартира певицы", "Я помню", "Угостить сигаретой", "Уйти"]));
     expect(q(s, "debt.ruby")).toBe(2);
     const memories = currentScene(s, world).memories;
     expect(memories.filter((m) => m.canReturn).map((m) => m.id)).toEqual(["voice"]);
-    expect(memories.find((m) => m.id === "voice")?.hint).toBe("Руби дважды писала тебе на салфетках. Голос, который ты помнишь с детства, — точно отцовский?");
+    expect(memories.find((m) => m.id === "voice")?.hint).toBe("Ты слышал голос Руби с пластинки. Голос, который ты помнишь с детства, — точно отцовский?");
     expect(world.memories.every((m) => m.hint !== undefined)).toBe(true);
   });
 
-  test("v18: the secret needs Vivian's envelope in hand, not the sight of the thirteenth alone", () => {
-    const p: Profile = { v: 1, profile: { nights: 6, dolly_trust: 1, "mem.true.name": 1 } };
-    const secret = (run: Record<string, number>) => {
-      const start = quiet(p, 77); // the office card of the name, then the wary Dolly
+  test("v18: the secret needs Vivian's envelope in the folder, not the sight of the thirteenth alone", () => {
+    const secret = (extra: Record<string, number>, run: Record<string, number> = {}) => {
+      const start = quiet({ v: 1, profile: { nights: 6, dolly_trust: 1, "mem.true.name": 1, ...extra } }, 77); // the office card of the name, then the wary Dolly
       const s = route(start, [open(start).find((c) => c.endsWith(" дело"))!, ...QUICK_EXIT.slice(1)]);
       return pledgeOptions({ ...s, run: { ...s.run, ...run } }, world).find((m) => m.id === "secret")!;
     };
-    expect(secret({ "seen.vault13": 1 }).canReturn).toBe(false);
-    expect(secret({ "has.vivian_envelope": 1 }).canReturn).toBe(true);
+    expect(secret({}, { "seen.vault13": 1 }).canReturn).toBe(false);
+    expect(secret({ "found.vivian_envelope": 1 }).canReturn).toBe(true); // v20: the folder, so any later night will do
     expect(after(10).profile["mem.true.secret"]).toBe(1); // the campaign takes the envelope from the vault room
+  });
+
+  test("v20: a find from an earlier night still returns its memory: the file for Lorraine, Ruby's record for the father's voice", () => {
+    // night A: the doctor's file, then the night itself is pledged; night B: straight to Dolly with the envelope
+    let a = route(quiet(after(3), 81), [...IN, "Попросить грузовой лифт", "На восьмой", "Приёмная доктора", "Сесть на кушетку", "Почему вы не спите?", "Промолчать", "Покажите карточку Вивиан Хейл", "Уйти"]);
+    expect(q(a, "has.medical_file")).toBe(1);
+    a = closeNight(a);
+    expect(q(a, "returned.hospital")).toBe(0);
+    expect(profileOf(a).profile["found.medical_file"]).toBe(1);
+    let b = route(inside(quiet(profileOf(a), 82)), ["Уйти до рассвета (залог)"]);
+    expect(currentScene(b, world).memories.find((m) => m.id === "hospital")).toMatchObject({ canReturn: true, hint: "Медкарта Вивиан. Лорейн ушла к трубачу. А кто тогда стоял ночью в больничном коридоре?" });
+    b = pledge(b, world, "hospital");
+    expect(q(b, "returned.hospital")).toBe(1);
+    expect(q(b, "mem.true.hospital")).toBe(1);
+    // the record was played on the lantern night; the voice waits in the profile, no favours needed tonight
+    expect(after(5).profile["met.ruby_voice"]).toBe(1);
+    let v = route(inside(quiet(after(5), 83)), ["Уйти до рассвета (залог)"]);
+    expect(q(v, "debt.ruby")).toBe(0);
+    expect(currentScene(v, world).memories.filter((m) => m.canReturn).map((m) => m.id)).toEqual(["voice"]);
+    v = pledge(v, world, "voice");
+    expect(q(v, "returned.voice")).toBe(1);
   });
 
   test("signature: after the thirteenth Vivian waits in the lobby; the truth ends the case, the story holds nine nights", async () => {
