@@ -17,6 +17,8 @@ body { overflow: hidden; -webkit-user-select: none; user-select: none; }
 button { font: inherit; }
 
 .screen { position: relative; width: 100%; height: var(--app-height); overflow: hidden; background: var(--bg); container-type: inline-size; }
+/* While the content and the save are loading: the same caption index.html shows before the js arrives. */
+.screen--loading { display: flex; align-items: center; justify-content: center; color: var(--hint); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
 /* Desktop Telegram / browser: keep the phone-shaped column so 9:16 art is never cropped to a strip. */
 @media (min-width: 560px) {
   body { background: #06070a; }

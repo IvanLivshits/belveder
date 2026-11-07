@@ -106,7 +106,7 @@ export function App() {
   const tense = playing && content !== null && state !== null && isTense(state, content.world);
   useEffect(() => setTension(tense), [tense]);
 
-  if (screen.kind === "loading") return <div class="screen" />;
+  if (screen.kind === "loading") return <div class="screen screen--loading">Загрузка…</div>;
   if (screen.kind === "error" || !content) return <div class="screen"><p class="scene__text" style="padding:24px">Ошибка: {screen.kind === "error" ? screen.message : "нет контента"}</p></div>;
   const { world, src, assets } = content;
   /** Portraits are full 9:16 scenes and replace the background; a square image (evidence close-up)
