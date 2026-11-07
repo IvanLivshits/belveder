@@ -6,6 +6,8 @@
     <meta name="theme-color" content="#0b0d12" />
     <title>Ломбард на последнем этаже</title>
     <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
+    <!-- The app asks for the asset manifest right after its js runs; preloading it saves that round trip on the title. -->
+    <link rel="preload" href="/assets.json" as="fetch" crossorigin />
   </head>
   <body>
     <div id="app"></div>
