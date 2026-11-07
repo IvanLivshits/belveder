@@ -163,7 +163,7 @@
 - id: pool_walter
   location: tenant_03
   priority: 4
-  when: [mem.true.name == 1, seen.pool_walter == 0]
+  when: [mem.true.name == 1, met.pool_walter == 0]
   background: landing_03
   portrait: pool_recognize
   title: Квартира миссис Пул
@@ -172,12 +172,12 @@
     - { who: pool, text: "Уолтер. Ты же съехал. Ты съехал в то утро и сказал, что тебя зовут по-другому." }
   choices:
     - say: Вы ошибаетесь
-      effects: [seen.pool_walter = 1]
+      effects: [seen.pool_walter = 1, met.pool_walter = 1, met.pool = 1]
       reply:
         - { who: pool, text: "Конечно. Они все так говорят." }
         - { who: pool, text: "Ешь, остынет." }
     - say: Это я
-      effects: [seen.pool_walter = 1, seen.pool_confess = 1, clues += 1]
+      effects: [seen.pool_walter = 1, met.pool_walter = 1, met.pool = 1, seen.pool_confess = 1, clues += 1]
       reply:
         - { who: pool, text: "Я знала. В то утро я постучала: «Доброе утро, мистер…». А ты сказал: «Кэллоуэй»." }
         - { who: pool, text: "Сам. Прочитал фамилию на визитке у себя на тумбочке." }

@@ -2,6 +2,9 @@
 
 Правило: каждое изменение хеша в `packages/*/test/golden/*.json` получает здесь одну строку в том же коммите. Коммит остаётся однострочным, объяснение живёт тут. Формат: `дата · коммит (тема, потому что хеш до коммита неизвестен) · golden · почему`. Новые строки сверху.
 
+- 2026-11-07 · feat: upper floors in lines, v15 · `night-ring-2024`, `night-first-5`, `night-dawn-11` · в профиле появилось `content_version: 15`: миграция ставит его в первую ночь, по нему строки для сохранений до v15 отличают старый профиль от нового.
+- 2026-11-07 · feat: upper floors in lines, v15 · `campaign-case-closed` · «За меня поручились трое» и «Подписать: „Уолтер Хейл мёртв“» стоят в `cordelia_desk` и `owner_office` на других местах (индексы выборов), «Отпустить» Эдди на лестнице бесплатно — отчёт подписан на 14-м ходу; в профиле `content_version`.
+- 2026-11-07 · feat: upper floors in lines, v15 · `campaign-signature-truth` · в ночи доктора и Руби появились поручительства («Промолчать», «Поставите пластинку?»): свидетели `witnesses_auerbach_silent` и `witnesses_ruby_listen`, в истории четыре поручителя; слухов стало девять, и ночь «Подписи» вытянула `lights` вместо `gorman_inside`; в профиле `content_version`.
 - 2026-11-06 · fix(content): Eddie's favours, Pool's dinner · `night-ring-2024` · в ночь 0 Ник ещё спрашивает Эдди «Куда хочешь уехать?»: в логе на выбор больше, ход 10 вместо 9, `debt.eddie 2`, `seen.eddie_dream`, в профиле `knows.denver` (новая зацепка «Денвер»).
 - 2026-11-06 · fix(content): Eddie's favours, Pool's dinner · `night-dawn-11` · профиль после ночи кольца несёт `knows.denver`; маршрут рассвета тот же.
 - 2026-11-06 · fix(content): Eddie's favours, Pool's dinner · `campaign-case-closed`, `campaign-signature-truth` · в профиле появилось `knows.denver`: про Денвер Эдди рассказывает в ночь 0, а аванс получает на третью ночь уже без вопроса; снимок последней ночи в остальном тот же.

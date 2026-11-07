@@ -75,6 +75,7 @@ button { font: inherit; }
 @keyframes line-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 .line--narrator { color: #b9b3a3; }
 .line--inner { font-style: italic; color: #d9d2bf; }
+.line--written { font-style: italic; color: #ece4cf; padding: 4px 10px; background: rgba(236,228,205,0.1); border-left: 2px solid rgba(236,228,205,0.4); border-radius: 2px; text-shadow: none; }
 .line__who { margin-right: 7px; font-size: 11px; font-style: normal; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--hint); }
 .line--pick { padding-left: 10px; border-left: 2px solid rgba(201,162,74,0.6); color: var(--link); }
 @media (prefers-reduced-motion: reduce) { .line { animation: none; } }

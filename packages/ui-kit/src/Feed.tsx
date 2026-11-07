@@ -4,8 +4,8 @@ export type FeedEntryItem =
       /** Small-caps name before the line; empty for the narrator. */
       label: string;
       color: string | null;
-      /** narrator: muted, no name. inner: the inner voice, italic. speech: a character. */
-      style: "narrator" | "inner" | "speech";
+      /** narrator: muted, no name. inner: the inner voice, italic. speech: a character. written: a note on paper. */
+      style: "narrator" | "inner" | "speech" | "written";
       text: string;
     }
   /** The player's own pick, as it fell into the feed. */

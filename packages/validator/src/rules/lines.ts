@@ -5,7 +5,7 @@
 import type { Line, World } from "@belvedere/content-schema";
 import { error, warning, type Issue, type Rule } from "./types";
 
-export const LIMITS = { narrator: 25, speech: 30, inner: 15, lines: 4, reply: 3, choice: 8, choices: 8 } as const;
+export const LIMITS = { narrator: 25, speech: 30, inner: 15, written: 30, lines: 4, reply: 3, choice: 8, choices: 8 } as const;
 
 /** Words are runs with a letter or a digit in them: a lone dash does not count. */
 export function wordCount(text: string): number {
@@ -20,7 +20,7 @@ function checkLines(world: World, where: string, lines: readonly Line[], max: nu
     if (!speaker) { issues.push(error(`${where} #${i}`, `unknown speaker: ${l.who}`)); return; }
     const style = speaker.style ?? "speech";
     const words = wordCount(l.text ?? "");
-    if (words > LIMITS[style]) issues.push(warning(`${where} #${i}`, `${style === "speech" ? "a character's" : `the ${style}'s`} line is ${words} words long (limit ${LIMITS[style]})`));
+    if (words > LIMITS[style]) issues.push(warning(`${where} #${i}`, `${style === "speech" || style === "written" ? "a character's" : `the ${style}'s`} line is ${words} words long (limit ${LIMITS[style]})`));
   });
   return issues;
 }

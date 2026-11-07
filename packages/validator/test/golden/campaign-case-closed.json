@@ -1,5 +1,5 @@
 {
-  "digest": "9d5ecb23cdc47b47b6d18c6fe4d7419dfdca94ac866d3fc631c2cea861d9dfb1",
+  "digest": "593dc5df78a41dc42c6392bf15faf90a648763d3fe3d911e6c1c73a4ee8594d1",
   "snapshot": {
     "ending": "case_closed",
     "history": {
@@ -132,7 +132,7 @@
         "storylet": "floor_11_doors"
       },
       {
-        "choice": 1,
+        "choice": 0,
         "storylet": "cordelia_desk"
       },
       {
@@ -161,13 +161,14 @@
         "storylet": "owner_first"
       },
       {
-        "choice": 2,
+        "choice": 3,
         "storylet": "owner_office"
       }
     ],
     "pendingChoice": null,
     "phase": "ending",
     "profile": {
+      "content_version": 15,
       "dolly_trust": 4,
       "endings.case_closed": 1,
       "found.cordelia_pass": 1,
@@ -245,7 +246,7 @@
       "seen.pool_invited": 1,
       "seen.stairs_chalk": 1,
       "seen.went_up": 1,
-      "turn": 15
+      "turn": 14
     },
     "seed": 4,
     "storyletId": "owner_office",

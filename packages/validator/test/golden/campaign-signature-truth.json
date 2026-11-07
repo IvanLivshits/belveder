@@ -1,5 +1,5 @@
 {
-  "digest": "950cc179ce76c43162ded640e0649eb766db70271bdcd78bf08571e59cd038f0",
+  "digest": "843f7734fd3d2de5e47daf85d0484535d39eb969f3c10857724fb07110655b0f",
   "snapshot": {
     "ending": "signature_truth",
     "history": {
@@ -59,7 +59,7 @@
             "finding": "finding_medical_file",
             "price": "price_lorraine",
             "twist": "twist_hospital_returned",
-            "witnesses": "witnesses_auerbach"
+            "witnesses": "witnesses_auerbach_silent"
           },
           "rumor": "eddie_blue",
           "values": {}
@@ -74,7 +74,7 @@
             "finding": "finding_ruby_record",
             "price": "price_mcginnis",
             "twist": "twist_lantern_returned",
-            "witnesses": "witnesses_ruby"
+            "witnesses": "witnesses_ruby_listen"
           },
           "rumor": "eddie_blue",
           "values": {}
@@ -135,7 +135,7 @@
             "twist": "twist_final",
             "witnesses": "witnesses_default"
           },
-          "rumor": "gorman_inside",
+          "rumor": "lights",
           "values": {}
         }
       ],
@@ -151,7 +151,9 @@
       ],
       "vouchers": [
         "vouch.sloan",
-        "vouch.eddie"
+        "vouch.eddie",
+        "vouch.auerbach",
+        "vouch.ruby"
       ]
     },
     "location": "lobby",
@@ -168,6 +170,7 @@
     "pendingChoice": null,
     "phase": "ending",
     "profile": {
+      "content_version": 15,
       "dolly_trust": 5,
       "endings.signature_truth": 1,
       "found.laundry_tag": 1,
@@ -185,6 +188,7 @@
       "knows.invitation": 1,
       "knows.matchbook": 1,
       "knows.room": 1,
+      "knows.ruby_coffee": 1,
       "knows.shortage": 1,
       "mem.false.father": 0,
       "mem.false.license": 0,
@@ -216,6 +220,7 @@
       "met.office_ring": 1,
       "met.office_voice": 1,
       "met.ruby": 1,
+      "met.ruby_recognized": 1,
       "met.sloan": 1,
       "met.sloan_deal": 1,
       "met.vivian": 1,
@@ -231,9 +236,11 @@
       "visited.floor7.service": 8,
       "visited.floor7.tenant": 2,
       "visited.floor8.tenant": 1,
+      "vouch.auerbach": 1,
       "vouch.eddie": 1,
+      "vouch.ruby": 1,
       "vouch.sloan": 1,
-      "vouches": 2
+      "vouches": 4
     },
     "report": {
       "client": "client_default",
@@ -249,7 +256,7 @@
       "has.laundry_tag": 1,
       "has.matchbook": 1,
       "has.note_12": 1,
-      "rumor.gorman_inside": 1,
+      "rumor.lights": 1,
       "turn": 1
     },
     "seed": 10,

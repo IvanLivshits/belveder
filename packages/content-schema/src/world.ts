@@ -266,11 +266,12 @@ export const RumorSchema = z.object({
 });
 export type Rumor = z.infer<typeof RumorSchema>;
 
-/** Who speaks in the feed. `narrator`: no label, muted. `inner`: the player character's inner voice, italic. */
+/** Who speaks in the feed. `narrator`: no label, muted. `inner`: the player character's inner voice, italic.
+ *  `written`: the speaker writes instead of talking (notes, napkins), drawn as a scrap of paper. */
 export const SpeakerSchema = z.object({
   label: z.string(),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "color must be #rrggbb").optional(),
-  style: z.enum(["narrator", "inner"]).optional(),
+  style: z.enum(["narrator", "inner", "written"]).optional(),
 });
 export type Speaker = z.infer<typeof SpeakerSchema>;
 

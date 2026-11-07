@@ -218,6 +218,7 @@
         - { who: narrator, text: "«Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»" }
         - { who: gut, text: "Он смотрит так, будто ты отнял билет на поезд." }
     - do: Отпустить
+      free: true
       effects: [seen.eddie = 1, seen.eddie_ran = 1, met.eddie = 1, debt.eddie += 1]
       reply:
         - { who: eddie, text: "Спасибо, мистер! Я запомню!" }

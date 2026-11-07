@@ -6,8 +6,8 @@ import { paragraphs, renderText } from "./text";
 
 type Bags = Pick<GameState, "run" | "profile">;
 
-/** narrator: no label, muted. inner: the inner voice, italic. speech: a character, label in its colour. */
-export type LineStyle = "narrator" | "inner" | "speech";
+/** narrator: no label, muted. inner: the inner voice, italic. speech: a character, label in its colour. written: a note instead of speech. */
+export type LineStyle = "narrator" | "inner" | "speech" | "written";
 
 /** One rendered line of the feed, ready to draw. */
 export interface FeedLine {

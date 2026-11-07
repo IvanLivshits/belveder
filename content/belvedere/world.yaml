@@ -84,6 +84,9 @@ qualities:
     min: 0
     max: 7
     hint: "Жилец поручился за тебя. Когда поручатся трое, тебя пустят на двенадцатый."
+  # Версия контента, с которой профиль последний раз начинал ночь. Ставится миграцией; по ней
+  # старые профили отличаются от новых, когда флаг надо выставить задним числом.
+  - { id: content_version, scope: profile, label: Версия контента, min: 0 }
 
 locations:
   - { id: office, label: Контора Ника }
@@ -150,6 +153,13 @@ rules:
     - { when: [nights >= 1, met.vivian == 0, found.ring == 1], effects: [knows.room = 1] }
     - { when: [nights >= 1, met.vivian == 0, found.pawn_ticket == 1], effects: [knows.shortage = 1, knows.matchbook = 1] }
     - { when: [nights >= 1, met.vivian == 0, found.ledger_true == 1], effects: [knows.shortage = 1, knows.matchbook = 1] }
+  # Сохранения до v15: сцены «узнавания» (Пул, Руби, доктор) стояли на run-флагах и повторялись каждую ночь.
+  # Теперь они на met.*; старому профилю с вернувшимся воспоминанием флаг ставится задним числом.
+  # Новый профиль получает content_version в первую же ночь, до возврата воспоминаний, и строки его не трогают.
+    - { when: [content_version < 15, mem.true.name == 1], effects: [met.pool_walter = 1] }
+    - { when: [content_version < 15, mem.true.lantern == 1], effects: [met.ruby_recognized = 1] }
+    - { when: [content_version < 15, mem.true.hospital == 1], effects: [met.auerbach_shocked = 1] }
+    - { when: [content_version < 15], effects: [content_version = 15] }
   # Ночь кончается только выбором на экране залога (endNight).
   # Перехваты проверяются после каждого выбора, срабатывает первый подходящий.
   interrupts:
@@ -243,7 +253,8 @@ morning:
     - when: [returned_tonight == 1]
       text: "Одна строка переписана. Ты не помнишь, когда успел."
 
-# Кто говорит в ленте реплик. narrator — без подписи, приглушённо; gut — внутренний голос Ника (курсив).
+# Кто говорит в ленте реплик. narrator — без подписи, приглушённо; gut — внутренний голос Ника (курсив);
+# written — персонаж пишет, а не говорит (бумажка).
 speakers:
   narrator: { label: "", style: narrator }
   gut: { label: ЧУТЬЁ, style: inner }
@@ -255,6 +266,15 @@ speakers:
   sloan: { label: СЛОУН, color: "#8fbf8f" }
   gorman: { label: ГОРМАН, color: "#c96f6f" }
   tony: { label: ТОНИ, color: "#b0a07f" }
+  mei: { label: МЭЙ, color: "#a9b4bf" }
+  # Руби не говорит, она пишет на салфетках: style written рисует её реплики бумажкой.
+  ruby: { label: РУБИ, color: "#c97f8f", style: written }
+  auerbach: { label: ДОКТОР, color: "#9fc0c0" }
+  bennett: { label: БЕННЕТ, color: "#c9b98f" }
+  fenn: { label: ФЕНН, color: "#b8a26a" }
+  cordelia: { label: МИСС ШОУ, color: "#b0a8c9" }
+  owner: { label: ВЛАДЕЛЕЦ, color: "#8a8a8a" }
+  silas: { label: САЙЛАС, color: "#c98a5f" }
 
 # Лестница — один экран (сторилет с layout: stairs задаёт только текст). Кнопки этажей рисует движок.
 stairs:
