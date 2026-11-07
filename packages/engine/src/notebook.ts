@@ -1,11 +1,9 @@
 import type { World } from "@belvedere/content-schema";
-import { evaluateAll } from "./conditions";
+import { evaluateAll, type Bags } from "./conditions";
 import { leadsView, vouchersView } from "./leads";
 import { getQuality } from "./qualities";
 import type { GameState } from "./state";
 import { renderText } from "./text";
-
-type Bags = Pick<GameState, "run" | "profile">;
 
 export type LifeStatus = "fake" | "empty" | "real";
 

@@ -19,7 +19,7 @@
 - `packages/engine` — чистое ядро `(state, action, world) -> state`. Без I/O, DOM, Telegram, имён персонажей.
 - `packages/validator` — сборка YAML → JSON и CLI проверок + симуляция.
 - `packages/ui-kit` — Preact-компоненты без логики игры.
-- `apps/miniapp` — тонкий адаптер: рендер, ввод, Telegram API, сохранение.
+- `apps/miniapp` — тонкий адаптер: рендер, ввод, Telegram API, сохранение, звук (`audio.ts` — единственный файл, который знает про FMOD; рантайм и типы в `src/fmod/`, банки из FMOD Studio в `src/banks/`).
 - `apps/bot` — `/start` с кнопкой открытия Mini App.
 - `content/belvedere` — мир как данные (`world.yaml`, `storylets/*.yaml`, `report-fragments/*.yaml`, `notebook.yaml` — блокнот Ника с зацепками, `evidence.yaml` — папка улик, `endings.yaml` — концовки и рассказ «Дело Хейла», `rumors.yaml` — слухи дня).
 - `assets/` — WebP по id из `assets.json`. В контенте только id, никаких путей.

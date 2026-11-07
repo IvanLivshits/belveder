@@ -173,7 +173,7 @@ button { font: inherit; }
 .title__cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .title__actions { position: relative; width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 8px; }
 .title__hint { position: relative; font-size: 12px; color: var(--hint); }
-.title__reset { position: relative; margin-top: 2px; padding: 4px 8px; border: 0; background: transparent; color: var(--hint); font: inherit; font-size: 12px; text-decoration: underline dotted; cursor: pointer; opacity: 0.8; }
+.title__sound, .title__reset { position: relative; margin-top: 2px; padding: 4px 8px; border: 0; background: transparent; color: var(--hint); font: inherit; font-size: 12px; text-decoration: underline dotted; cursor: pointer; opacity: 0.8; }
 
 /* ---- pledge ---- */
 .choice--memory { border-style: dashed; font-style: italic; padding-top: 8px; padding-bottom: 8px; flex-wrap: wrap; }

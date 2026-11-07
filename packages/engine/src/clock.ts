@@ -1,8 +1,6 @@
 import type { World } from "@belvedere/content-schema";
 import { getQuality } from "./qualities";
-import type { GameState } from "./state";
-
-type Bags = Pick<GameState, "run" | "profile">;
+import type { Bags } from "./conditions";
 
 /** "HH:MM" from `rules.clock`: start + quality × step minutes, wrapping past midnight. Null without a clock. */
 export function clockTime(state: Bags, world: World): string | null {
