@@ -480,20 +480,42 @@ describe("belvedere: knowledge", () => {
     expect(notebookView(s, world)!.leads.open.map((l) => l.id)).toContain("money");
   });
 
-  test("pressure on Sloan, then breaking into the archive: his copy is compared only because he handed it over tonight", () => {
-    let s = route(newNight(emptyProfile(), world, 3), [...TO_SLOAN, "Показать коробок с цифрами", "Надавить и потребовать книгу"]);
+  test("pressure on Sloan, then breaking into the archive: the real copy is found only once the cashbox is known from an earlier night", () => {
+    // v19: the night Sloan tells of the cashbox the archive gives nothing more; the next night it gives the real copy
+    let s = route(newNight(emptyProfile(), world, 3), [...TO_SLOAN, "Показать коробок с цифрами", "Угостить сигаретой", "Куда делись четыре тысячи?", "Надавить и потребовать книгу"]);
     expect(q(s, "has.ledger_fake")).toBe(1);
-    expect(q(s, "has.ledger_true")).toBe(0);
+    expect(q(s, "knows.cashbox")).toBe(1);
     s = route(s, ["Уйти", "Архив", "Вскрыть замок"]);
     expect(s.storyletId).toBe("archive_shelves");
-    expect(open(s)).toContain("Сравнить с копией Слоуна");
-    expect(open(s)).not.toContain("Пошарить за стеллажом");
+    expect(open(s)).toEqual(["Уйти"]);
+    const known: Profile = { v: 1, profile: { nights: 1, "knows.shortage": 1, "knows.matchbook": 1, "knows.cashbox": 1, "met.sloan": 1 } };
+    const SLOAN_AGAIN: Step[] = ["Взять деньги и дело", "Войти", "Молча пойти к лестнице", "Лестница", 4, "Кабинет аудитора"]; // met before: straight to the desk
+    s = route(quiet(known, 3), [...SLOAN_AGAIN, "Надавить и потребовать книгу", "Уйти", "Архив", "Вскрыть замок"]);
+    expect(open(s)).toEqual(["Пошарить за стеллажом", "Сравнить с копией Слоуна", "Уйти"]);
     s = route(s, ["Сравнить с копией Слоуна"]);
     expect(q(s, "has.ledger_true")).toBe(1);
-    expect(q(s, "suspicion")).toBe(3); // 1 for the pressure, 2 for the lock
-    // the archive alone, without Sloan's copy: nothing to compare with
-    const alone = route(newNight(emptyProfile(), world, 3), [...TO_SLOAN.slice(0, -2), "Архив", "Вскрыть замок"]);
-    expect(open(alone)).toEqual(["Взять копию с ближней полки", "Уйти"]);
+    expect(q(s, "suspicion")).toBe(4); // 1 for passing Dolly in silence, 1 for the pressure, 2 for the lock
+    // without Sloan's copy of tonight: only the shelf itself
+    const alone = route(quiet(known, 3), [...SLOAN_AGAIN.slice(0, -1), "Архив", "Вскрыть замок"]);
+    expect(open(alone)).toEqual(["Взять копию с ближней полки", "Пошарить за стеллажом", "Уйти"]);
+  });
+
+  test("v19: Sloan keeps one secret a night, and trades the real ledger only with the man who lied to Gorman for him", () => {
+    const risked: Profile = { v: 1, profile: { nights: 2, "knows.shortage": 1, "knows.matchbook": 1, "met.sloan": 1, "vouch.sloan": 1, vouches: 1 } };
+    const SLOAN_AGAIN: Step[] = ["Взять деньги и дело", "Войти", "Молча пойти к лестнице", "Лестница", 4, "Кабинет аудитора", "Угостить сигаретой"];
+    // the cashbox first: the ledger waits for another night
+    let s = route(quiet(risked, 4), [...SLOAN_AGAIN, "Куда делись четыре тысячи?", "Надавить и потребовать книгу"]);
+    expect(open(s)).not.toContain("Молчание за настоящую копию");
+    // the ledger first: the cashbox waits
+    s = route(quiet(risked, 4), [...SLOAN_AGAIN, "Надавить и потребовать книгу", "Молчание за настоящую копию"]);
+    expect(q(s, "has.ledger_true")).toBe(1);
+    expect(open(s)).not.toContain("Куда делись четыре тысячи?");
+    // no voucher yet: the same words get a refusal with its reason, once, and no book
+    const unproven: Profile = { v: 1, profile: { nights: 2, "knows.shortage": 1, "knows.matchbook": 1, "met.sloan": 1 } };
+    s = route(quiet(unproven, 4), [...SLOAN_AGAIN, "Надавить и потребовать книгу", "Молчание за настоящую копию"]);
+    expect(q(s, "has.ledger_true")).toBe(0);
+    expect(q(s, "seen.sloan_refused")).toBe(1);
+    expect(open(s)).not.toContain("Молчание за настоящую копию");
   });
 
   test("Sloan tells of the missing money, then hands a fake ledger: the report pits the two Sloans against each other", () => {
@@ -925,26 +947,33 @@ describe("belvedere: the campaign and the five endings", () => {
   const waitForRuby = (s: GameState) => { let cur = s; while (q(cur, "turn") < 6) cur = route(cur, ["Гримёрная", "Уйти"]); return cur; };
 
   const night1 = () => ringNight();
-  // The pie again: Mrs. Pool refused, back to Dolly by one, her lift to the auditor, the real ledger for silence.
+  // The pie again: Mrs. Pool refused, back to Dolly by one, her lift to the auditor; Sloan's one secret of the night is the cashbox.
   const night2 = (p: Profile) => {
     let s = route(night(p, 2, "pool_pie"), ["Взять деньги и дело", "Войти", "Кивнуть", "Угостить сигаретой", "На площадку", "Лестница", 3, "Меня ждут внизу", "Лестница", 1, "Долли"]);
     expect(s.storyletId).toBe("dolly_kept");
     expect(q(s, "turn")).toBe(4);
-    s = route(s, ["Войти в кабину", "На четвёртый", "Кабинет аудитора", "Сесть без приглашения", "Показать коробок с цифрами", "Угостить сигаретой", "Полиция о вас не узнает"]);
-    expect(open(s)).not.toContain("Молчание за настоящую копию"); // v18: the real copy is bought only once Nick has seen the fake one
-    s = route(s, ["Надавить и потребовать книгу", "Молчание за настоящую копию", "Уйти"]);
-    expect(q(s, "met.sloan_deal")).toBe(1);
-    return route(toPledge(s), [["pledge", "ledger"]]);
+    s = route(s, ["Войти в кабину", "На четвёртый", "Кабинет аудитора", "Сесть без приглашения", "Показать коробок с цифрами", "Угостить сигаретой", "Куда делись четыре тысячи?"]);
+    expect(q(s, "has.pawn_ticket")).toBe(1);
+    expect(q(s, "knows.cashbox")).toBe(1);
+    expect(open(s)).not.toContain("Молчание за настоящую копию"); // v19: one secret a night, and no fake copy seen yet
+    s = route(s, ["Уйти"]);
+    return route(toPledge(s), [["pledge", "cashbox"]]);
   };
-  // Gorman inside: Nick covers for Sloan, Sloan vouches and tells of the cashbox; Vivian's advance buys Eddie's ticket to Denver.
+  // Gorman inside: Nick covers for Sloan, Sloan vouches and, having been risked for, trades the real ledger (v19);
+  // Vivian's advance buys Eddie's ticket to Denver.
   const night3 = (p: Profile) => {
     let s = route(night(p, 3, "gorman_inside"), [...IN, "Угостить сигаретой", "На площадку", "Лестница", 4]);
     expect(s.storyletId).toBe("stairs_gorman_rumor");
-    s = route(s, ["Аудитора нет", "Кабинет аудитора", "Я прикрыл вас перед Горманом", "Куда делись четыре тысячи?", "Уйти"]);
-    s = route(walk(s, 2), ["Прачечная"]);
+    s = route(s, ["Аудитора нет", "Кабинет аудитора", "Я прикрыл вас перед Горманом"]);
+    expect(open(s)).not.toContain("Молчание за настоящую копию"); // v18: first the fake copy
+    s = route(s, ["Надавить и потребовать книгу", "Молчание за настоящую копию"]);
+    expect(q(s, "met.sloan_deal")).toBe(1);
+    expect(q(s, "has.ledger_true")).toBe(1);
+    expect(open(s)).not.toContain("Куда делись четыре тысячи?"); // told last night, and one secret a night anyway
+    s = route(walk(route(s, ["Уйти"]), 2), ["Прачечная"]);
     expect(open(s)).not.toContain("Куда хочешь уехать?"); // Nick knows; Eddie does not remember telling him
     s = route(s, ["Отдать ему аванс на билет до Денвера", "Уйти"]);
-    return route(toPledge(s), [["pledge", "cashbox"]]);
+    return route(toPledge(s), [["pledge", "ledger"]]);
   };
   // The pie a third time: dinner, the third voucher, on foot to Miss Shaw, the pass, the report signed.
   const night4 = (p: Profile) => {
@@ -1024,26 +1053,26 @@ describe("belvedere: the campaign and the five endings", () => {
   };
   const returned = (p: Profile) => world.memories.filter((m) => p.profile[m.real] === 1).map((m) => m.id);
 
-  test("night 2: back to Dolly by one, her lift, the real ledger; trust 3", () => {
+  test("night 2: back to Dolly by one, her lift, the pawn ticket; the cashbox returns, trust 3", () => {
     const s = night2(after(1));
-    expect(q(s, "returned.ledger")).toBe(1);
+    expect(q(s, "returned.cashbox")).toBe(1);
     expect(q(s, "dolly_trust")).toBe(3);
-    expect(reportOf(s)).toMatchObject({ client: "client_ring", entry: "entry_kept", finding: "finding_true_ledger", price: "price_senator_dog" });
-    expect(progressNotes(s, world)).toEqual(["Зацепок закрыто: 5 из 8.", "Поручились: 0 из 3."]);
+    expect(reportOf(s)).toMatchObject({ client: "client_ring", entry: "entry_kept", finding: "finding_ticket", price: "price_sheriff" });
+    expect(progressNotes(s, world)).toEqual(["Зацепок закрыто: 4 из 8.", "Поручились: 0 из 3."]); // v19: the ledger lead waits for the third night
   });
 
-  test("night 3: Sloan and Eddie vouch, the cashbox returns", () => {
+  test("night 3: Sloan and Eddie vouch, the real ledger returns", () => {
     const s = night3(after(2));
-    expect(q(s, "returned.cashbox")).toBe(1);
+    expect(q(s, "returned.ledger")).toBe(1);
     expect(q(s, "vouches")).toBe(2);
     expect(notebookView(s, world)!.vouchers!.lines).toEqual(["Огден Слоун, аудитор с четвёртого", "Эдди Мэлоун, курьер со второго", "—"]);
-    expect(reportOf(s)).toMatchObject({ entry: "entry_tea", twist: "twist_cashbox_returned", price: "price_sheriff" });
+    expect(reportOf(s)).toMatchObject({ entry: "entry_tea", finding: "finding_true_ledger", price: "price_senator_dog" });
     expect(q(s, "has.advance_given")).toBe(1);
     expect(progressNotes(s, world)).toEqual(["Зацепок закрыто: 6 из 8.", "Поручились: 2 из 3."]);
     expect(q(s, "dolly_trust")).toBe(5); // v17: covering for Sloan and Eddie's ticket, not the cigarette (refused for free at 2+)
-    expect(q(s, "turn")).toBe(11);
-    // the next office card is the hospital bill, once
-    expect(newNight(profileOf(s), world, 5).storyletId).toBe("office_cashbox");
+    expect(q(s, "turn")).toBe(12);
+    // the next office card is the ledger, once
+    expect(newNight(profileOf(s), world, 5).storyletId).toBe("office_ledger");
   });
 
   test("night 4, case closed: the third voucher, Miss Shaw's pass, the report signed at turn 14", async () => {
@@ -1071,9 +1100,9 @@ describe("belvedere: the campaign and the five endings", () => {
     expect(p.profile["dolly_trust"]).toBe(5);
     expect(p.profile["nights"]).toBe(10);
     expect(p.profile["nights_lost"]).toBe(2);
-    expect(p.history!.pledges).toEqual(["ring", "ledger", "cashbox", "hospital", "lantern", "voice", "name", "secret"]);
+    expect(p.history!.pledges).toEqual(["ring", "cashbox", "ledger", "hospital", "lantern", "voice", "name", "secret"]);
     expect(p.history!.nights.map((n) => n.pledged)).toEqual([false, false, false, false, false, false, false, true, true, false]);
-    expect(p.history!.nights.map((n) => n.report["price"])).toEqual(["price_marines", "price_senator_dog", "price_sheriff", "price_lorraine", "price_mcginnis", "price_father", "price_license", "price_night", "price_night", "price_scar"]);
+    expect(p.history!.nights.map((n) => n.report["price"])).toEqual(["price_marines", "price_sheriff", "price_senator_dog", "price_lorraine", "price_mcginnis", "price_father", "price_license", "price_night", "price_night", "price_scar"]);
     expect(p.history!.nights.map((n) => n.rumor)).toEqual(["pool_pie", "pool_pie", "gorman_inside", ...Array(7).fill("eddie_blue")]);
     expect(p.history!.vouchers).toEqual(["vouch.sloan", "vouch.eddie", "vouch.auerbach", "vouch.ruby"]);
     expect(p.profile["vouches"]).toBe(4);

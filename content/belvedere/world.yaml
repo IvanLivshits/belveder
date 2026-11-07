@@ -203,10 +203,10 @@ memories:
   - id: ledger
     fake: mem.false.senator_dog
     real: mem.true.ledger
-    label_fake: Первое дело — собака сенатора
+    label_fake: Первое дело — бриллианты сенатора
     label_real: "Цифры: недостача в 4 000"
     returnWhen: [has.ledger_true == 1]
-    hint: "Настоящая книга клуба. Твоё «первое дело» вдруг пахнет бухгалтерией, а не собакой."
+    hint: "Настоящая книга клуба. Твоё «первое дело» вдруг пахнет бухгалтерией, а не бриллиантами."
   - id: hospital
     fake: mem.false.lorraine
     real: mem.true.hospital

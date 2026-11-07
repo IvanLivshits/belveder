@@ -153,13 +153,13 @@
         - { who: narrator, text: "Чистая книга, ровные столбцы. Март сходится до цента." }
         - { who: gut, text: "Слишком чисто для бухгалтерии портового клуба." }
     - do: Пошарить за стеллажом
-      when: [seen.sloan_cashbox == 1, has.ledger_true == 0]
+      when: [knows.cashbox == 1, seen.sloan_cashbox == 0, has.ledger_true == 0]
       effects: [has.ledger_true = 1, clues += 1]
       reply:
         - { who: gut, text: "Слоун сказал: деньги вернулись наутро. Значит, есть книга, где они сначала пропали." }
         - { who: narrator, text: "За стеллажом вторая копия на бечёвке. Март, строка 41: «Недостача 4 000. Погашена в ночь на 16-е»." }
     - do: Сравнить с копией Слоуна
-      when: [seen.sloan_copy == 1, has.ledger_true == 0, seen.sloan_cashbox == 0]
+      when: [seen.sloan_copy == 1, has.ledger_true == 0, knows.cashbox == 1, seen.sloan_cashbox == 0]
       effects: [has.ledger_true = 1, clues += 1]
       reply:
         - { who: narrator, text: "Книга на полке — точная копия той, что дал Слоун. Даже клякса на той же странице." }

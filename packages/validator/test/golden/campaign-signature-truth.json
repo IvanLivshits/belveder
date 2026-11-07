@@ -1,5 +1,5 @@
 {
-  "digest": "9fa81802d1837ed9f1265949386baf2fc0ade7dd6a4f13447a48f5197e7c6180",
+  "digest": "6090f7d26b5364eb74d6632cc6b3934d5fe2b6108568df94207aa817e2881b71",
   "snapshot": {
     "ending": "signature_truth",
     "history": {
@@ -21,14 +21,14 @@
         },
         {
           "night": 2,
-          "pair": "ledger",
+          "pair": "cashbox",
           "pledged": false,
           "report": {
             "client": "client_ring",
             "entry": "entry_kept",
-            "finding": "finding_true_ledger",
-            "price": "price_senator_dog",
-            "twist": "twist_ledger_returned",
+            "finding": "finding_ticket",
+            "price": "price_sheriff",
+            "twist": "twist_cashbox_returned",
             "witnesses": "witnesses_sloan"
           },
           "rumor": "pool_pie",
@@ -36,14 +36,14 @@
         },
         {
           "night": 3,
-          "pair": "cashbox",
+          "pair": "ledger",
           "pledged": false,
           "report": {
-            "client": "client_return",
+            "client": "client_cashbox",
             "entry": "entry_tea",
-            "finding": "finding_ticket",
-            "price": "price_sheriff",
-            "twist": "twist_cashbox_returned",
+            "finding": "finding_true_ledger",
+            "price": "price_senator_dog",
+            "twist": "twist_ledger_returned",
             "witnesses": "witnesses_sloan"
           },
           "rumor": "gorman_inside",
@@ -54,7 +54,7 @@
           "pair": "hospital",
           "pledged": false,
           "report": {
-            "client": "client_cashbox",
+            "client": "client_return",
             "entry": "entry_lift",
             "finding": "finding_medical_file",
             "price": "price_lorraine",
@@ -169,8 +169,8 @@
       ],
       "pledges": [
         "ring",
-        "ledger",
         "cashbox",
+        "ledger",
         "hospital",
         "lantern",
         "voice",
@@ -214,6 +214,7 @@
       "found.ruby_record": 1,
       "found.signature_photo": 1,
       "found.vivian_envelope": 1,
+      "knows.cashbox": 1,
       "knows.club": 1,
       "knows.denver": 1,
       "knows.fire": 1,
