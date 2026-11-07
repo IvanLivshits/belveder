@@ -344,6 +344,7 @@ export function App() {
       text={`Взамен ничего не встанет. „${pledgeConfirm.label}“ пропадёт насовсем.`}
       okLabel="Отдать"
       cancelLabel="Передумать"
+      primary="cancel"
       onOk={() => { const id = pledgeConfirm.id; setPledgeConfirm(null); advance(pledge(state, world, id)); }}
       onCancel={() => setPledgeConfirm(null)}
     />
