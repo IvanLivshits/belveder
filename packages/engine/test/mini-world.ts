@@ -22,7 +22,7 @@ export const miniWorld: World = WorldSchema.parse({
   ],
   locations: [{ id: "hall" }, { id: "room" }, { id: "vault" }],
   memories: [
-    { id: "a", fake: "mem.false.a", real: "mem.true.a", label_fake: "False A", label_real: "True A", returnWhen: ["trust >= 1"] },
+    { id: "a", fake: "mem.false.a", real: "mem.true.a", label_fake: "False A", label_real: "True A", returnWhen: ["trust >= 1"], hint: "Trust speaks for A" },
     { id: "b", fake: "mem.false.b", real: "mem.true.b", label_fake: "False B", label_real: "True B", returnWhen: ["heat >= 9"] },
   ],
   // Turn 4 sends the player to the vault (pledge screen); the night only ends there.

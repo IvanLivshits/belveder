@@ -2,6 +2,7 @@
 
 Правило: каждое изменение хеша в `packages/*/test/golden/*.json` получает здесь одну строку в том же коммите. Коммит остаётся однострочным, объяснение живёт тут. Формат: `дата · коммит (тема, потому что хеш до коммита неизвестен) · golden · почему`. Новые строки сверху.
 
+- 2026-11-07 · fix(content): v18 after the deep run · `campaign-case-closed`, `campaign-signature-truth` · Слоун отдаёт настоящую копию только после подделки, ночь 2 сначала «Надавить и потребовать книгу» (`found.ledger_fake: 1`); мел «13» на лестнице теперь один раз за игру (`met.stairs_chalk: 1`).
 - 2026-11-07 · feat: the price of the night, v17 · `campaign-signature-truth` · в кампании две новые ночи перед тринадцатым: «лор» (вырезка Мэй, фасад пересчитан, `knows.fire`, `paths.thirteen`) и «книга» (пропуск за троих, запись № 1, `knows.tomorrow`), обе заложены целиком (`price_night`, `pledged: true`, `nights_lost: 2`); «Подпись» теперь ночь 11, `content_version: 17`, `met.dolly_heard`.
 - 2026-11-07 · feat: the price of the night, v17 · `campaign-case-closed` · доверие Долли 5 уже к ночи 3 за поступки (`met.dolly_heard` — прикрыл Слоуна, `met.dolly_kept` — вернулся к часу), а не 4; сигарета при доверии 2+ — бесплатный отказ; `content_version: 17`.
 - 2026-11-07 · feat: the price of the night, v17 · `night-ring-2024`, `night-first-5`, `night-dawn-11` · миграция v17 ставит `content_version: 17` (только штамп: `nights_lost` у старых профилей начинается с нуля).

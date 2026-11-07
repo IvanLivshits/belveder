@@ -1,5 +1,5 @@
 {
-  "digest": "d8ebe04a0e043cfe46dc4c7dde257a11c2afba83004bf36aadd7856596ba71db",
+  "digest": "9fa81802d1837ed9f1265949386baf2fc0ade7dd6a4f13447a48f5197e7c6180",
   "snapshot": {
     "ending": "signature_truth",
     "history": {
@@ -204,6 +204,7 @@
       "found.cordelia_pass": 1,
       "found.facade_photo": 1,
       "found.laundry_tag": 1,
+      "found.ledger_fake": 1,
       "found.ledger_true": 1,
       "found.matchbook": 1,
       "found.medical_file": 1,
@@ -259,6 +260,7 @@
       "met.ruby_recognized": 1,
       "met.sloan": 1,
       "met.sloan_deal": 1,
+      "met.stairs_chalk": 1,
       "met.vivian": 1,
       "nights": 11,
       "nights_lost": 2,

@@ -271,7 +271,7 @@
       reply:
         - { who: narrator, text: "Он не курит. Кладёт сигарету параллельно краю стола и немного успокаивается." }
     - say: Полиция о вас не узнает
-      when: [seen.sloan_promise == 0]
+      when: [seen.sloan_promise == 0, knows.shortage == 1]
       effects: [seen.sloan_promise = 1, debt.sloan += 1, met.sloan = 1]
       reply:
         - { who: sloan, text: "Сержант Горман узнаёт всё, что ему выгодно." }
@@ -293,14 +293,14 @@
       effects: [seen.sloan_cashbox = 1, has.pawn_ticket = 1, clues += 1]
       reply:
         - { who: sloan, text: "В марте из кассы пропали четыре тысячи. Я нашёл недостачу." }
-        - { who: sloan, text: "Утром пятнадцатого деньги вернулись. До цента. А человек — нет." }
+        - { who: sloan, text: "Утром шестнадцатого деньги вернулись. До цента. А человек — нет." }
         - { who: narrator, text: "Он кладёт на стол квитанцию ломбарда: «Предмет залога: имя»." }
     - say: Молчание за настоящую копию
-      when: [knows.shortage == 1, debt.sloan >= 2, has.ledger_true == 0]
+      when: [knows.shortage == 1, debt.sloan >= 2, has.ledger_true == 0, has.ledger_fake == 1]
       effects: [has.ledger_true = 1, clues += 1, met.sloan_deal = 1]
       reply:
         - { who: narrator, text: "Слоун отодвигает шкаф. За ним вторая книга, перевязанная бечёвкой." }
-        - { who: sloan, text: "В архиве лежит та, что для Гормана. Эта — для вас. Март, сорок первая строка." }
+        - { who: sloan, text: "Эта — настоящая. Вторую такую же я спрятал в архиве, за стеллажом. На случай, если со мной что-то случится." }
     - do: Уйти
       free: true
       goto: floor_04

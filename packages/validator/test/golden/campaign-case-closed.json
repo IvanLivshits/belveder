@@ -1,5 +1,5 @@
 {
-  "digest": "7e461b0c3393bb12b2865333532e4747172553824e85f9c0943cdf0fbfe4adef",
+  "digest": "d701a0ce06bf02535d1dc212ebf6650848c87e697be49e9a27e2c75609f146bb",
   "snapshot": {
     "ending": "case_closed",
     "history": {
@@ -173,6 +173,7 @@
       "endings.case_closed": 1,
       "found.cordelia_pass": 1,
       "found.laundry_tag": 1,
+      "found.ledger_fake": 1,
       "found.ledger_true": 1,
       "found.matchbook": 1,
       "found.note_12": 1,
@@ -205,6 +206,7 @@
       "met.pool": 1,
       "met.sloan": 1,
       "met.sloan_deal": 1,
+      "met.stairs_chalk": 1,
       "met.vivian": 1,
       "nights": 4,
       "paths.freight_lift": 1,

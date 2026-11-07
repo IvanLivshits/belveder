@@ -83,7 +83,7 @@
   title: Спортзал
   lines:
     - { who: narrator, text: "Пусто. Мешок покачивается на цепи. Окно на пожарную лестницу открыто настежь." }
-    - { who: gut, text: "Тони в порту. Выбивает чей-то долг. Сегодня проводить некому." }
+    - { who: gut, text: "Тони внизу, у Сайласа, таскает уголь. Сегодня проводить некому." }
   choices:
     - do: Вылезти на пожарную лестницу
       effects: [paths.fire_escape = 1, floor = 6]
@@ -169,7 +169,7 @@
     - { who: ruby, text: "«Третий столик слева. Ты всегда сидел там и считал выручку в уме, пока я пела»." }
   choices:
     - say: Я помню
-      effects: [seen.ruby_recognized = 1, met.ruby_recognized = 1, knows.ruby_coffee = 1, debt.ruby += 1, clues += 1]
+      effects: [seen.ruby_recognized = 1, met.ruby_recognized = 1, seen.ruby_said_remember = 1, knows.ruby_coffee = 1, debt.ruby += 1, clues += 1]
       reply:
         - { who: narrator, text: "Руби закрывает лицо руками. Плечи трясутся без звука." }
         - { who: ruby, text: "«Уолтер». Дважды подчёркнуто." }
@@ -219,13 +219,14 @@
       effects: [seen.ruby_listen = 1, debt.ruby += 1, turn += 1, vouch.ruby = 1, vouches += 1, seen.ruby_vouched = 1]
       reply:
         - { who: narrator, text: "Из патефона поёт её голос: тёплый, низкий, живой. Руби слушает с закрытыми глазами." }
-        - { who: ruby, text: "«Возьми её. Мне больнее, когда она здесь»." }
-        - { who: ruby, text: "«И если наверху спросят — я за тебя напишу. Крупно»." }
+        - { who: gut, text: "Этот голос ты слышал раньше. Не на пластинке. Ближе." }
+        - { who: ruby, text: "«Возьми её. И если наверху спросят — я за тебя напишу. Крупно»." }
     - say: Поставите пластинку?
       when: [seen.ruby_listen == 0, seen.record_stolen == 0, vouch.ruby == 1]
       effects: [seen.ruby_listen = 1, debt.ruby += 1, turn += 1]
       reply:
         - { who: narrator, text: "Из патефона поёт её голос: тёплый, низкий, живой. Руби слушает с закрытыми глазами." }
+        - { who: gut, text: "Этот голос ты слышал раньше. Не на пластинке. Ближе." }
         - { who: ruby, text: "«Возьми её. Мне больнее, когда она здесь»." }
     - do: Взять пластинку
       when: [seen.ruby_listen == 1, has.ruby_record == 0]
@@ -265,7 +266,8 @@
   title: Приёмная доктора
   lines:
     - { who: narrator, text: "Седой человек в халате моет руки и не оборачивается. Моет долго, как моют то, что не отмывается." }
-    - { who: auerbach, text: "Доктор Ауэрбах. Приём до полуночи, и вы успели. Немногие успевают." }
+    - { who: auerbach, text: "Доктор Ауэрбах. Приём до полуночи, и вы успели. Немногие успевают.", when: [turn < 4] }
+    - { who: auerbach, text: "Доктор Ауэрбах. Сегодня я до двух. Не спится — ни мне, ни вам.", when: [turn >= 4] }
   choices:
     - do: Сесть на кушетку
       free: true

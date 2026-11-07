@@ -157,6 +157,7 @@
       reply:
         - { who: gorman, text: "«Синий фонарь» недосчитался четырёх тысяч. Ордер на Хейла есть, Хейла нет." }
         - { who: gorman, text: "Долг клубу теперь на мне. Найди его. Или я найду, кем его заменить." }
+        - { who: gut, text: "Касса, говорят, давно сошлась. А ордер висит. Кому-то он выгоден." }
     - say: Аудитора нет
       when: [met.sloan == 1, met.dolly_heard == 0]
       effects: [seen.gorman = 1, met.gorman = 1, seen.covered_sloan = 1, debt.sloan += 1, suspicion += 1, met.dolly_heard = 1, dolly_trust += 1]
@@ -192,6 +193,7 @@
       reply:
         - { who: gorman, text: "«Синий фонарь» недосчитался четырёх тысяч. Ордер на Хейла есть, Хейла нет." }
         - { who: gorman, text: "Долг клубу теперь на мне. Найди его. Или я найду, кем его заменить." }
+        - { who: gut, text: "Касса, говорят, давно сошлась. А ордер висит. Кому-то он выгоден." }
     - say: Аудитора нет
       when: [met.sloan == 1, met.dolly_heard == 0]
       effects: [seen.gorman = 1, met.gorman = 1, seen.covered_sloan = 1, debt.sloan += 1, suspicion += 1, met.dolly_heard = 1, dolly_trust += 1]
@@ -266,7 +268,7 @@
   location: stairs_event
   priority: 1
   floors: [12, 12]
-  when: [seen.stairs_chalk == 0]
+  when: [met.stairs_chalk == 0]
   background: stairwell
   title: Лестница
   lines:
@@ -274,7 +276,7 @@
   choices:
     - do: Пойти дальше
       free: true
-      effects: [seen.stairs_chalk = 1]
+      effects: [seen.stairs_chalk = 1, met.stairs_chalk = 1]
 
 # Желоб: только вниз, в подвал к Сайласу. Ход не тратится.
 - id: chute_peek

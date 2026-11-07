@@ -105,7 +105,7 @@ describe("mini world night", () => {
     expect(s.storyletId).toBe("vault_pledge");
     const scene = currentScene(s, miniWorld);
     // trust 1 satisfies a's returnWhen, heat < 9 does not satisfy b's
-    expect(scene.memories).toEqual([{ id: "a", label: "False A", canReturn: true }, { id: "b", label: "False B", canReturn: false }]);
+    expect(scene.memories).toEqual([{ id: "a", label: "False A", canReturn: true, hint: "Trust speaks for A" }, { id: "b", label: "False B", canReturn: false }]);
     s = pledge(s, miniWorld, "a");
     expect(s.phase).toBe("report");
     expect(s.profile["mem.false.a"]).toBe(0);

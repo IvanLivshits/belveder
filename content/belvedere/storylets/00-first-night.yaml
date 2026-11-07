@@ -128,7 +128,7 @@
       effects: [seen.lobby = 1, seen.dolly_ask = 1, seen.dolly_invite = 1, knows.invitation = 1, clues += 1]
       reply:
         - { who: dolly, text: "Двенадцатый. Там Владелец. Там выкупают то, что заложили." }
-        - { who: dolly, text: "Наверх без приглашения не ходят. Хейла пригласили. Тебя — когда за тебя поручатся трое." }
+        - { who: dolly, text: "Наверх без приглашения не ходят. Хейла пригласили. Тебя — когда поручатся трое. Иначе только как вор." }
         - { who: gut, text: "Трое жильцов. Значит, придётся стучать в двери." }
     - say: Сколько дают за имя?
       effects: [seen.lobby = 1, seen.dolly_ask = 1, seen.dolly_hale = 1, clues += 1]
@@ -189,7 +189,7 @@
   location: pledge
   layout: pledge
   priority: 5
-  when: [nights == 0, turn < 16, has.ring == 0, seen.sloan_cashbox == 0, has.ledger_true == 0]
+  when: [nights == 0, turn < 16, has.ring == 0, seen.sloan_cashbox == 0, has.ledger_true == 0, has.ruby_record == 0, has.medical_file == 0, debt.ruby < 2]
   background: lobby
   portrait: dolly_worry
   title: Залог
