@@ -1,8 +1,6 @@
 import { parseEffect, type World } from "@belvedere/content-schema";
 import { getQuality, setQuality } from "./qualities";
-import type { GameState } from "./state";
-
-type Bags = Pick<GameState, "run" | "profile">;
+import type { Bags } from "./conditions";
 
 export function applyEffect<S extends Bags>(state: S, world: World, effect: string): S {
   const { quality, op, value } = parseEffect(effect);

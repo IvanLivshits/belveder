@@ -1,10 +1,7 @@
 import type { Storylet, World } from "@belvedere/content-schema";
-import { evaluateAll } from "./conditions";
+import { evaluateAll, type Bags } from "./conditions";
 import { leadTargets } from "./leads";
 import { getQuality } from "./qualities";
-import type { GameState } from "./state";
-
-type Bags = Pick<GameState, "run" | "profile">;
 
 export interface StairsFloor {
   floor: number;

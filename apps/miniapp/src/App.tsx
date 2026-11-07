@@ -1,10 +1,11 @@
 import {
-  changedQualities, choiceCost, choose, clockTime, continueOutcome, currentNotes, currentReport, currentRumor, currentScene, emptyProfile, endingView, evidenceView, extendFeed, findStorylet, getQuality,
+  changedQualities, choiceCost, choose, clockTime, continueOutcome, currentNotes, currentReport, currentRumor, currentScene, emptyProfile, endingView, evidenceView, extendFeed, findStorylet, getQuality, isTense,
   isResumable, morningNotes, newCase, newNight, notebookView, openFeed, pledge, profileOf, progressNotes, storyView, travel, type Feed, type GameState, type NotebookView, type Profile,
 } from "@belvedere/engine";
 import { RESERVED_QUALITIES } from "@belvedere/content-schema";
 import { Backdrop, ChoiceList, ConfirmSheet, DoorPicker, EndingPage, EvidencePage, Hint, MorningPage, NotebookPage, PledgePicker, QualityBar, ReportPage, SceneCard, StairsPicker, StoryPage, TitleScreen, type LifeLineItem } from "@belvedere/ui-kit";
 import { useCallback, useEffect, useState } from "preact/hooks";
+import { initAudio, isSoundOn, playLighter, setSoundOn, setTension } from "./audio";
 import { loadContent, type Content } from "./content";
 import { saves } from "./saves";
 import { EMPTY_UI, type UiMeta } from "./storage";
@@ -49,6 +50,7 @@ export function App() {
   /** The transcript of the place the player is in, and how many of its entries are already on screen. */
   const [feed, setFeed] = useState<Feed>({ location: "", entries: [] });
   const [shown, setShown] = useState(0);
+  const [soundOn, setSoundOnState] = useState(isSoundOn);
 
   useEffect(() => {
     (async () => {
@@ -60,6 +62,7 @@ export function App() {
         const run = saved && isResumable(saved, c.world) ? saved : null;
         if (saved && !run) saves.clearRun();
         setContent(c);
+        initAudio();
         setProfile(p);
         setState(run);
         if (run) setFeed(openFeed(run, c.world));
@@ -95,6 +98,13 @@ export function App() {
   }, []);
   // Telegram's gear opens the same reset; in a browser the link lives at the bottom of the notebook.
   useEffect(() => setSettingsButton(content !== null, () => void reset()), [content, reset]);
+  // The music follows the run: tense while rules.tensionWhen holds, but only while the night is being played
+  // (scene or outcome, on the night, notebook or evidence screens). The title, the report, the morning page,
+  // the ending and the case story are always calm, even when a saved night is still in state.
+  const playing = (screen.kind === "night" || screen.kind === "notebook" || screen.kind === "evidence")
+    && (state?.phase === "scene" || state?.phase === "outcome");
+  const tense = playing && content !== null && state !== null && isTense(state, content.world);
+  useEffect(() => setTension(tense), [tense]);
 
   if (screen.kind === "loading") return <div class="screen" />;
   if (screen.kind === "error" || !content) return <div class="screen"><p class="scene__text" style="padding:24px">Ошибка: {screen.kind === "error" ? screen.message : "нет контента"}</p></div>;
@@ -118,6 +128,7 @@ export function App() {
   };
 
   const startNight = () => {
+    playLighter();
     const s = newNight(profile, world, randomSeed());
     setState(s);
     setFeed(openFeed(s, world));
@@ -179,6 +190,8 @@ export function App() {
           nights={getQuality({ run: {}, profile: profile.profile }, world, "nights")}
           onContinue={() => setScreen({ kind: "night" })}
           onNewNight={startNight}
+          soundLabel={soundOn ? "Звук: вкл" : "Звук: выкл"}
+          onToggleSound={() => { setSoundOn(!soundOn); setSoundOnState(!soundOn); }}
         />
       </div>
     );

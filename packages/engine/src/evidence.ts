@@ -1,8 +1,6 @@
 import { RESERVED_QUALITIES, type World } from "@belvedere/content-schema";
 import { getQuality, setQuality } from "./qualities";
-import type { GameState } from "./state";
-
-type Bags = Pick<GameState, "run" | "profile">;
+import type { Bags } from "./conditions";
 
 /** Sets profile `found.<id> = 1` for every evidence item whose run flag is 1. Called after
  *  every effect batch, so the folder remembers a find even after the night's run bag is gone. */

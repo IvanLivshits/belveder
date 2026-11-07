@@ -1,11 +1,9 @@
 import { RESERVED_QUALITIES, type Rumor, type World } from "@belvedere/content-schema";
-import { evaluateAll } from "./conditions";
+import { evaluateAll, type Bags } from "./conditions";
 import { nightQuality } from "./cost";
 import { getQuality, setQuality } from "./qualities";
 import { nextInt } from "./rng";
 import type { GameState } from "./state";
-
-type Bags = Pick<GameState, "run" | "profile">;
 
 /** Tonight's rumor: the one whose run flag `rumor.<id>` is set. */
 export function currentRumor(state: Bags, world: World): Rumor | undefined {

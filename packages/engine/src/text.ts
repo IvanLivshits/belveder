@@ -1,8 +1,6 @@
 import { PLACEHOLDER_RE, qualityMatches, type World } from "@belvedere/content-schema";
 import { getQuality } from "./qualities";
-import type { GameState } from "./state";
-
-type Bags = Pick<GameState, "run" | "profile">;
+import type { Bags } from "./conditions";
 
 /** Replaces `{quality_id}` with the current value and `{name}` from `extra` with the number given
  *  (values the engine counts itself). Unknown ids are left as written (the validator rejects them at build time). */

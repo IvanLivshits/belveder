@@ -2,7 +2,7 @@ import { parseCondition, type World } from "@belvedere/content-schema";
 import { getQuality } from "./qualities";
 import type { GameState } from "./state";
 
-type Bags = Pick<GameState, "run" | "profile">;
+export type Bags = Pick<GameState, "run" | "profile">;
 
 export function evaluate(state: Bags, world: World, condition: string): boolean {
   const { quality, op, value } = parseCondition(condition);
