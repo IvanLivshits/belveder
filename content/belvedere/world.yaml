@@ -160,6 +160,9 @@ rules:
     - { when: [content_version < 15, mem.true.lantern == 1], effects: [met.ruby_recognized = 1] }
     - { when: [content_version < 15, mem.true.hospital == 1], effects: [met.auerbach_shocked = 1] }
     - { when: [content_version < 15], effects: [content_version = 15] }
+  # Сохранения до v16: записку Владельца Ник помнит навсегда, Эдди на лестнице встречается один раз за игру.
+    - { when: [content_version < 16, found.owner_note == 1], effects: [knows.owner_note = 1, met.eddie_stairs = 1] }
+    - { when: [content_version < 16], effects: [content_version = 16] }
   # Ночь кончается только выбором на экране залога (endNight).
   # Перехваты проверяются после каждого выбора, срабатывает первый подходящий.
   interrupts:

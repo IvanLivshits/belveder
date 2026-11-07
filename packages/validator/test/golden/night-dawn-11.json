@@ -1,5 +1,5 @@
 {
-  "digest": "12ccb0aae3cfdb2462a96c981b5a91b7ea5d9fa41f71e194ea33d8b29784c33b",
+  "digest": "bb27c04004a295a2f7d597da136c62e3f10aec7059a3db267eda15f7d9e31e7c",
   "snapshot": {
     "ending": null,
     "history": {
@@ -114,7 +114,7 @@
     "pendingChoice": null,
     "phase": "scene",
     "profile": {
-      "content_version": 15,
+      "content_version": 16,
       "dolly_trust": 1,
       "found.laundry_tag": 1,
       "found.matchbook": 1,

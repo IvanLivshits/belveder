@@ -1,5 +1,5 @@
 {
-  "digest": "5f1ecd014d29e006adf31adf951c3ee182ca1aed95ab6eade5712c76eb1679dd",
+  "digest": "66d2647c514a64c69093fd6886ac4b7bd04d66f30b2bc0a161926175d86722b0",
   "snapshot": {
     "ending": null,
     "history": {
@@ -138,7 +138,7 @@
     "pendingChoice": null,
     "phase": "report",
     "profile": {
-      "content_version": 15,
+      "content_version": 16,
       "found.laundry_tag": 1,
       "found.matchbook": 1,
       "found.note_12": 1,

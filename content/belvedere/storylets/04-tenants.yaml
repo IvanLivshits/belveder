@@ -68,15 +68,15 @@
         - { who: eddie, text: "Показалось, что я уже прожил этот вечер. Раз сто." }
         - { who: eddie, text: "Глупость, да? Желоб в подвал — вон та заслонка. Берите, если надо." }
     - do: Угостить сигаретой и спросить, кому записки
-      when: [cigarettes >= 1, has.owner_note == 0]
-      effects: [seen.eddie = 1, cigarettes -= 1, debt.eddie += 1, has.owner_note = 1, clues += 1]
+      when: [cigarettes >= 1, has.owner_note == 0, knows.owner_note == 0]
+      effects: [seen.eddie = 1, cigarettes -= 1, debt.eddie += 1, has.owner_note = 1, knows.owner_note = 1, clues += 1]
       reply:
         - { who: eddie, text: "Все наверх. Ему. И одна про вас. Я не давал, вы сами нашли." }
         - { who: narrator, text: "«Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»" }
     # Грубый путь — только когда угостить нечем.
     - do: Снять цилиндр с полки
-      when: [cigarettes == 0, has.owner_note == 0]
-      effects: [seen.eddie = 1, seen.eddie_hostile = 1, suspicion += 2, has.owner_note = 1, clues += 1]
+      when: [cigarettes == 0, has.owner_note == 0, knows.owner_note == 0]
+      effects: [seen.eddie = 1, seen.eddie_hostile = 1, suspicion += 2, has.owner_note = 1, knows.owner_note = 1, clues += 1]
       reply:
         - { who: narrator, text: "«Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»" }
         - { who: gut, text: "Ему пятнадцать. Он только что решил, что ты такой же, как все тут." }

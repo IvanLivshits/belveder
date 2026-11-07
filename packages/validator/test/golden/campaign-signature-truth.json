@@ -1,5 +1,5 @@
 {
-  "digest": "843f7734fd3d2de5e47daf85d0484535d39eb969f3c10857724fb07110655b0f",
+  "digest": "afa201db58c49e395e550ec8ba7ce0f83d5cf84d568aa406ff6439a8b1d0040d",
   "snapshot": {
     "ending": "signature_truth",
     "history": {
@@ -170,7 +170,7 @@
     "pendingChoice": null,
     "phase": "ending",
     "profile": {
-      "content_version": 15,
+      "content_version": 16,
       "dolly_trust": 5,
       "endings.signature_truth": 1,
       "found.laundry_tag": 1,

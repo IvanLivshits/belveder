@@ -2,6 +2,8 @@
 
 Правило: каждое изменение хеша в `packages/*/test/golden/*.json` получает здесь одну строку в том же коммите. Коммит остаётся однострочным, объяснение живёт тут. Формат: `дата · коммит (тема, потому что хеш до коммита неизвестен) · golden · почему`. Новые строки сверху.
 
+- 2026-11-07 · fix(content): v16 after the upper-floor run · `campaign-case-closed` · в профиле `content_version: 16` и `met.eddie_stairs: 1`: Эдди на лестнице теперь встречается один раз за игру, «Отпустить» в ночь 4 ставит флаг.
+- 2026-11-07 · fix(content): v16 after the upper-floor run · `night-ring-2024`, `night-first-5`, `night-dawn-11`, `campaign-signature-truth` · миграция v16 ставит в профиль `content_version: 16` (блок `< 16`: `knows.owner_note` и `met.eddie_stairs` для сохранений с найденной запиской).
 - 2026-11-07 · feat: upper floors in lines, v15 · `night-ring-2024`, `night-first-5`, `night-dawn-11` · в профиле появилось `content_version: 15`: миграция ставит его в первую ночь, по нему строки для сохранений до v15 отличают старый профиль от нового.
 - 2026-11-07 · feat: upper floors in lines, v15 · `campaign-case-closed` · «За меня поручились трое» и «Подписать: „Уолтер Хейл мёртв“» стоят в `cordelia_desk` и `owner_office` на других местах (индексы выборов), «Отпустить» Эдди на лестнице бесплатно — отчёт подписан на 14-м ходу; в профиле `content_version`.
 - 2026-11-07 · feat: upper floors in lines, v15 · `campaign-signature-truth` · в ночи доктора и Руби появились поручительства («Промолчать», «Поставите пластинку?»): свидетели `witnesses_auerbach_silent` и `witnesses_ruby_listen`, в истории четыре поручителя; слухов стало девять, и ночь «Подписи» вытянула `lights` вместо `gorman_inside`; в профиле `content_version`.

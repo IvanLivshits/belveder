@@ -198,7 +198,8 @@
   location: stairs_event
   priority: 4
   floors: [4, 12]
-  when: [turn >= 3, seen.eddie == 0, rumor.eddie_blue == 0]
+  # Один раз за игру: met.eddie_stairs.
+  when: [turn >= 3, seen.eddie == 0, rumor.eddie_blue == 0, met.eddie_stairs == 0]
   background: stairwell
   portrait: eddie_scared
   title: Лестница
@@ -208,18 +209,18 @@
   choices:
     - do: Дать сигарету и спросить, кому записка
       when: [cigarettes >= 1]
-      effects: [seen.eddie = 1, seen.eddie_ran = 1, met.eddie = 1, cigarettes -= 1, has.owner_note = 1, clues += 1]
+      effects: [seen.eddie = 1, seen.eddie_ran = 1, met.eddie = 1, met.eddie_stairs = 1, knows.owner_note = 1, cigarettes -= 1, has.owner_note = 1, clues += 1]
       reply:
         - { who: eddie, text: "Наверх. Всегда наверх. Я ничего не давал, вы сами прочитали." }
         - { who: narrator, text: "«Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»" }
     - do: Выхватить цилиндр
-      effects: [seen.eddie = 1, seen.eddie_ran = 1, met.eddie = 1, seen.eddie_hostile = 1, suspicion += 2, has.owner_note = 1, clues += 1]
+      effects: [seen.eddie = 1, seen.eddie_ran = 1, met.eddie = 1, met.eddie_stairs = 1, knows.owner_note = 1, seen.eddie_hostile = 1, suspicion += 2, has.owner_note = 1, clues += 1]
       reply:
         - { who: narrator, text: "«Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»" }
         - { who: gut, text: "Он смотрит так, будто ты отнял билет на поезд." }
     - do: Отпустить
       free: true
-      effects: [seen.eddie = 1, seen.eddie_ran = 1, met.eddie = 1, debt.eddie += 1]
+      effects: [seen.eddie = 1, seen.eddie_ran = 1, met.eddie = 1, met.eddie_stairs = 1, debt.eddie += 1]
       reply:
         - { who: eddie, text: "Спасибо, мистер! Я запомню!" }
 
@@ -228,7 +229,7 @@
   location: stairs_event
   priority: 5
   floors: [3, 3]
-  when: [rumor.pool_pie == 1, seen.pool_invited == 0]
+  when: [rumor.pool_pie == 1, seen.pool_invited == 0, turn <= 10]
   background: landing_03
   portrait: pool
   title: Третий этаж

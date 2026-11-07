@@ -370,6 +370,31 @@ describe("belvedere: the stairs", () => {
     expect(q(on, "debt.eddie")).toBe(1);
   });
 
+  test("v16: Eddie on the stairs once per game; the note is known for good, so the laundry does not ask about it again", () => {
+    const first = travel({ ...onStairs("sloan_lamp"), run: { ...onStairs("sloan_lamp").run, turn: 3 } }, world, 4);
+    expect(first.storyletId).toBe("stairs_eddie");
+    const note = route(first, ["Дать сигарету и спросить, кому записка"]);
+    expect(q(note, "knows.owner_note")).toBe(1);
+    expect(q(note, "met.eddie_stairs")).toBe(1);
+    // the next night: the walk goes on to the landing, and Eddie in the laundry has nothing to add about the note
+    const landing = route(night(profileOf(note), 8, "sloan_lamp"), QUICK_IN);
+    const next = route(landing, ["Лестница"]);
+    expect(travel({ ...next, run: { ...next.run, turn: 3 } }, world, 4).storyletId).toBe("floor_04_doors");
+    expect(open(route(walk(landing, 2), ["Прачечная"]))).not.toContain("Угостить сигаретой и спросить, кому записки");
+    // the laundry first: on a later night the stairs still stop Nick once, with the note he already knows
+    const laundry = route(walk(route(night(profileOf(ringNight()), 8, "sloan_lamp"), QUICK_IN), 2), ["Прачечная", "Угостить сигаретой и спросить, кому записки", "Уйти"]);
+    expect(q(laundry, "knows.owner_note")).toBe(1);
+    const up = route(night(profileOf(laundry), 9, "sloan_lamp"), [...QUICK_IN, "Лестница"]);
+    expect(travel({ ...up, run: { ...up.run, turn: 3 } }, world, 4).storyletId).toBe("stairs_eddie");
+  });
+
+  test("v16: Mrs. Pool invites from the stairs only until 03:00 (turn 10)", () => {
+    const s = onStairs();
+    const at = (turn: number) => travel({ ...s, run: { ...s.run, turn, "seen.eddie": 1 } }, world, 4); // arrives at turn + 2; Eddie is not in the way
+    expect(at(8).storyletId).toBe("stairs_pool_pie");
+    expect(at(9).storyletId).toBe("floor_04_doors");
+  });
+
   test("the chalk mark on the twelfth is seen once", () => {
     const s = onStairs("eddie_blue");
     const up = travel({ ...s, run: { ...s.run, "has.cordelia_pass": 1 } }, world, 12);
@@ -520,20 +545,30 @@ describe("belvedere: knowledge", () => {
   });
 });
 
-describe("belvedere: saves from before v15", () => {
+describe("belvedere: saves from before v15 and v16", () => {
   test("the recognition scenes are marked as seen for a profile whose memory had already returned; a fresh profile is stamped first", () => {
     const old: Profile = { v: 1, profile: { nights: 5, "mem.true.name": 1, "mem.true.lantern": 1 } };
     const s = newNight(old, world, 1);
-    expect(q(s, "content_version")).toBe(15);
+    expect(q(s, "content_version")).toBe(16);
     expect(q(s, "met.pool_walter")).toBe(1);
     expect(q(s, "met.ruby_recognized")).toBe(1);
     expect(q(s, "met.auerbach_shocked")).toBe(0); // the hospital has not returned
     const fresh = newNight(emptyProfile(), world, 1);
-    expect(q(fresh, "content_version")).toBe(15);
+    expect(q(fresh, "content_version")).toBe(16);
     expect(q(fresh, "met.pool_walter")).toBe(0);
     // a profile the new content has already seen keeps its scenes when a memory returns later
     const stamped: Profile = { v: 1, profile: { nights: 5, content_version: 15, "mem.true.name": 1 } };
     expect(q(newNight(stamped, world, 1), "met.pool_walter")).toBe(0);
+  });
+
+  test("v16: a save that had found the Proprietor's note knows it for good and has met Eddie on the stairs", () => {
+    const old: Profile = { v: 1, profile: { nights: 3, content_version: 15, "found.owner_note": 1 } };
+    const s = newNight(old, world, 1);
+    expect(q(s, "content_version")).toBe(16);
+    expect(q(s, "knows.owner_note")).toBe(1);
+    expect(q(s, "met.eddie_stairs")).toBe(1);
+    const without: Profile = { v: 1, profile: { nights: 3, content_version: 15 } };
+    expect(q(newNight(without, world, 1), "met.eddie_stairs")).toBe(0);
   });
 });
 
@@ -1062,20 +1097,24 @@ describe("belvedere: the campaign and the five endings", () => {
     expect(storyView(profileOf(s), world, "redemption").sections.filter((x) => x.kind === "night").length).toBe(8);
   });
 
-  test("new proprietor: Gorman's car, Fenn's key, Eddie's cylinder, the stolen pass, the torn page; the chair at turn 15 with suspicion 8", () => {
-    let s = route(night(after(6), 61, "sloan_lamp"), ["Взять деньги и дело", "Подойти к машине у фонаря", "Войти", "Откуда вы знаете, что меня ждут?", "Попросить грузовой лифт", "На десятый"]);
+  test("new proprietor: Gorman's car, Fenn's key, Gorman on the stairs, the stolen pass, the torn page; the chair at turn 15 with suspicion 7", () => {
+    let s = route(night(after(6), 61, "gorman_inside"), ["Взять деньги и дело", "Подойти к машине у фонаря", "Войти", "Откуда вы знаете, что меня ждут?", "Попросить грузовой лифт", "На десятый"]);
     expect(q(s, "suspicion")).toBe(1);
     s = route(s, ["Мастерская часовщика", "На какую минуту?", "Угостить сигаретой", "Что открывает ключ у вас на шее?", "Уйти", "Лестница", 11]);
     expect(q(s, "has.clock_key")).toBe(1);
-    expect(s.storyletId).toBe("stairs_eddie");
-    s = route(s, ["Выхватить цилиндр"]);
-    expect(q(s, "suspicion")).toBe(3);
-    s = route(s, ["Приёмная", "Взять пропуск, пока она смотрит в окно", "Уйти", "Лестница", 12]);
-    expect(s.storyletId).toBe("stairs_gorman");
-    s = route(s, ["Почему вы его ищете?", "Книга залогов", "Вырвать страницу с сорок первой строкой", "Уйти", "Ломбард", "Подойти к стойке"]);
-    expect(q(s, "suspicion")).toBe(8);
+    expect(s.storyletId).toBe("stairs_gorman_rumor");
+    s = route(s, ["Аудитора нет", "Приёмная", "Взять пропуск, пока она смотрит в окно", "Уйти", "Лестница", 12]);
+    expect(s.storyletId).toBe("stairs_eddie"); // in these six nights Nick has not met him on the stairs yet; letting go is free
+    s = route(s, ["Отпустить"]);
+    expect(s.storyletId).toBe("floor_12_doors");
+    s = route(s, ["Книга залогов"]);
+    expect(open(s)).not.toContain("Вырвать страницу с сорок первой строкой"); // v16: first the line itself
+    s = route(s, ["Найти сорок первую строку марта"]);
+    expect(open(s)).toContain("Вырвать страницу с сорок первой строкой");
+    s = route(s, ["Вырвать страницу с сорок первой строкой", "Уйти", "Ломбард", "Подойти к стойке"]);
+    expect(q(s, "suspicion")).toBe(7);
     s = route(s, ["Сесть в его кресло"]);
-    expect(q(s, "turn")).toBe(15); // two walks, two encounters on them, and the chair itself
+    expect(q(s, "turn")).toBe(15); // the line found and the page torn are a move each; Eddie let go costs nothing
     expect(s.ending).toBe("new_proprietor");
   });
 
@@ -1112,17 +1151,17 @@ describe("belvedere: the campaign and the five endings", () => {
     for (const step of ["Кивнуть и пройти", "Сесть и выпить чаю"]) if (open(cur).includes(step)) cur = route(cur, [step]);
     return cur;
   };
-  test("Mei and Fenn: the clipping, the box of negatives on the depot roof, the clocks and the number of the night; six vouchers", () => {
+  test("Mei and Fenn: the clipping, the box of negatives down the dead shaft, the clocks and the number of the night; six vouchers", () => {
     let s = route(night(after(6), 63, "tony_out"), [...IN, "Попросить грузовой лифт", "На пятый", "Студия фотографа", "Посмотреть на снимки"]);
     expect(s.storyletId).toBe("mei_studio");
     expect(open(s)).toContain("Что это за вырезка?"); // from the third night on
     s = route(s, ["Что это за вырезка?"]);
     expect(q(s, "knows.fire")).toBe(1);
-    expect(open(s)).not.toContain("Вынести коробку с негативами"); // first the help
+    expect(open(s)).not.toContain("Спрятать коробку с негативами"); // first the help
     s = route(s, ["Помочь развесить снимки"]);
     const turn = q(s, "turn");
     const suspicion = q(s, "suspicion");
-    s = route(s, ["Вынести коробку с негативами"]);
+    s = route(s, ["Спрятать коробку с негативами"]);
     expect(q(s, "turn")).toBe(turn + 2);
     expect(q(s, "suspicion")).toBe(suspicion + 2);
     expect(q(s, "vouch.mei")).toBe(1);
@@ -1161,6 +1200,18 @@ describe("belvedere: the campaign and the five endings", () => {
     // the first page is not offered without the clipping or Silas's fire
     const unread = route(quiet({ v: 1, profile: { ...TRUSTED.profile, dolly_trust: 4, memories_returned: 6, vouches: 3 } }, 65), [...IN, "Попросить грузовой лифт", "На одиннадцатый", "Приёмная", "За меня поручились трое", "Уйти"]);
     expect(open(route(walk(unread, 12), ["Книга залогов"]))).not.toContain("Открыть книгу на первой странице");
+  });
+
+  test("v16: after the shock the doctor is not asked whether Vivian Hale was his patient", () => {
+    let s = route(quiet(after(4), 52), [...IN, "Попросить грузовой лифт", "На восьмой", "Приёмная доктора"]);
+    expect(s.storyletId).toBe("auerbach_shock");
+    s = route(s, ["Какую ночь?"]);
+    expect(q(s, "met.auerbach_shocked")).toBe(1);
+    expect(s.storyletId).toBe("auerbach_office");
+    expect(open(s)).not.toContain("У вас лечилась Вивиан Хейл?");
+    // before the hospital returned the question is there
+    const before = route(quiet(after(3), 52), [...IN, "Попросить грузовой лифт", "На восьмой", "Приёмная доктора", "Сесть на кушетку"]);
+    expect(open(before)).toContain("У вас лечилась Вивиан Хейл?");
   });
 
   test("doctor_late: the doctor receives until two; judging him closes the file", () => {
