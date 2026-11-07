@@ -1,5 +1,5 @@
 {
-  "digest": "afa201db58c49e395e550ec8ba7ce0f83d5cf84d568aa406ff6439a8b1d0040d",
+  "digest": "d8ebe04a0e043cfe46dc4c7dde257a11c2afba83004bf36aadd7856596ba71db",
   "snapshot": {
     "ending": "signature_truth",
     "history": {
@@ -111,10 +111,38 @@
         },
         {
           "night": 8,
+          "pledged": true,
+          "report": {
+            "client": "client_name",
+            "entry": "entry_lift",
+            "finding": "finding_clipping",
+            "price": "price_night",
+            "twist": "twist_thirteen",
+            "witnesses": "witnesses_default"
+          },
+          "rumor": "eddie_blue",
+          "values": {}
+        },
+        {
+          "night": 9,
+          "pledged": true,
+          "report": {
+            "client": "client_coffee",
+            "entry": "entry_lift",
+            "finding": "finding_book_one",
+            "price": "price_night",
+            "twist": "twist_default",
+            "witnesses": "witnesses_default"
+          },
+          "rumor": "eddie_blue",
+          "values": {}
+        },
+        {
+          "night": 10,
           "pair": "secret",
           "pledged": false,
           "report": {
-            "client": "client_name",
+            "client": "client_coffee",
             "entry": "entry_lift",
             "finding": "finding_vivian_envelope",
             "price": "price_scar",
@@ -125,7 +153,7 @@
           "values": {}
         },
         {
-          "night": 9,
+          "night": 11,
           "pledged": false,
           "report": {
             "client": "client_default",
@@ -170,9 +198,11 @@
     "pendingChoice": null,
     "phase": "ending",
     "profile": {
-      "content_version": 16,
+      "content_version": 17,
       "dolly_trust": 5,
       "endings.signature_truth": 1,
+      "found.cordelia_pass": 1,
+      "found.facade_photo": 1,
       "found.laundry_tag": 1,
       "found.ledger_true": 1,
       "found.matchbook": 1,
@@ -185,11 +215,13 @@
       "found.vivian_envelope": 1,
       "knows.club": 1,
       "knows.denver": 1,
+      "knows.fire": 1,
       "knows.invitation": 1,
       "knows.matchbook": 1,
       "knows.room": 1,
       "knows.ruby_coffee": 1,
       "knows.shortage": 1,
+      "knows.tomorrow": 1,
       "mem.false.father": 0,
       "mem.false.license": 0,
       "mem.false.lorraine": 0,
@@ -208,7 +240,11 @@
       "mem.true.voice": 1,
       "memories_returned": 8,
       "met.auerbach": 1,
+      "met.cordelia": 1,
       "met.dolly": 1,
+      "met.dolly_heard": 1,
+      "met.dolly_kept": 1,
+      "met.dolly_late": 1,
       "met.eddie": 1,
       "met.gorman": 1,
       "met.mei": 1,
@@ -224,15 +260,19 @@
       "met.sloan": 1,
       "met.sloan_deal": 1,
       "met.vivian": 1,
-      "nights": 9,
+      "nights": 11,
+      "nights_lost": 2,
       "paths.freight_lift": 1,
+      "paths.thirteen": 1,
       "paths.vault": 1,
-      "visited.floor1.tenant": 8,
+      "visited.floor1.tenant": 10,
+      "visited.floor11.tenant": 1,
+      "visited.floor12.service": 1,
       "visited.floor2.tenant": 2,
       "visited.floor3.service": 1,
       "visited.floor4.tenant": 2,
-      "visited.floor5.service": 1,
-      "visited.floor5.tenant": 1,
+      "visited.floor5.service": 2,
+      "visited.floor5.tenant": 2,
       "visited.floor7.service": 8,
       "visited.floor7.tenant": 2,
       "visited.floor8.tenant": 1,

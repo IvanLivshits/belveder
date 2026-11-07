@@ -44,6 +44,8 @@ export function App() {
   const [hints, setHints] = useState<string[]>([]);
   /** Index of an ending choice waiting for the player's confirmation. */
   const [confirm, setConfirm] = useState<number | null>(null);
+  /** An envelope nothing would replace, waiting for the player to confirm the loss. */
+  const [pledgeConfirm, setPledgeConfirm] = useState<{ id: string; label: string } | null>(null);
   /** The transcript of the place the player is in, and how many of its entries are already on screen. */
   const [feed, setFeed] = useState<Feed>({ location: "", entries: [] });
   const [shown, setShown] = useState(0);
@@ -329,7 +331,7 @@ export function App() {
   const items = scene.choices.map(item);
   // An ending choice asks first; there is no way back after it.
   const onChoose = (index: number) => (scene.storylet.choices[index]?.ending !== undefined ? setConfirm(index) : advance(choose(state, world, index)));
-  const confirmSheet = confirm !== null && (
+  const confirmSheet = confirm !== null ? (
     <ConfirmSheet
       text="Это финал дела. Дальше пути назад не будет."
       okLabel="Закончить дело"
@@ -337,12 +339,26 @@ export function App() {
       onOk={() => { const i = confirm; setConfirm(null); advance(choose(state, world, i)); }}
       onCancel={() => setConfirm(null)}
     />
+  ) : pledgeConfirm !== null && (
+    <ConfirmSheet
+      text={`Взамен ничего не встанет. „${pledgeConfirm.label}“ пропадёт насовсем.`}
+      okLabel="Отдать"
+      cancelLabel="Передумать"
+      onOk={() => { const id = pledgeConfirm.id; setPledgeConfirm(null); advance(pledge(state, world, id)); }}
+      onCancel={() => setPledgeConfirm(null)}
+    />
   );
+  // An envelope with nothing to replace it is a loss for good: Dolly says so first (the notebook's pledge rule).
+  const onPledge = (id: string) => {
+    const m = scene.memories.find((x) => x.id === id);
+    if (m && !m.canReturn) setPledgeConfirm({ id, label: m.label });
+    else advance(pledge(state, world, id));
+  };
   const stairs = scene.stairs;
   const picker = scene.storylet.layout === "doors"
     ? <DoorPicker doors={scene.doors.map(item)} onChoose={onChoose} />
     : scene.storylet.layout === "pledge"
-      ? <PledgePicker memories={scene.memories} readyLabel="Кажется, это есть чем заменить" onPledge={(id) => advance(pledge(state, world, id))} choices={items} onChoose={onChoose} />
+      ? <PledgePicker memories={scene.memories} readyLabel="Кажется, это есть чем заменить" onPledge={onPledge} choices={items} onChoose={onChoose} />
       : stairs
         ? (
           <StairsPicker

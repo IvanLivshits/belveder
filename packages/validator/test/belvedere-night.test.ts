@@ -422,6 +422,7 @@ describe("belvedere: the rumor of the night", () => {
       s = route(s.location === "floor_01" ? route(s, ["Долли"]) : s, ["Уйти до рассвета (залог)", "Заложить эту ночь"]);
       expect(s.phase).toBe("report");
       profile = profileOf(s);
+      profile.profile["nights_lost"] = 0; // v17: the third night given away would end the game; this test is about the draw
     }
     expect(profile.history!.nights.map((r) => r.rumor)).toEqual(drawn);
     // Nick has met Eddie only: Sloan's lamp and Gorman inside are not talked about yet
@@ -545,16 +546,16 @@ describe("belvedere: knowledge", () => {
   });
 });
 
-describe("belvedere: saves from before v15 and v16", () => {
+describe("belvedere: saves from before v15, v16 and v17", () => {
   test("the recognition scenes are marked as seen for a profile whose memory had already returned; a fresh profile is stamped first", () => {
     const old: Profile = { v: 1, profile: { nights: 5, "mem.true.name": 1, "mem.true.lantern": 1 } };
     const s = newNight(old, world, 1);
-    expect(q(s, "content_version")).toBe(16);
+    expect(q(s, "content_version")).toBe(17);
     expect(q(s, "met.pool_walter")).toBe(1);
     expect(q(s, "met.ruby_recognized")).toBe(1);
     expect(q(s, "met.auerbach_shocked")).toBe(0); // the hospital has not returned
     const fresh = newNight(emptyProfile(), world, 1);
-    expect(q(fresh, "content_version")).toBe(16);
+    expect(q(fresh, "content_version")).toBe(17);
     expect(q(fresh, "met.pool_walter")).toBe(0);
     // a profile the new content has already seen keeps its scenes when a memory returns later
     const stamped: Profile = { v: 1, profile: { nights: 5, content_version: 15, "mem.true.name": 1 } };
@@ -564,11 +565,17 @@ describe("belvedere: saves from before v15 and v16", () => {
   test("v16: a save that had found the Proprietor's note knows it for good and has met Eddie on the stairs", () => {
     const old: Profile = { v: 1, profile: { nights: 3, content_version: 15, "found.owner_note": 1 } };
     const s = newNight(old, world, 1);
-    expect(q(s, "content_version")).toBe(16);
+    expect(q(s, "content_version")).toBe(17);
     expect(q(s, "knows.owner_note")).toBe(1);
     expect(q(s, "met.eddie_stairs")).toBe(1);
     const without: Profile = { v: 1, profile: { nights: 3, content_version: 15 } };
     expect(q(newNight(without, world, 1), "met.eddie_stairs")).toBe(0);
+    // v17 only stamps: an old save starts counting the nights it gives away from zero
+    const v16: Profile = { v: 1, profile: { nights: 9, content_version: 16, dolly_trust: 5 } };
+    const n = newNight(v16, world, 1);
+    expect(q(n, "content_version")).toBe(17);
+    expect(q(n, "nights_lost")).toBe(0);
+    expect(q(n, "dolly_trust")).toBe(5);
   });
 });
 
@@ -938,8 +945,8 @@ describe("belvedere: the campaign and the five endings", () => {
 
   // Regression nights, from the profile after the third: quiet nights, the freight lift.
   const doctor = (p: Profile) => {
-    let s = route(quiet(p, 5), [...IN, "Угостить сигаретой", "Попросить грузовой лифт", "На восьмой"]);
-    expect(q(s, "turn")).toBe(3);
+    let s = route(quiet(p, 5), [...IN, "Попросить грузовой лифт", "На восьмой"]);
+    expect(q(s, "turn")).toBe(2); // v17: no cigarette for Dolly on the way (trust is full since the third night)
     s = route(s, ["Приёмная доктора", "Сесть на кушетку", "Почему вы не спите?", "Промолчать", "Покажите карточку Вивиан Хейл", "Уйти"]);
     expect(q(s, "vouch.auerbach")).toBe(1);
     return route(toPledge(s), [["pledge", "hospital"]]);
@@ -959,8 +966,31 @@ describe("belvedere: the campaign and the five endings", () => {
     expect(q(s, "has.signature_photo")).toBe(1);
     return route(toPledge(s), [["pledge", "name"]]);
   };
+  // v17, the lore night (N8a): Mei's clipping, the facade print counted twice; the night itself is the first one given away.
+  const lore = (p: Profile) => {
+    let s = route(inside(quiet(p, 10)), ["Попросить грузовой лифт", "На пятый", "Студия фотографа", "Что это за вырезка?", "Помочь развесить снимки", "Уйти"]);
+    s = route(s, ["Фотолаборатория", "Отпечатать «Фасад Белведера»", "Пересчитать ещё раз", "Уйти"]);
+    expect(q(s, "knows.fire")).toBe(1);
+    expect(q(s, "paths.thirteen")).toBe(1);
+    s = closeNight(s);
+    expect(q(s, "nights_lost")).toBe(1);
+    return s;
+  };
+  // v17, the book night (N8b): the pass for three vouchers, the first page of the pledge book; Dolly warns before the second night given away.
+  const book = (p: Profile) => {
+    let s = route(inside(quiet(p, 11)), ["Попросить грузовой лифт", "На одиннадцатый", "Приёмная", "За меня поручились трое", "Уйти"]);
+    expect(q(s, "has.cordelia_pass")).toBe(1);
+    s = route(walk(s, 12), ["Книга залогов", "Открыть книгу на первой странице", "Уйти"]);
+    expect(q(s, "knows.tomorrow")).toBe(1);
+    s = route(walk(s, 1), ["Долли", "Уйти до рассвета (залог)"]);
+    expect(s.storyletId).toBe("pledge_exit");
+    expect(feedTexts(s)).toContain("Одну ночь ты мне уже отдал. Ночь — тоже кусок жизни. Кто отдаёт ночи, тому не к чему возвращаться утром.");
+    s = route(s, ["Заложить эту ночь"]);
+    expect(q(s, "nights_lost")).toBe(2);
+    return s;
+  };
   const thirteenth = (p: Profile) => {
-    let s = route(quiet(p, 9), ["Поднять трость и взять дело", "Войти", "Сесть и выпить чаю", "Попросить грузовой лифт", "Попросить нажать две кнопки сразу"]);
+    let s = route(inside(quiet(p, 9)), ["Попросить грузовой лифт", "Попросить нажать две кнопки сразу"]);
     expect(s.storyletId).toBe("vault_room");
     s = route(s, ["Найти конверт Вивиан Хейл", "Вернуться к лифту", "Уйти до рассвета (залог)"]);
     return pledge(s, world, "secret");
@@ -969,7 +999,7 @@ describe("belvedere: the campaign and the five endings", () => {
   /** Profiles after each night, computed once. */
   const P: Profile[] = [];
   const after = (n: number): Profile => {
-    const steps = [night1, night2, night3, doctor, record, voice, name, thirteenth];
+    const steps = [night1, night2, night3, doctor, record, voice, name, lore, book, thirteenth];
     while (P.length < n) {
       const i = P.length;
       const s = i === 0 ? night1() : steps[i]!(P[i - 1]!);
@@ -996,7 +1026,8 @@ describe("belvedere: the campaign and the five endings", () => {
     expect(reportOf(s)).toMatchObject({ entry: "entry_tea", twist: "twist_cashbox_returned", price: "price_sheriff" });
     expect(q(s, "has.advance_given")).toBe(1);
     expect(progressNotes(s, world)).toEqual(["Зацепок закрыто: 6 из 8.", "Поручились: 2 из 3."]);
-    expect(q(s, "turn")).toBe(12); // one question less than before: Denver was told on the first night
+    expect(q(s, "dolly_trust")).toBe(5); // v17: covering for Sloan and Eddie's ticket, not the cigarette (refused for free at 2+)
+    expect(q(s, "turn")).toBe(11);
     // the next office card is the hospital bill, once
     expect(newNight(profileOf(s), world, 5).storyletId).toBe("office_cashbox");
   });
@@ -1019,22 +1050,23 @@ describe("belvedere: the campaign and the five endings", () => {
     await expectGolden(DIR, "campaign-case-closed", s);
   });
 
-  test("eight nights return all eight pairs, Dolly's trust reaches 5, every night is on record", () => {
-    const p = after(8);
+  test("ten nights return all eight pairs and give two away, Dolly's trust reaches 5, every night is on record", () => {
+    const p = after(10);
     expect(returned(p)).toEqual(["ring", "lantern", "ledger", "hospital", "voice", "cashbox", "name", "secret"]);
     expect(p.profile["memories_returned"]).toBe(8);
     expect(p.profile["dolly_trust"]).toBe(5);
-    expect(p.profile["nights"]).toBe(8);
+    expect(p.profile["nights"]).toBe(10);
+    expect(p.profile["nights_lost"]).toBe(2);
     expect(p.history!.pledges).toEqual(["ring", "ledger", "cashbox", "hospital", "lantern", "voice", "name", "secret"]);
-    expect(p.history!.nights.map((n) => n.pledged)).toEqual(Array(8).fill(false));
-    expect(p.history!.nights.map((n) => n.report["price"])).toEqual(["price_marines", "price_senator_dog", "price_sheriff", "price_lorraine", "price_mcginnis", "price_father", "price_license", "price_scar"]);
-    expect(p.history!.nights.map((n) => n.rumor)).toEqual(["pool_pie", "pool_pie", "gorman_inside", "eddie_blue", "eddie_blue", "eddie_blue", "eddie_blue", "eddie_blue"]);
+    expect(p.history!.nights.map((n) => n.pledged)).toEqual([false, false, false, false, false, false, false, true, true, false]);
+    expect(p.history!.nights.map((n) => n.report["price"])).toEqual(["price_marines", "price_senator_dog", "price_sheriff", "price_lorraine", "price_mcginnis", "price_father", "price_license", "price_night", "price_night", "price_scar"]);
+    expect(p.history!.nights.map((n) => n.rumor)).toEqual(["pool_pie", "pool_pie", "gorman_inside", ...Array(7).fill("eddie_blue")]);
     expect(p.history!.vouchers).toEqual(["vouch.sloan", "vouch.eddie", "vouch.auerbach", "vouch.ruby"]);
     expect(p.profile["vouches"]).toBe(4);
   });
 
   test("signature: after the thirteenth Vivian waits in the lobby; the truth ends the case, the story holds nine nights", async () => {
-    let s = newNight(after(8), world, 10);
+    let s = newNight(after(10), world, 10);
     expect(s.storyletId).toBe("office_signature");
     s = route(s, ["Пойти в Белведер"]);
     expect(s.storyletId).toBe("lobby_vivian");
@@ -1050,13 +1082,13 @@ describe("belvedere: the campaign and the five endings", () => {
     expect(view.epilogues.length).toBe(1);
     const story = storyView(profileOf(s), world, "signature_truth");
     expect(story.title).toBe("Дело Хейла");
-    expect(story.sections.map((x) => x.kind)).toEqual(["opening", ...Array(9).fill("night"), "litany", "ending", "epilogues", "closing"]);
+    expect(story.sections.map((x) => x.kind)).toEqual(["opening", ...Array(9).fill("night"), "pledged_note", "litany", "ending", "epilogues", "closing"]);
     const opening = story.sections[0] as { text: string };
     expect(opening.text).toBe(currentReport(night1(), world).find((r) => r.slot === "client")!.text);
     const litany = story.sections.find((x) => x.kind === "litany") as { text: string };
     expect(litany.text.split(" ").length).toBeGreaterThan(40);
     const nights = story.sections.filter((x) => x.kind === "night") as { night: number; paragraphs: string[] }[];
-    expect(nights.map((n) => n.night)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(nights.map((n) => n.night)).toEqual([1, 2, 3, 4, 5, 6, 7, 10, 11]); // the two nights given away are not in the story
     // prose only: no slot labels; the first night does not repeat the opening, nights with a pawned pair leave the price to the litany
     expect(nights[0]!.paragraphs.length).toBe(4);
     expect(nights[0]!.paragraphs).not.toContain(opening.text);
@@ -1118,22 +1150,28 @@ describe("belvedere: the campaign and the five endings", () => {
     expect(s.ending).toBe("new_proprietor");
   });
 
-  test("ashes: Eddie's chute, Silas's matches, Dolly's two buttons, a match on the thirteenth; the redemption epilogue only once redemption was seen", () => {
+  /** Eddie's chute to the basement, Silas warmed by the furnace; the matches are asked for. */
+  const toSilas = (p: Profile) => {
+    let s = route(inside(night(p, 62, "sloan_lamp")), ["На площадку"]);
+    s = route(walk(s, 2), ["Прачечная", "Угостить сигаретой и спросить, кому записки", "Куда ведёт желоб?", "Уйти", "Бельё", "Прыгнуть"]);
+    expect(s.storyletId).toBe("silas_intro");
+    return route(s, ["Сесть рядом с огнём", "Кем вы были?", "Прикурить от топки и угостить его", "Дадите спички?"]);
+  };
+
+  test("ashes is secret: Silas's matches and Dolly's two buttons need the first line of the book, the match seven memories; the redemption epilogue only once redemption was seen", () => {
     const toMatch = (p: Profile) => {
-      let s = route(night(p, 62, "sloan_lamp"), [...IN, "На площадку"]);
-      s = route(walk(s, 2), ["Прачечная", "Угостить сигаретой и спросить, кому записки", "Куда ведёт желоб?", "Уйти", "Бельё", "Прыгнуть"]);
-      expect(s.storyletId).toBe("silas_intro");
-      s = route(s, ["Сесть рядом с огнём", "Кем вы были?", "Прикурить от топки и угостить его", "Дадите спички?", "Подняться по чёрной лестнице в вестибюль", "Долли", "Попросить грузовой лифт", "Попросить нажать две кнопки сразу"]);
-      expect(s.storyletId).toBe("vault_room");
+      let s = toSilas(p);
       expect(q(s, "has.matches")).toBe(1);
+      s = route(s, ["Подняться по чёрной лестнице в вестибюль", "Долли", "Попросить грузовой лифт", "Попросить нажать две кнопки сразу"]);
+      expect(s.storyletId).toBe("vault_room");
       return route(s, ["Чиркнуть спичкой Сайласа"]);
     };
-    const first = toMatch(after(6));
+    const first = toMatch(after(9));
     expect(first.ending).toBe("ashes");
     expect(q(first, "turn")).toBe(11);
     expect(endingView(first, world).epilogues.length).toBe(1);
     // the same campaign in a player who already bought the name back in an earlier case
-    const seen: Profile = { ...after(6), profile: { ...after(6).profile, "endings.redemption": 1 } };
+    const seen: Profile = { ...after(9), profile: { ...after(9).profile, "endings.redemption": 1 } };
     const second = toMatch(seen);
     expect(endingView(second, world).epilogues.length).toBe(2);
     expect(endingView(second, world).epilogues[1]).toMatch(/Вивиан узнала мужа/);
@@ -1200,6 +1238,101 @@ describe("belvedere: the campaign and the five endings", () => {
     // the first page is not offered without the clipping or Silas's fire
     const unread = route(quiet({ v: 1, profile: { ...TRUSTED.profile, dolly_trust: 4, memories_returned: 6, vouches: 3 } }, 65), [...IN, "Попросить грузовой лифт", "На одиннадцатый", "Приёмная", "За меня поручились трое", "Уйти"]);
     expect(open(route(walk(unread, 12), ["Книга залогов"]))).not.toContain("Открыть книгу на первой странице");
+  });
+
+  // v17: the price of the night, trust for deeds, the secret path to the thirteenth.
+  test("v17: Dolly's trust is bought with a cigarette only up to 2; after that she refuses it for free and says why", () => {
+    const wary = route(quiet({ v: 1, profile: { nights: 2, dolly_trust: 1 } }, 71), ["Взять деньги и дело", "Войти", "Угостить сигаретой"]);
+    expect(q(wary, "dolly_trust")).toBe(2);
+    const s = route(quiet(TRUSTED, 71), [...IN]);
+    const turn = q(s, "turn");
+    const refused = route(s, ["Угостить сигаретой"]);
+    expect(q(refused, "dolly_trust")).toBe(3);
+    expect(q(refused, "cigarettes")).toBe(q(s, "cigarettes"));
+    expect(q(refused, "turn")).toBe(turn);
+    expect(q(refused, "seen.dolly_cig")).toBe(1); // her refusal is the reply; once a night
+    expect(open(refused)).not.toContain("Угостить сигаретой");
+  });
+
+  test("v17: keeping the word to Dolly counts once per game; the second time the ride is there, the trust is not", () => {
+    const p = after(2); // met.dolly_kept from the second night
+    expect(p.profile["met.dolly_kept"]).toBe(1);
+    const s = route(night(p, 72, "pool_pie"), ["Взять деньги и дело", "Войти", "Кивнуть", "На площадку", "Лестница", 3, "Меня ждут внизу", "Лестница", 1, "Долли"]);
+    expect(s.storyletId).toBe("dolly_kept_again");
+    expect(feedTexts(s)).toContain("Опять пришёл вовремя. Я начинаю к этому привыкать. Это опасно.");
+    const trust = q(s, "dolly_trust");
+    const again = route(s, ["В другой раз"]);
+    expect(q(again, "dolly_trust")).toBe(trust);
+    expect(q(again, "has.lift_ride")).toBe(1);
+  });
+
+  test("v17: a shameful exit (suspicion 5–9) or Tony's collar costs a point of trust, with an envelope and with the night alike", () => {
+    const exit = (suspicion: number) => {
+      const s = route(quiet(TRUSTED, 73), IN); // tea with Dolly, then straight back to her envelope
+      return route({ ...s, run: { ...s.run, suspicion } }, ["Уйти до рассвета (залог)"]);
+    };
+    const quietExit = exit(4);
+    expect(quietExit.storyletId).toBe("pledge_exit");
+    expect(q(route(quietExit, ["Заложить эту ночь"]), "dolly_trust")).toBe(3);
+    const shamed = exit(6);
+    expect(shamed.storyletId).toBe("pledge_shamed");
+    expect(feedTexts(shamed)).toContain("Мне за тебя стыдно, Ник. Это я запомню.");
+    const night = route(shamed, ["Заложить эту ночь"]);
+    expect(night.phase).toBe("report");
+    expect(q(night, "dolly_trust")).toBe(2);
+    expect(q(night, "nights_lost")).toBe(1);
+    const envelope = pledge(shamed, world, "ring");
+    expect(q(envelope, "dolly_trust")).toBe(2);
+    expect(q(envelope, "nights_lost")).toBe(0);
+    expect(q(envelope, "pledged.ring")).toBe(1);
+    const caught = exit(10);
+    expect(caught.storyletId).toBe("pledge_caught");
+    expect(feedTexts(caught)).toContain("Тебя привели за шиворот, Ник. Это я тоже запомню. Выбирай сам.");
+    expect(q(route(caught, ["Заложить эту ночь"]), "dolly_trust")).toBe(2);
+  });
+
+  test("v17: the first night given away is not counted; the third makes Nick a tenant (ending tenant)", () => {
+    // the first night: no counter yet
+    expect(q(route(newNight(emptyProfile(), world, 3), [...PLAN_FIRST_NIGHT, "Заложить эту ночь"]), "nights_lost")).toBe(0);
+    const p: Profile = { v: 1, profile: { nights: 4, dolly_trust: 1, nights_lost: 2 } };
+    const s = route(quiet(p, 74), QUICK_EXIT);
+    expect(s.storyletId).toBe("pledge_exit");
+    expect(feedTexts(s)).toContain("Две ночи. Отдашь третью — утром проснёшься в 3-В. Новым жильцом. Я тебя предупредила.");
+    expect(open(s)).not.toContain("Заложить эту ночь");
+    expect(open(s)).toContain("Заложить третью ночь");
+    expect(currentScene(s, world).memories.length).toBe(8); // the envelopes are still the way out
+    const end = route(s, ["Заложить третью ночь"]);
+    expect(end.phase).toBe("ending");
+    expect(end.ending).toBe("tenant");
+    expect(q(end, "endings.tenant")).toBe(1);
+    const view = endingView(end, world);
+    expect(view.title).toBe("Жилец");
+    expect(view.image).toBe("room_newtenant");
+    expect(view.epilogues.length).toBe(1);
+    const closed: Profile = { ...p, profile: { ...p.profile, "endings.case_closed": 1 } };
+    expect(endingView(route(quiet(closed, 74), [...QUICK_EXIT, "Заложить третью ночь"]), world).epilogues.length).toBe(2);
+    // at dawn and after a shameful night the third night is the same ending
+    const dawn = route({ ...route(quiet(p, 75), QUICK_IN), run: { ...route(quiet(p, 75), QUICK_IN).run, turn: 16 } }, ["Долли"]);
+    expect(dawn.storyletId).toBe("pledge_dawn");
+    expect(open(dawn)).toEqual(["Заложить третью ночь"]);
+  });
+
+  test("v17: the thirteenth needs the first line of the book and the counted floors, not trust alone; Silas keeps his matches until then", () => {
+    const trusted = (extra: Record<string, number>) => route(quiet({ v: 1, profile: { nights: 6, dolly_trust: 5, memories_returned: 6, ...extra } }, 76), [...IN, "Попросить грузовой лифт"]);
+    expect(open(trusted({}))).not.toContain("Попросить нажать две кнопки сразу");
+    expect(open(trusted({}))).not.toContain("Спросить про тринадцатый");
+    const counted = trusted({ "paths.thirteen": 1 });
+    expect(open(counted)).not.toContain("Попросить нажать две кнопки сразу");
+    const asked = route(counted, ["Спросить про тринадцатый"]);
+    expect(q(asked, "turn")).toBe(q(counted, "turn")); // free
+    expect(q(asked, "seen.ask13")).toBe(1); // Dolly's answer is the reply: first read the first line
+    expect(open(asked)).not.toContain("Спросить про тринадцатый");
+    expect(open(trusted({ "paths.thirteen": 1, "knows.tomorrow": 1 }))).toContain("Попросить нажать две кнопки сразу");
+    // Silas, before the book is read: a refusal with its reason, no matches
+    const silas = toSilas(after(6));
+    expect(q(silas, "has.matches")).toBe(0);
+    expect(q(silas, "seen.silas_refused")).toBe(1); // the refusal with its reason is the reply
+    expect(open(silas)).not.toContain("Дадите спички?");
   });
 
   test("v16: after the shock the doctor is not asked whether Vivian Hale was his patient", () => {

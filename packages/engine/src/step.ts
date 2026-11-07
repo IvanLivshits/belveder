@@ -97,6 +97,8 @@ export function choose(state: GameState, world: World, index: number): GameState
   let next: GameState = { ...state, log: [...state.log, { storylet: storylet.id, choice: index }] };
   next = applyEffects(next, world, choice.effects);
   if (!choice.free) next = applyEffects(next, world, world.rules.onChoice);
+  // A choice that closes the night from a pledge screen is a pledge too (the night itself): the screen's pledgeEffects apply.
+  if (choice.endNight || choice.ending !== undefined) next = applyEffects(next, world, storylet.pledgeEffects);
   next = record(next, world);
 
   const resolved = resolveChoice(next, world, index);
@@ -199,6 +201,8 @@ export function pledge(state: GameState, world: World, pairId: string): GameStat
     next = setQuality(next, world, returnedTonight, 1);
     next = setQuality(next, world, memoriesReturned, getQuality(next, world, memoriesReturned) + 1);
   }
+  // The screen's own price (e.g. trust lost for a shameful exit) comes after the pair, before the report.
+  next = applyEffects(next, world, storylet.pledgeEffects);
   return endNight(next, world, pairId);
 }
 

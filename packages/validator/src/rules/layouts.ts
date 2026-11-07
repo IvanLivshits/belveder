@@ -1,5 +1,6 @@
 /** `layout: doors` = exactly three doors, each choice with goto or endNight (choices with the same goto are variants of one door).
- *  `layout: pledge` needs memory pairs in the world and at least one plain choice (the night pledge).
+ *  `layout: pledge` needs memory pairs in the world and at least one choice that closes the night (endNight or ending);
+ *  such choices may be conditional (the night pledge has variants), the simulation proves one is always open.
  *  `layout: stairs` needs `world.stairs` and lives at `stairs.location`; `floors` belongs to encounters at `stairs.events` only. */
 import { error, type Issue, type Rule } from "./types";
 
@@ -22,8 +23,8 @@ export const check: Rule = (world) => {
     }
     if (s.layout === "pledge") {
       if (world.memories.length === 0) issues.push(error(`storylet ${s.id}`, "pledge layout but world.memories is empty"));
-      if (!s.choices.some((c) => c.when.length === 0 && c.endNight)) {
-        issues.push(error(`storylet ${s.id}`, "pledge layout needs an unconditional endNight choice (pledge the night)"));
+      if (!s.choices.some((c) => c.endNight || c.ending !== undefined)) {
+        issues.push(error(`storylet ${s.id}`, "pledge layout needs a choice that closes the night (endNight or ending)"));
       }
     }
   }

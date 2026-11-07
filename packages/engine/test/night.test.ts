@@ -141,6 +141,24 @@ describe("mini world night", () => {
     expect(s.profile["mem.false.a"]).toBeUndefined(); // still default 1
   });
 
+  test("pledgeEffects of the screen apply after a memory pledge and on a choice that closes the night", () => {
+    const w = { ...miniWorld, storylets: miniWorld.storylets.map((s) => (s.id === "vault_pledge" ? { ...s, pledgeEffects: ["trust -= 1"] } : s)) };
+    const toVault = (trust: number) => { let s = newNight({ v: 1, profile: { trust } }, w, 3); s = choose(s, w, 0); s = choose(s, w, 2); return continueOutcome(s, w); };
+    // the pair resolves first (trust 1 still satisfies a's returnWhen), then the screen's price
+    const a = pledge(toVault(1), w, "a");
+    expect(a.profile["mem.true.a"]).toBe(1);
+    expect(a.profile["trust"] ?? 0).toBe(0);
+    const night = choose(toVault(2), w, 0);
+    expect(night.phase).toBe("report");
+    expect(night.profile["trust"]).toBe(1);
+    const fire = continueOutcome(choose(toVault(2), w, 1), w);
+    expect(fire.phase).toBe("ending");
+    expect(fire.profile["trust"]).toBe(1);
+    // a choice that stays on the screen pays nothing
+    const stay = { ...w, storylets: w.storylets.map((s) => (s.id === "vault_pledge" ? { ...s, choices: [...s.choices, { ...s.choices[0]!, text: "think", endNight: false, free: true }] } : s)) };
+    expect(choose(toVault(2), stay, 2).profile["trust"]).toBe(2);
+  });
+
   test("pledge outside a pledge screen throws", () => {
     const s = newNight(emptyProfile(), miniWorld, 3);
     expect(() => pledge(s, miniWorld, "a")).toThrow(/not a pledge screen/);

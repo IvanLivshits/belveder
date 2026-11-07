@@ -91,10 +91,10 @@
     # Услуги Эдди (аванс, ключ, желоб) — не больше одной за ночь: seen.eddie_favor.
     - do: Отдать ему аванс на билет до Денвера
       when: [knows.denver == 1, seen.eddie_dream == 0, vouch.eddie == 0, seen.eddie_favor == 0]
-      effects: [vouch.eddie = 1, vouches += 1, has.advance_given = 1, debt.eddie += 1, seen.eddie_favor = 1]
+      effects: [vouch.eddie = 1, vouches += 1, has.advance_given = 1, debt.eddie += 1, seen.eddie_favor = 1, dolly_trust += 1]
       reply:
         - { who: eddie, text: "Откуда вы знаете про Денвер? Я никому… Мистер, это же два билета." }
-        - { who: eddie, text: "Наверху спросят, кто вы, — я скажу. Я им почту ношу, мне верят." }
+        - { who: eddie, text: "Наверху спросят, кто вы, — я скажу. И Долли скажу. Она мне как мать, она вам это припомнит. По-хорошему." }
     - say: Есть ключ от лаборатории Мэй?
       when: [met.mei == 1, debt.eddie >= 2, has.darkroom_key == 0, seen.eddie_favor == 0]
       effects: [has.darkroom_key = 1, seen.eddie_favor = 1]

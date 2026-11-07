@@ -2,6 +2,9 @@
 
 Правило: каждое изменение хеша в `packages/*/test/golden/*.json` получает здесь одну строку в том же коммите. Коммит остаётся однострочным, объяснение живёт тут. Формат: `дата · коммит (тема, потому что хеш до коммита неизвестен) · golden · почему`. Новые строки сверху.
 
+- 2026-11-07 · feat: the price of the night, v17 · `campaign-signature-truth` · в кампании две новые ночи перед тринадцатым: «лор» (вырезка Мэй, фасад пересчитан, `knows.fire`, `paths.thirteen`) и «книга» (пропуск за троих, запись № 1, `knows.tomorrow`), обе заложены целиком (`price_night`, `pledged: true`, `nights_lost: 2`); «Подпись» теперь ночь 11, `content_version: 17`, `met.dolly_heard`.
+- 2026-11-07 · feat: the price of the night, v17 · `campaign-case-closed` · доверие Долли 5 уже к ночи 3 за поступки (`met.dolly_heard` — прикрыл Слоуна, `met.dolly_kept` — вернулся к часу), а не 4; сигарета при доверии 2+ — бесплатный отказ; `content_version: 17`.
+- 2026-11-07 · feat: the price of the night, v17 · `night-ring-2024`, `night-first-5`, `night-dawn-11` · миграция v17 ставит `content_version: 17` (только штамп: `nights_lost` у старых профилей начинается с нуля).
 - 2026-11-07 · fix(content): v16 after the upper-floor run · `campaign-case-closed` · в профиле `content_version: 16` и `met.eddie_stairs: 1`: Эдди на лестнице теперь встречается один раз за игру, «Отпустить» в ночь 4 ставит флаг.
 - 2026-11-07 · fix(content): v16 after the upper-floor run · `night-ring-2024`, `night-first-5`, `night-dawn-11`, `campaign-signature-truth` · миграция v16 ставит в профиль `content_version: 16` (блок `< 16`: `knows.owner_note` и `met.eddie_stairs` для сохранений с найденной запиской).
 - 2026-11-07 · feat: upper floors in lines, v15 · `night-ring-2024`, `night-first-5`, `night-dawn-11` · в профиле появилось `content_version: 15`: миграция ставит его в первую ночь, по нему строки для сохранений до v15 отличают старый профиль от нового.

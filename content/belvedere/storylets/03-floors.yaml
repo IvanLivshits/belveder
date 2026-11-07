@@ -158,7 +158,14 @@
         - { who: gorman, text: "«Синий фонарь» недосчитался четырёх тысяч. Ордер на Хейла есть, Хейла нет." }
         - { who: gorman, text: "Долг клубу теперь на мне. Найди его. Или я найду, кем его заменить." }
     - say: Аудитора нет
-      when: [met.sloan == 1]
+      when: [met.sloan == 1, met.dolly_heard == 0]
+      effects: [seen.gorman = 1, met.gorman = 1, seen.covered_sloan = 1, debt.sloan += 1, suspicion += 1, met.dolly_heard = 1, dolly_trust += 1]
+      reply:
+        - { who: gorman, text: "Никого. Даже бухгалтера. Ладно." }
+        - { who: narrator, text: "Он не верит. Но наверх не идёт." }
+        - { who: gut, text: "Внизу в шахте лифта звякает спица. Долли слышит всё, что говорят на лестнице." }
+    - say: Аудитора нет
+      when: [met.sloan == 1, met.dolly_heard == 1]
       effects: [seen.gorman = 1, met.gorman = 1, seen.covered_sloan = 1, debt.sloan += 1, suspicion += 1]
       reply:
         - { who: gorman, text: "Никого. Даже бухгалтера. Ладно." }
@@ -186,7 +193,14 @@
         - { who: gorman, text: "«Синий фонарь» недосчитался четырёх тысяч. Ордер на Хейла есть, Хейла нет." }
         - { who: gorman, text: "Долг клубу теперь на мне. Найди его. Или я найду, кем его заменить." }
     - say: Аудитора нет
-      when: [met.sloan == 1]
+      when: [met.sloan == 1, met.dolly_heard == 0]
+      effects: [seen.gorman = 1, met.gorman = 1, seen.covered_sloan = 1, debt.sloan += 1, suspicion += 1, met.dolly_heard = 1, dolly_trust += 1]
+      reply:
+        - { who: gorman, text: "Никого. Даже бухгалтера. Ладно." }
+        - { who: narrator, text: "Он не верит. Но наверх не идёт." }
+        - { who: gut, text: "Внизу в шахте лифта звякает спица. Долли слышит всё, что говорят на лестнице." }
+    - say: Аудитора нет
+      when: [met.sloan == 1, met.dolly_heard == 1]
       effects: [seen.gorman = 1, met.gorman = 1, seen.covered_sloan = 1, debt.sloan += 1, suspicion += 1]
       reply:
         - { who: gorman, text: "Никого. Даже бухгалтера. Ладно." }

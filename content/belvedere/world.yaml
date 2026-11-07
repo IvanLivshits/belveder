@@ -49,13 +49,21 @@ qualities:
   - { id: rumor.*, scope: run, label: Слух дня, min: 0, max: 1 }
 
   - { id: nights, scope: profile, label: Ночей, min: 0 }
+  # v17. Отданные ночи. Первая ночь не в счёт. Третья отданная — концовка «Жилец».
+  - id: nights_lost
+    scope: profile
+    label: Отданные ночи
+    visible: true
+    min: 0
+    max: 3
+    hint: "Ночь — тоже кусок жизни. Отдашь Долли три ночи — утром проснёшься в 3-В новым жильцом."
   - id: dolly_trust
     scope: profile
     label: Доверие Долли
     visible: true
     min: 0
     max: 5
-    hint: "Долли помнит все ночи, поэтому её доверие не сгорает. Чем оно выше, тем больше она тебе откроет."
+    hint: "Долли помнит все ночи, поэтому её доверие не сгорает. Сигаретой берут только задаток: дальше она смотрит на поступки. Грубость дому она тоже помнит."
   # Ложная биография Ника есть с самого начала (default 1); залог обнуляет флаг.
   - { id: mem.false.*, scope: profile, label: Жизнь Ника, default: 1, min: 0, max: 1 }
   - { id: mem.true.*, scope: profile, label: Жизнь Уолтера, min: 0, max: 1 }
@@ -163,6 +171,8 @@ rules:
   # Сохранения до v16: записку Владельца Ник помнит навсегда, Эдди на лестнице встречается один раз за игру.
     - { when: [content_version < 16, found.owner_note == 1], effects: [knows.owner_note = 1, met.eddie_stairs = 1] }
     - { when: [content_version < 16], effects: [content_version = 16] }
+  # v17: старые профили начинают с nights_lost = 0, ставить нечего — только штамп.
+    - { when: [content_version < 17], effects: [content_version = 17] }
   # Ночь кончается только выбором на экране залога (endNight).
   # Перехваты проверяются после каждого выбора, срабатывает первый подходящий.
   interrupts:

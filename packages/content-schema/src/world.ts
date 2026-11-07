@@ -79,7 +79,11 @@ export const StoryletSchema = z.object({
   /** Encounter on the stairs (location `stairs.events`): shown only when the walked path crosses [from, to]. */
   floors: z.tuple([z.number().int(), z.number().int()]).optional(),
   choices: z.array(ChoiceSchema),
+  /** Pledge layout only: effects applied on any pledge made from this screen, a memory pair or a choice that
+   *  ends the night (endNight or ending), before the report is built. */
+  pledgeEffects: z.array(EffectSchema).default([]),
 }).superRefine((s, ctx) => {
+  if (s.pledgeEffects.length > 0 && s.layout !== "pledge") ctx.addIssue({ code: "custom", path: ["pledgeEffects"], message: "pledgeEffects belongs to a pledge layout" });
   if (s.text === undefined && s.lines === undefined) ctx.addIssue({ code: "custom", message: "a storylet needs lines or text" });
   if (s.choices.length === 0 && s.layout !== "stairs") ctx.addIssue({ code: "custom", path: ["choices"], message: "only a stairs layout may have no choices" });
 });

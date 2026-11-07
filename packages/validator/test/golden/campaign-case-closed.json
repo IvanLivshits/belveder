@@ -1,5 +1,5 @@
 {
-  "digest": "9dbff1e6993f79db3b3dfe051a30758db1657c4122ee8fca104b1dec59bf3818",
+  "digest": "7e461b0c3393bb12b2865333532e4747172553824e85f9c0943cdf0fbfe4adef",
   "snapshot": {
     "ending": "case_closed",
     "history": {
@@ -168,8 +168,8 @@
     "pendingChoice": null,
     "phase": "ending",
     "profile": {
-      "content_version": 16,
-      "dolly_trust": 4,
+      "content_version": 17,
+      "dolly_trust": 5,
       "endings.case_closed": 1,
       "found.cordelia_pass": 1,
       "found.laundry_tag": 1,
@@ -193,6 +193,8 @@
       "memories_returned": 3,
       "met.cordelia": 1,
       "met.dolly": 1,
+      "met.dolly_heard": 1,
+      "met.dolly_kept": 1,
       "met.eddie": 1,
       "met.eddie_stairs": 1,
       "met.gorman": 1,

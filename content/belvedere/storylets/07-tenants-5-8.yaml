@@ -50,10 +50,10 @@
         - { who: mei, text: "Горман грозится изъять негативы. Мне бы кто спрятал коробку. В шахту лифта он не полезет.", when: [vouch.mei == 0] }
     - do: Спрятать коробку с негативами
       when: [seen.mei_help == 1, vouch.mei == 0]
-      effects: [vouch.mei = 1, vouches += 1, seen.mei_saved = 1, suspicion += 2, turn += 1]
+      effects: [vouch.mei = 1, vouches += 1, seen.mei_saved = 1, dolly_trust += 1, suspicion += 2, turn += 1]
       reply:
         - { who: narrator, text: "Коробка тяжёлая, как чемодан кирпичей. Ты спускаешь её на тросе в мёртвую шахту лифта." }
-        - { who: narrator, text: "Снизу трос дёргают два раза. Долли приняла груз и ничего не спросила." }
+        - { who: narrator, text: "Снизу трос дёргают два раза. Долли приняла груз и ничего не спросила. Такое она запоминает." }
         - { who: mei, text: "Наверху спросят, кто вы. Скажу: человек, который умеет держать чужое." }
     - say: Что это за вырезка?
       when: [nights >= 3, knows.fire == 0]

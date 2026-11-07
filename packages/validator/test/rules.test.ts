@@ -97,8 +97,11 @@ describe("validator rules", () => {
     expect(messages(rules["layouts"]!(w, assets))).toMatch(/needs 3 doors \(distinct goto\), has 1/);
     const noMem = broken((w) => { w.memories = []; });
     expect(messages(rules["layouts"]!(noMem, assets))).toMatch(/world.memories is empty/);
-    const noNight = broken((w) => { w.storylets.find((s) => s.id === "vault_pledge")!.choices[0]!.endNight = false; });
-    expect(messages(rules["layouts"]!(noNight, assets))).toMatch(/unconditional endNight choice/);
+    // the night pledge may be conditional (it comes in variants), but something must close the night
+    const conditional = broken((w) => { w.storylets.find((s) => s.id === "vault_pledge")!.choices[0]!.when = ["trust < 2"]; });
+    expect(messages(rules["layouts"]!(conditional, assets))).toBe("");
+    const noNight = broken((w) => { for (const c of w.storylets.find((s) => s.id === "vault_pledge")!.choices) { c.endNight = false; delete c.ending; } });
+    expect(messages(rules["layouts"]!(noNight, assets))).toMatch(/closes the night/);
   });
 
   test("placeholders: unknown quality in text, choice text, outcome or fragment", () => {
