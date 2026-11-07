@@ -1,9 +1,9 @@
 import {
-  changedQualities, choiceCost, choose, clockTime, continueOutcome, currentNotes, currentOutcome, currentReport, currentScene, emptyProfile, endingView, evidenceView, getQuality,
-  morningNotes, newCase, newNight, notebookView, pledge, profileOf, storyView, type GameState, type Profile,
+  changedQualities, choiceCost, choose, clockTime, continueOutcome, currentNotes, currentReport, currentRumor, currentScene, emptyProfile, endingView, evidenceView, extendFeed, findStorylet, getQuality,
+  isResumable, morningNotes, newCase, newNight, notebookView, openFeed, pledge, profileOf, progressNotes, storyView, travel, type Feed, type GameState, type NotebookView, type Profile,
 } from "@belvedere/engine";
 import { RESERVED_QUALITIES } from "@belvedere/content-schema";
-import { Backdrop, ChoiceList, ConfirmSheet, DoorPicker, EndingPage, EvidencePage, Hint, MorningPage, NotebookPage, PledgePicker, QualityBar, ReportPage, SceneCard, StoryPage, TitleScreen, type LifeLineItem } from "@belvedere/ui-kit";
+import { Backdrop, ChoiceList, ConfirmSheet, DoorPicker, EndingPage, EvidencePage, Hint, MorningPage, NotebookPage, PledgePicker, QualityBar, ReportPage, SceneCard, StairsPicker, StoryPage, TitleScreen, type LifeLineItem } from "@belvedere/ui-kit";
 import { useCallback, useEffect, useState } from "preact/hooks";
 import { loadContent, type Content } from "./content";
 import { saves } from "./saves";
@@ -12,7 +12,9 @@ import { confirmDialog, haptic, setBackButton, setSettingsButton } from "./teleg
 
 type Life = { title: string; intro: string; footer: string | null; lines: LifeLineItem[] };
 type Screen =
-  | { kind: "loading" } | { kind: "error"; message: string } | { kind: "title" } | { kind: "night" } | { kind: "notebook" }
+  | { kind: "loading" } | { kind: "error"; message: string } | { kind: "title" } | { kind: "night" }
+  /** Notebook: the leads tab or the pages tab. */
+  | { kind: "notebook"; tab: "leads" | "pages" }
   /** Evidence folder: the list, or one open card. */
   | { kind: "evidence"; item: string | null }
   /** The whole case as one page, after the ending screen. */
@@ -42,16 +44,25 @@ export function App() {
   const [hints, setHints] = useState<string[]>([]);
   /** Index of an ending choice waiting for the player's confirmation. */
   const [confirm, setConfirm] = useState<number | null>(null);
+  /** An envelope nothing would replace, waiting for the player to confirm the loss. */
+  const [pledgeConfirm, setPledgeConfirm] = useState<{ id: string; label: string } | null>(null);
+  /** The transcript of the place the player is in, and how many of its entries are already on screen. */
+  const [feed, setFeed] = useState<Feed>({ location: "", entries: [] });
+  const [shown, setShown] = useState(0);
 
   useEffect(() => {
     (async () => {
       try {
         const c = await loadContent();
         const p = (await saves.loadProfile()) ?? emptyProfile();
-        const [run, meta] = await Promise.all([saves.loadRun(p), saves.loadUi()]);
+        const [saved, meta] = await Promise.all([saves.loadRun(p), saves.loadUi()]);
+        // A run saved on older content may stand on a card that no longer exists: the night is dropped, the profile stays.
+        const run = saved && isResumable(saved, c.world) ? saved : null;
+        if (saved && !run) saves.clearRun();
         setContent(c);
         setProfile(p);
         setState(run);
+        if (run) setFeed(openFeed(run, c.world));
         setUi(meta);
         setScreen({ kind: "title" });
       } catch (e) {
@@ -70,6 +81,7 @@ export function App() {
     ),
   ), [backKey]);
   const dismissHint = useCallback(() => setHints((h) => h.slice(1)), []);
+  const reveal = useCallback((n: number) => setShown((cur) => Math.max(cur, n)), []);
 
   // Wipes every device: tombstones go to the cloud, other clients pick them up on their next load.
   const reset = useCallback(async () => {
@@ -96,10 +108,20 @@ export function App() {
     return { src: src(isScene ? storylet.portrait : storylet.background), inset: p && !isScene ? src(storylet.portrait) : undefined, rain: outdoor };
   };
   const saveUi = (next: UiMeta) => { setUi(next); saves.persistUi(next); };
+  const leadIds = (nb: NotebookView) => [...nb.leads.open, ...nb.leads.closed].map((l) => l.id);
+  /** Opens a notebook tab. Showing a tab reads it: the dot on the other tab stays until that one is opened. */
+  const showNotebook = (nb: NotebookView, tab: "leads" | "pages") => {
+    const ids = tab === "leads" ? leadIds(nb) : nb.pages.map((p) => p.id);
+    const key = tab === "leads" ? "leadsSeen" : "pagesRead";
+    if (ids.some((id) => !ui[key].includes(id))) saveUi({ ...ui, [key]: [...new Set([...ui[key], ...ids])] });
+    setScreen({ kind: "notebook", tab });
+  };
 
   const startNight = () => {
     const s = newNight(profile, world, randomSeed());
     setState(s);
+    setFeed(openFeed(s, world));
+    setShown(0);
     setScreen({ kind: "night" });
     saves.persistRun(s);
   };
@@ -165,10 +187,18 @@ export function App() {
   if (screen.kind === "notebook") {
     const nb = notebookView(state, world);
     if (!nb) { setScreen({ kind: "night" }); return <div class="screen" />; }
+    const hasLeads = (world.notebook?.leads.length ?? 0) > 0;
     return (
       <div class="screen">
         <NotebookPage
           {...nb}
+          tabs={hasLeads ? [
+            { id: "leads", label: "Зацепки", badge: leadIds(nb).some((id) => !ui.leadsSeen.includes(id)) },
+            { id: "pages", label: "Блокнот", badge: nb.pages.some((p) => !ui.pagesRead.includes(p.id)) },
+          ] : undefined}
+          tab={hasLeads ? screen.tab : "pages"}
+          onTab={(id) => showNotebook(nb, id === "leads" ? "leads" : "pages")}
+          leads={hasLeads ? { open: nb.leads.open, closed: nb.leads.closed, emptyLabel: "Пока ни одной зацепки." } : undefined}
           ruleLabel="Как это работает"
           lockedLabel={(n) => `Ещё страниц: ${n}`}
           backLabel="Назад"
@@ -223,7 +253,7 @@ export function App() {
     };
     return (
       <div class="screen">
-        <ReportPage title="Отчёт за ночь" notes={currentNotes(state, world)} entries={entries} nextLabel="К утру" onNext={finish} texture={texture} />
+        <ReportPage title="Отчёт за ночь" notes={currentNotes(state, world)} entries={entries} progress={progressNotes(state, world)} nextLabel="К утру" onNext={finish} texture={texture} />
         {paperHint}
       </div>
     );
@@ -243,6 +273,9 @@ export function App() {
       setHints((h) => [...h, ...fresh.map((q) => q.hint)]);
       saveUi({ ...ui, hintsShown: [...ui.hintsShown, ...fresh.map((q) => q.id)] });
     }
+    const nextFeed = extendFeed(feed, state, next, world);
+    if (nextFeed.location !== feed.location) setShown(0);
+    setFeed(nextFeed);
     setState(next);
     saves.persistRun(next);
     saves.persistProfile(profileOf(next));
@@ -267,24 +300,24 @@ export function App() {
       }
     : undefined;
   const nb = notebookView(state, world);
-  const unread = nb !== null && nb.pages.some((p) => !ui.pagesRead.includes(p.id));
-  const openNotebook = nb
-    ? () => {
-        const ids = nb.pages.map((p) => p.id);
-        if (ids.some((id) => !ui.pagesRead.includes(id))) saveUi({ ...ui, pagesRead: [...new Set([...ui.pagesRead, ...ids])] });
-        setScreen({ kind: "notebook" });
-      }
-    : undefined;
-  const bar = <QualityBar items={hud} onNotebook={openNotebook} badge={unread} notebookLabel="Блокнот" onEvidence={openEvidence} evidenceBadge={evidenceUnread} evidenceLabel="Улики" />;
+  const leadsUnread = nb !== null && leadIds(nb).some((id) => !ui.leadsSeen.includes(id));
+  const unread = leadsUnread || (nb !== null && nb.pages.some((p) => !ui.pagesRead.includes(p.id)));
+  // The notebook opens on the leads when there is a new one (or nothing new at all), on the pages otherwise.
+  const openNotebook = nb ? () => showNotebook(nb, leadIds(nb).length > 0 && (leadsUnread || !unread) ? "leads" : "pages") : undefined;
+  const rumor = currentRumor(state, world);
+  // The speech-bubble icon repeats tonight's rumor as a hint (once on screen, a second tap adds nothing).
+  const showRumor = rumor ? () => setHints((h) => (h.includes(rumor.text) ? h : [rumor.text, ...h])) : undefined;
+  const bar = <QualityBar items={hud} onNotebook={openNotebook} badge={unread} notebookLabel="Блокнот" onEvidence={openEvidence} evidenceBadge={evidenceUnread} evidenceLabel="Улики" onRumor={showRumor} rumorLabel="Слух дня" />;
+  const card = findStorylet(world, state.storyletId);
 
+  // A reply that leads elsewhere (or ends the night) is read where it was said, then "Дальше".
   if (state.phase === "outcome") {
-    const out = currentOutcome(state, world);
     return (
       <div class="screen">
-        <Backdrop {...visuals(out.storylet)}>
+        <Backdrop {...visuals(card)}>
           {bar}
           {hint}
-          <SceneCard title={out.storylet.title} text={out.text}>
+          <SceneCard title={card.title} entries={feed.entries} shown={shown} onReveal={reveal}>
             <ChoiceList choices={[{ index: 0, text: "Дальше", available: true }]} onChoose={() => advance(continueOutcome(state, world))} />
           </SceneCard>
         </Backdrop>
@@ -294,10 +327,11 @@ export function App() {
 
   const scene = currentScene(state, world);
   // No cost on an ending: time after the finale does not matter.
-  const items = scene.choices.map((c) => ({ index: c.index, text: c.text, available: c.available, cost: c.choice.ending !== undefined ? undefined : costLabel(choiceCost(state, world, c.choice)) }));
+  const item = (c: (typeof scene.choices)[number]) => ({ index: c.index, text: c.text, mode: c.mode, available: c.available, lead: c.lead, cost: c.choice.ending !== undefined ? undefined : costLabel(choiceCost(state, world, c.choice)) });
+  const items = scene.choices.map(item);
   // An ending choice asks first; there is no way back after it.
   const onChoose = (index: number) => (scene.storylet.choices[index]?.ending !== undefined ? setConfirm(index) : advance(choose(state, world, index)));
-  const confirmSheet = confirm !== null && (
+  const confirmSheet = confirm !== null ? (
     <ConfirmSheet
       text="Это финал дела. Дальше пути назад не будет."
       okLabel="Закончить дело"
@@ -305,19 +339,49 @@ export function App() {
       onOk={() => { const i = confirm; setConfirm(null); advance(choose(state, world, i)); }}
       onCancel={() => setConfirm(null)}
     />
+  ) : pledgeConfirm !== null && (
+    <ConfirmSheet
+      text={`Взамен ничего не встанет. „${pledgeConfirm.label}“ пропадёт насовсем.`}
+      okLabel="Отдать"
+      cancelLabel="Передумать"
+      primary="cancel"
+      onOk={() => { const id = pledgeConfirm.id; setPledgeConfirm(null); advance(pledge(state, world, id)); }}
+      onCancel={() => setPledgeConfirm(null)}
+    />
   );
+  // An envelope with nothing to replace it is a loss for good: Dolly says so first (the notebook's pledge rule).
+  const onPledge = (id: string) => {
+    const m = scene.memories.find((x) => x.id === id);
+    if (m && !m.canReturn) setPledgeConfirm({ id, label: m.label });
+    else advance(pledge(state, world, id));
+  };
+  const stairs = scene.stairs;
   const picker = scene.storylet.layout === "doors"
-    ? <DoorPicker doors={items} onChoose={onChoose} />
+    ? <DoorPicker doors={scene.doors.map(item)} onChoose={onChoose} />
     : scene.storylet.layout === "pledge"
-      ? <PledgePicker memories={scene.memories} readyLabel="Кажется, это есть чем заменить" onPledge={(id) => advance(pledge(state, world, id))} choices={items} onChoose={onChoose} />
-      : <ChoiceList choices={items} onChoose={onChoose} />;
+      ? <PledgePicker memories={scene.memories} readyLabel="Кажется, это есть чем заменить" onPledge={onPledge} choices={items} onChoose={onChoose} />
+      : stairs
+        ? (
+          <StairsPicker
+            floors={[
+              ...stairs.floors.map((f) => ({ floor: f.floor, cost: costLabel(f.cost), locked: f.locked !== null, lead: f.lead })),
+              ...(stairs.back ? [{ floor: stairs.back.floor, current: true }] : []),
+            ]}
+            notes={stairs.floors.filter((f) => f.locked !== null).map((f) => `${f.floor} · ${f.locked}`)}
+            hereLabel="здесь"
+            onTravel={(floor) => advance(travel(state, world, floor))}
+            backLabel={stairs.back ? "Обратно на площадку" : undefined}
+            onBack={stairs.back ? () => advance(travel(state, world, stairs.current)) : undefined}
+          />
+        )
+        : <ChoiceList choices={items} onChoose={onChoose} />;
 
   return (
     <div class="screen">
       <Backdrop {...visuals(scene.storylet)}>
         {bar}
         {hint}
-        <SceneCard title={scene.storylet.title} text={scene.text}>
+        <SceneCard title={scene.storylet.title} entries={feed.entries} shown={shown} onReveal={reveal}>
           {picker}
         </SceneCard>
         {confirmSheet}

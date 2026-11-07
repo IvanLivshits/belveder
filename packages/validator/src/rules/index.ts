@@ -12,12 +12,14 @@ import { check as notebook } from "./notebook";
 import { check as selfExclusion } from "./self-exclusion";
 import { check as evidence } from "./evidence";
 import { check as endings } from "./endings";
+import { check as lines } from "./lines";
+import { check as rumors } from "./rumors";
 import type { Issue, Rule } from "./types";
 
 export type { Issue, Level, Rule } from "./types";
 
 export const rules: Record<string, Rule> = {
-  qualities, references, "dead-ends": deadEnds, reachability, "report-slots": reportSlots, layouts, placeholders, memories, planned, notebook, "self-exclusion": selfExclusion, evidence, endings,
+  qualities, references, "dead-ends": deadEnds, reachability, "report-slots": reportSlots, layouts, placeholders, memories, planned, notebook, "self-exclusion": selfExclusion, evidence, endings, lines, rumors,
 };
 
 export function runRules(world: World, assets: AssetManifest): Issue[] {

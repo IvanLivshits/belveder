@@ -1,4 +1,4 @@
-/** Loads a content folder (world.yaml + storylets/*.yaml + report-fragments/*.yaml + optional notebook.yaml, evidence.yaml and endings.yaml)
+/** Loads a content folder (world.yaml + storylets/*.yaml + report-fragments/*.yaml + optional notebook.yaml, evidence.yaml, endings.yaml and rumors.yaml)
  *  into a validated World. Used by the build script, the CLI and tests. */
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -24,6 +24,7 @@ export async function loadWorldDir(dir: string): Promise<World> {
   const notebookPath = join(dir, "notebook.yaml");
   const evidencePath = join(dir, "evidence.yaml");
   const endingsPath = join(dir, "endings.yaml");
+  const rumorsPath = join(dir, "rumors.yaml");
   const input = {
     ...base,
     storylets: await readList(join(dir, "storylets")),
@@ -31,6 +32,7 @@ export async function loadWorldDir(dir: string): Promise<World> {
     ...(existsSync(notebookPath) ? { notebook: await readYaml(notebookPath) } : {}),
     ...(existsSync(evidencePath) ? { evidence: await readYaml(evidencePath) } : {}),
     ...(existsSync(endingsPath) ? { endings: await readYaml(endingsPath) } : {}),
+    ...(existsSync(rumorsPath) ? { rumors: ((await readYaml(rumorsPath)) as { rumors?: unknown }).rumors } : {}),
   } as WorldInput;
   const parsed = WorldSchema.safeParse(input);
   if (!parsed.success) {

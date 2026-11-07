@@ -1,14 +1,14 @@
-# Экраны трёх дверей. Порядок: дверь жильца, служебная дверь, лестница.
-# Войти в дверь = 1 ход. Выйти на лестницу и вернуться на площадку бесплатно,
-# пролёт вверх или вниз = 1 ход.
+# Площадки 1–4, лестница v2 и встречи по пути.
+# Войти в дверь = 1 ход. Выйти на лестницу и вернуться на площадку бесплатно.
+# Скрепку на двери движок ставит сам, если открытая зацепка ведёт в эту локацию (leads.target).
 
 - id: floor_01_doors
   location: floor_01
   layout: doors
   background: landing_base
   title: Площадка 1
-  text: |
-    Слева стеклянная будка Долли и мёртвая шахта лифта. Справа стена латунных почтовых ящиков. Лестница уходит вверх, пахнет мокрым деревом.
+  lines:
+    - { who: narrator, text: "Будка Долли, мёртвая шахта лифта, стена латунных почтовых ящиков." }
   choices:
     - text: Долли
       free: true
@@ -27,8 +27,8 @@
   layout: doors
   background: landing_02
   title: Площадка 2
-  text: |
-    Пар ползёт из-под двери прачечной и оседает на перилах. В стене гудит труба пневмопочты: кто-то наверху опять пишет записки. На служебной двери выцветшее «Бельё».
+  lines:
+    - { who: narrator, text: "Пар из-под двери прачечной оседает на перилах. В стене гудит труба пневмопочты." }
   choices:
     - text: Прачечная
       when: [suspicion < 5]
@@ -49,14 +49,20 @@
   layout: doors
   background: landing_03
   title: Площадка 3
-  text: |
-    У двери миссис Пул стоят мужские ботинки, начищенные до блеска. Их никто не носит. Служебная дверь без таблички. Говорят, за ней по утрам просыпаются новые жильцы.
+  lines:
+    - { who: narrator, text: "У двери миссис Пул мужские ботинки, начищенные до блеска. Их никто не носит." }
+    - { who: gut, text: "Перила сухие. На улице льёт, а перила сухие.", when: [nights >= 1] }
   choices:
     - text: Квартира миссис Пул
       when: [suspicion < 5]
       effects: [visited.floor3.tenant += 1, floor = 3]
       goto: tenant_03
+    - text: Комната 3-В
+      when: [knows.room == 1]
+      effects: [visited.floor3.service += 1, floor = 3, seen.room_open = 1]
+      goto: service_03
     - text: Служебная дверь
+      when: [knows.room == 0]
       effects: [visited.floor3.service += 1, floor = 3]
       goto: service_03
     - text: Лестница
@@ -69,14 +75,15 @@
   layout: doors
   background: landing_04
   title: Площадка 4
-  text: |
-    Из-под двери аудитора зелёный свет настольной лампы. На служебной двери новый медный замок, ещё не потемневший. Пролёт наверх перегорожен козлами с табличкой «Ремонт».
+  lines:
+    - { who: narrator, text: "Из-под двери аудитора зелёный свет. На служебной двери новый медный замок." }
+    - { who: narrator, text: "Служебная дверь приоткрыта. Внутри темно.", when: [rumor.sloan_lamp == 1] }
   choices:
     - text: Кабинет аудитора
       when: [suspicion < 5]
       effects: [visited.floor4.tenant += 1, floor = 4, seen.sloan_met = 1]
       goto: tenant_04
-    - text: Служебная дверь
+    - text: Архив
       effects: [visited.floor4.service += 1, floor = 4]
       goto: service_04
     - text: Лестница
@@ -84,365 +91,206 @@
       effects: [floor = 4]
       goto: stairwell
 
-# Лестница. Одна локация на все этажи, выбор зависит от floor.
-# Встречи (Горман, Эдди) перехватывают лестницу по priority и после выбора
-# уступают место обычной карточке: их флаг seen.* уже стоит.
-
-# Горман берёт за воротник: Подозрение 7+. Отсюда реально дойти до поимки (10).
-- id: stairs_gorman_collar
+# ── Лестница v2: один экран. Кнопки этажей и «Обратно на площадку» рисует движок
+# по world.yaml → stairs. Здесь только текст.
+- id: stairs
   location: stairwell
+  layout: stairs
+  background: stairwell_up
+  title: Лестница
+  lines:
+    - { who: narrator, text: "Ступени скрипят заранее, будто предупреждают кого-то наверху." }
+    - { who: narrator, text: "Лампы мигают. Идёшь на ощупь.", when: [rumor.lights == 1] }
+  choices: []
+
+# ── Встречи по пути (location: stairs_event). floors: [от, до] — где на пути случается встреча.
+# Выбор без goto — Ник идёт дальше, на целевой этаж.
+
+# Горман берёт за воротник: Подозрение 7+.
+- id: stairs_gorman_collar
+  location: stairs_event
   priority: 9
   when: [suspicion >= 7, seen.gorman_collar == 0]
   background: stairwell
   portrait: gorman_threat
   title: Лестница
-  text: |
-    Горман выходит из-за поворота пролёта, будто стоял там всю ночь. Берёт тебя за лацкан, не сильно, по-хозяйски.
-
-    — Весь дом про тебя шепчется, Кэллоуэй. Мне это надоело раньше, чем дому.
+  lines:
+    - { who: narrator, text: "Горман выходит из-за поворота и берёт тебя за лацкан. Не сильно, по-хозяйски." }
+    - { who: gorman, text: "Весь дом про тебя шепчется, Кэллоуэй. Мне это надоело раньше, чем дому." }
   choices:
-    - text: Откупиться двумя сигаретами
+    - do: Откупиться двумя сигаретами
       when: [cigarettes >= 2]
       effects: [seen.gorman_collar = 1, cigarettes -= 2, suspicion -= 2]
-      outcome: |
-        Горман берёт обе, одну прячет за ухо.
-
-        — Ещё раз услышу твою фамилию до рассвета — отдам тебя Тони.
-    - text: Вырваться и уйти вниз
+      reply:
+        - { who: gorman, text: "Ещё раз услышу твою фамилию до рассвета — отдам тебя Тони." }
+    - do: Вырваться
       effects: [seen.gorman_collar = 1, suspicion += 3]
-      outcome: |
-        Ты вырываешься, оставляя у него в кулаке пуговицу, и слышишь за спиной его смех. Он не бежит следом. Ему некуда торопиться: из этого дома выходят только через вестибюль.
-    - text: Дать себя увести
+      reply:
+        - { who: narrator, text: "У него в кулаке остаётся пуговица. Он не бежит следом." }
+        - { who: gut, text: "Ему некуда торопиться. Выход тут один — через Долли." }
+    - do: Дать себя увести
       effects: [seen.gorman_collar = 1, suspicion = 10]
-      outcome: |
-        Горман ведёт тебя вниз, держа за лацкан, как ведут пьяного. Пролётом ниже его молча сменяет Тони Риццо.
+      reply:
+        - { who: narrator, text: "Горман ведёт тебя вниз, как пьяного. Пролётом ниже его молча сменяет Тони Риццо." }
 
-- id: stairs_gorman_again
-  location: stairwell
-  priority: 7
-  when: [suspicion >= 4, seen.gorman == 0, seen.facade_car == 1]
-  background: stairwell
-  portrait: gorman_threat
-  title: Лестница
-  text: |
-    Горман всё-таки вылез из машины. Стоит на пролёте, курит и не прячет сигарету.
-
-    — Я же сказал, что подожду, Кэллоуэй. Ждать надоело. Ты ищешь Хейла, я тоже. Только тебе за это платят, а я за это плачу. — Пауза. — Аудитор у себя?
-  choices:
-    - text: Угостить сигаретой
-      when: [cigarettes >= 1]
-      effects: [seen.gorman = 1, met.gorman = 1, cigarettes -= 1, suspicion -= 1]
-      outcome: |
-        Горман берёт сигарету, прикуривает от своей и выбрасывает свою в пролёт.
-
-        — Хорошие. Хейл курил такие же.
-    - text: Спросить, почему он платит
-      effects: [seen.gorman = 1, met.gorman = 1, seen.gorman_debt = 1, clues += 1]
-      outcome: |
-        — Клуб «Синий фонарь» недосчитался четырёх тысяч. Ордер на Хейла выписан, а Хейла нет. Долг клубу теперь на мне. — Он улыбается без страха, как человек, которому нечего бояться. — Так что найди его, Кэллоуэй. Или я найду, кем его заменить.
-    - text: Сказать, что аудитора нет
-      when: [seen.sloan_met == 1]
-      effects: [seen.gorman = 1, met.gorman = 1, debt.sloan += 1, suspicion += 1]
-      outcome: |
-        — Никого, — повторяет Горман. — Даже бухгалтера. Ладно.
-
-        Он не верит. Но наверх не идёт.
-
-
+# Горман: при Подозрении 4+ или по слуху gorman_inside. Два сторилета с одинаковыми выборами.
 - id: stairs_gorman
-  location: stairwell
+  location: stairs_event
   priority: 6
   when: [suspicion >= 4, seen.gorman == 0]
   background: stairwell
   portrait: gorman_threat
   title: Лестница
-  text: |
-    На пролёте курит человек в мокром плаще, значок на лацкане. Он не прячет сигарету, когда видит тебя.
-
-    — Сержант Горман. Кэллоуэй, верно? Ты ищешь Хейла. Я тоже. Разница в том, что тебе за это платят, а я за это плачу. — Пауза. — Аудитор у себя?
+  lines:
+    - { who: narrator, text: "На пролёте курит человек в мокром плаще. Значок на лацкане." }
+    - { who: gorman, text: "Сержант Горман. А ты Кэллоуэй.", when: [seen.facade_car == 0] }
+    - { who: gorman, text: "Я же сказал, что подожду. Ждать надоело.", when: [seen.facade_car == 1] }
+    - { who: gorman, text: "Ты ищешь Хейла, я тоже. Аудитор у себя?" }
   choices:
-    - text: Угостить сигаретой
+    - do: Угостить сигаретой
       when: [cigarettes >= 1]
       effects: [seen.gorman = 1, met.gorman = 1, cigarettes -= 1, suspicion -= 1]
-      outcome: |
-        Горман берёт сигарету, прикуривает от своей и выбрасывает свою в пролёт.
+      reply:
+        - { who: gorman, text: "Хорошие. Хейл курил такие же." }
+    - say: Почему вы его ищете?
+      effects: [seen.gorman = 1, met.gorman = 1, seen.gorman_debt = 1, knows.shortage = 1, clues += 1]
+      reply:
+        - { who: gorman, text: "«Синий фонарь» недосчитался четырёх тысяч. Ордер на Хейла есть, Хейла нет." }
+        - { who: gorman, text: "Долг клубу теперь на мне. Найди его. Или я найду, кем его заменить." }
+    - say: Аудитора нет
+      when: [met.sloan == 1, met.dolly_heard == 0]
+      effects: [seen.gorman = 1, met.gorman = 1, seen.covered_sloan = 1, debt.sloan += 1, suspicion += 1, met.dolly_heard = 1, dolly_trust += 1]
+      reply:
+        - { who: gorman, text: "Никого. Даже бухгалтера. Ладно." }
+        - { who: narrator, text: "Он не верит. Но наверх не идёт." }
+        - { who: gut, text: "Внизу в шахте лифта звякает спица. Долли слышит всё, что говорят на лестнице." }
+    - say: Аудитора нет
+      when: [met.sloan == 1, met.dolly_heard == 1]
+      effects: [seen.gorman = 1, met.gorman = 1, seen.covered_sloan = 1, debt.sloan += 1, suspicion += 1]
+      reply:
+        - { who: gorman, text: "Никого. Даже бухгалтера. Ладно." }
+        - { who: narrator, text: "Он не верит. Но наверх не идёт." }
 
-        — Хорошие. Хейл курил такие же.
-    - text: Спросить, почему он платит
-      effects: [seen.gorman = 1, met.gorman = 1, seen.gorman_debt = 1, clues += 1]
-      outcome: |
-        — Клуб «Синий фонарь» недосчитался четырёх тысяч. Ордер на Хейла выписан, а Хейла нет. Долг клубу теперь на мне. — Он улыбается без страха, как человек, которому нечего бояться. — Так что найди его, Кэллоуэй. Или я найду, кем его заменить.
-    - text: Сказать, что аудитора нет
-      when: [seen.sloan_met == 1]
-      effects: [seen.gorman = 1, met.gorman = 1, debt.sloan += 1, suspicion += 1]
-      outcome: |
-        — Никого, — повторяет Горман. — Даже бухгалтера. Ладно.
-
-        Он не верит. Но наверх не идёт.
-
-- id: stairs_eddie_again
-  location: stairwell
-  priority: 5
-  when: [turn >= 3, seen.eddie == 0, met.eddie == 1]
+- id: stairs_gorman_rumor
+  location: stairs_event
+  priority: 7
+  when: [rumor.gorman_inside == 1, seen.gorman == 0]
   background: stairwell
-  portrait: eddie_scared
+  portrait: gorman_threat
   title: Лестница
-  text: |
-    Эдди. Опять бежит, опять с цилиндром, опять едва не сбивает тебя с ног. Останавливается, морщит лоб.
-
-    — Мистер, мы знакомы? — Пауза. — Нет. Показалось. У вас просто лицо такое.
+  lines:
+    - { who: narrator, text: "Горман сидит на ступеньке, как дома. Сигарета, значок, мокрый плащ." }
+    - { who: gorman, text: "Долли тебе сказала, что я внутри? Она всем говорит. Аудитор у себя?" }
   choices:
-    - text: Дать сигарету и спросить, кому записка
+    - do: Угостить сигаретой
       when: [cigarettes >= 1]
-      effects: [seen.eddie = 1, met.eddie = 1, cigarettes -= 1, has.owner_note = 1, clues += 1]
-      outcome: |
-        Эдди прячет сигарету за ухо, к карандашу, и косится на лестницу.
+      effects: [seen.gorman = 1, met.gorman = 1, cigarettes -= 1, suspicion -= 1]
+      reply:
+        - { who: gorman, text: "Хорошие. Хейл курил такие же." }
+    - say: Почему вы его ищете?
+      effects: [seen.gorman = 1, met.gorman = 1, seen.gorman_debt = 1, knows.shortage = 1, clues += 1]
+      reply:
+        - { who: gorman, text: "«Синий фонарь» недосчитался четырёх тысяч. Ордер на Хейла есть, Хейла нет." }
+        - { who: gorman, text: "Долг клубу теперь на мне. Найди его. Или я найду, кем его заменить." }
+    - say: Аудитора нет
+      when: [met.sloan == 1, met.dolly_heard == 0]
+      effects: [seen.gorman = 1, met.gorman = 1, seen.covered_sloan = 1, debt.sloan += 1, suspicion += 1, met.dolly_heard = 1, dolly_trust += 1]
+      reply:
+        - { who: gorman, text: "Никого. Даже бухгалтера. Ладно." }
+        - { who: narrator, text: "Он не верит. Но наверх не идёт." }
+        - { who: gut, text: "Внизу в шахте лифта звякает спица. Долли слышит всё, что говорят на лестнице." }
+    - say: Аудитора нет
+      when: [met.sloan == 1, met.dolly_heard == 1]
+      effects: [seen.gorman = 1, met.gorman = 1, seen.covered_sloan = 1, debt.sloan += 1, suspicion += 1]
+      reply:
+        - { who: gorman, text: "Никого. Даже бухгалтера. Ладно." }
+        - { who: narrator, text: "Он не верит. Но наверх не идёт." }
 
-        — Наверх. Всегда наверх. — Он суёт тебе листок. — Я ничего не давал. Вы сами прочитали.
-
-        «Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»
-    - text: Выхватить цилиндр
-      effects: [seen.eddie = 1, met.eddie = 1, seen.eddie_hostile = 1, suspicion += 2, has.owner_note = 1, clues += 1]
-      outcome: |
-        Крышка поддаётся с третьего раза. «Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»
-
-        Эдди смотрит на тебя так, будто ты отобрал у него не записку, а билет на поезд.
-    - text: Отпустить
-      effects: [seen.eddie = 1, met.eddie = 1, debt.eddie += 1]
-      outcome: |
-        Эдди уже двумя пролётами ниже. Оттуда:
-
-        — Спасибо, мистер! Я запомню!
-
-
+# Эдди бежит с цилиндром наверх. Только выше второго (на втором он в прачечной)
+# и не в ночь, когда он «не в духе».
 - id: stairs_eddie
-  location: stairwell
+  location: stairs_event
   priority: 4
-  when: [turn >= 3, seen.eddie == 0, met.eddie == 0]
+  floors: [4, 12]
+  # Один раз за игру: met.eddie_stairs.
+  when: [turn >= 3, seen.eddie == 0, rumor.eddie_blue == 0, met.eddie_stairs == 0]
   background: stairwell
   portrait: eddie_scared
   title: Лестница
-  text: |
-    Мальчишка лет пятнадцати в форменной кепке курьера едва не сбивает тебя с ног. Карандаш за ухом, из кармана торчит цилиндр пневмопочты с печатью «В».
+  lines:
+    - { who: narrator, text: "Мальчишка в кепке курьера едва не сбивает тебя с ног. Из кармана торчит цилиндр с печатью «В»." }
+    - { who: eddie, text: "Мистер, мы знакомы? Нет. Показалось. Лицо у вас такое.", when: [met.eddie == 1] }
   choices:
-    - text: Дать сигарету и спросить, кому записка
+    - do: Дать сигарету и спросить, кому записка
       when: [cigarettes >= 1]
-      effects: [seen.eddie = 1, met.eddie = 1, cigarettes -= 1, has.owner_note = 1, clues += 1]
-      outcome: |
-        Эдди прячет сигарету за ухо, к карандашу, и косится на лестницу.
+      effects: [seen.eddie = 1, seen.eddie_ran = 1, met.eddie = 1, met.eddie_stairs = 1, knows.owner_note = 1, cigarettes -= 1, has.owner_note = 1, clues += 1]
+      reply:
+        - { who: eddie, text: "Наверх. Всегда наверх. Я ничего не давал, вы сами прочитали." }
+        - { who: narrator, text: "«Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»" }
+    - do: Выхватить цилиндр
+      effects: [seen.eddie = 1, seen.eddie_ran = 1, met.eddie = 1, met.eddie_stairs = 1, knows.owner_note = 1, seen.eddie_hostile = 1, suspicion += 2, has.owner_note = 1, clues += 1]
+      reply:
+        - { who: narrator, text: "«Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»" }
+        - { who: gut, text: "Он смотрит так, будто ты отнял билет на поезд." }
+    - do: Отпустить
+      free: true
+      effects: [seen.eddie = 1, seen.eddie_ran = 1, met.eddie = 1, met.eddie_stairs = 1, debt.eddie += 1]
+      reply:
+        - { who: eddie, text: "Спасибо, мистер! Я запомню!" }
 
-        — Наверх. Всегда наверх. — Он суёт тебе листок. — Я ничего не давал. Вы сами прочитали.
+# Дилемма: в ночь пирога миссис Пул зовёт к столу, когда Ник проходит третий.
+- id: stairs_pool_pie
+  location: stairs_event
+  priority: 5
+  floors: [3, 3]
+  when: [rumor.pool_pie == 1, seen.pool_invited == 0, turn <= 10]
+  background: landing_03
+  portrait: pool
+  title: Третий этаж
+  lines:
+    - { who: narrator, text: "На третьем открывается дверь. Пахнет корицей." }
+    - { who: pool, text: "Мистер! Пирог как раз из печи. Я поставила вторую тарелку." }
+    - { who: gut, text: "Ужин у неё — час, не меньше. А Долли просила зайти.", when: [seen.dolly_ask == 1, turn <= 5] }
+  choices:
+    - say: Иду
+      effects: [seen.pool_invited = 1, floor = 3]
+      goto: tenant_03
+    - say: Меня ждут внизу
+      free: true
+      effects: [seen.pool_invited = 1, seen.pool_declined = 1]
+      reply:
+        - { who: pool, text: "Он тоже всегда торопился. Всегда кто-то ждал внизу." }
 
-        «Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»
-    - text: Выхватить цилиндр
-      effects: [seen.eddie = 1, met.eddie = 1, seen.eddie_hostile = 1, suspicion += 2, has.owner_note = 1, clues += 1]
-      outcome: |
-        Крышка поддаётся с третьего раза. «Детектив поднимется. Не мешать. Ему нужно дойти самому. — В.»
-
-        Эдди смотрит на тебя так, будто ты отобрал у него не записку, а билет на поезд.
-    - text: Отпустить
-      effects: [seen.eddie = 1, met.eddie = 1, debt.eddie += 1]
-      outcome: |
-        Эдди уже двумя пролётами ниже. Оттуда:
-
-        — Спасибо, мистер! Я запомню!
-
-# Лестница: тексты по высоте, выборы зависят от floor.
-# С 11-го на 12-й решётка: нужен пропуск Корделии или часовой ключ Фенна.
-- id: stairs_top
-  location: stairwell
+# На двенадцатом выше лестницы нет. Один раз.
+- id: stairs_chalk
+  location: stairs_event
   priority: 1
-  when: [floor == 12]
+  floors: [12, 12]
+  when: [seen.stairs_chalk == 0]
   background: stairwell
   title: Лестница
-  text: |
-    Выше двенадцатого лестницы нет. Ступени упираются в кирпичную кладку, свежую, будто проём заложили вчера. На кирпиче мелом: «13».
+  lines:
+    - { who: narrator, text: "Выше двенадцатого ступени упираются в свежую кладку. На кирпиче мелом: «13»." }
   choices:
-    - text: Вниз, на одиннадцатый
-      when: [floor == 12]
-      effects: [floor = 11]
-      goto: floor_11
-    - text: Обратно на площадку
-      when: [floor == 12]
+    - do: Пойти дальше
       free: true
-      goto: floor_12
-
-- id: stairs_grate
-  location: stairwell
-  priority: 1
-  when: [floor == 11]
-  background: stairwell
-  title: Лестница
-  text: |
-    Пролёт на двенадцатый перекрыт кованой решёткой. На замке гравировка: «Только по приглашению». Сквозь прутья видно ковровую дорожку и полоску жёлтого света под дверью.
-  choices:
-    - text: Вверх, на двенадцатый (пропуск)
-      when: [floor == 11, has.cordelia_pass == 1]
-      effects: [floor = 12]
-      goto: floor_12
-    - text: Вверх, на двенадцатый (часовой ключ)
-      when: [floor == 11, has.cordelia_pass == 0, has.clock_key == 1]
-      effects: [floor = 12]
-      goto: floor_12
-    - text: Вниз, на десятый
-      when: [floor == 11]
-      effects: [floor = 10]
-      goto: floor_10
-    - text: Обратно на площадку
-      when: [floor == 11]
-      free: true
-      goto: floor_11
-
-- id: stairs_upper
-  location: stairwell
-  priority: 1
-  when: [floor >= 5, floor <= 10]
-  background: stairwell_up
-  title: Лестница
-  text: |
-    Чем выше, тем суше ступени и тем дороже ковровая дорожка. Пахнет лаком, канифолью и больницей. Где-то наверху бубнит радио.
-  choices:
-    - text: Вверх, на шестой
-      when: [floor == 5]
-      effects: [floor = 6]
-      goto: floor_06
-    - text: Вниз, на четвёртый
-      when: [floor == 5]
-      effects: [floor = 4]
-      goto: floor_04
-    - text: Обратно на площадку
-      when: [floor == 5]
-      free: true
-      goto: floor_05
-    - text: Вверх, на седьмой
-      when: [floor == 6]
-      effects: [floor = 7]
-      goto: floor_07
-    - text: Вниз, на пятый
-      when: [floor == 6]
-      effects: [floor = 5]
-      goto: floor_05
-    - text: Обратно на площадку
-      when: [floor == 6]
-      free: true
-      goto: floor_06
-    - text: Вверх, на восьмой
-      when: [floor == 7]
-      effects: [floor = 8]
-      goto: floor_08
-    - text: Вниз, на шестой
-      when: [floor == 7]
-      effects: [floor = 6]
-      goto: floor_06
-    - text: Обратно на площадку
-      when: [floor == 7]
-      free: true
-      goto: floor_07
-    - text: Вверх, на девятый
-      when: [floor == 8]
-      effects: [floor = 9]
-      goto: floor_09
-    - text: Вниз, на седьмой
-      when: [floor == 8]
-      effects: [floor = 7]
-      goto: floor_07
-    - text: Обратно на площадку
-      when: [floor == 8]
-      free: true
-      goto: floor_08
-    - text: Вверх, на десятый
-      when: [floor == 9]
-      effects: [floor = 10]
-      goto: floor_10
-    - text: Вниз, на восьмой
-      when: [floor == 9]
-      effects: [floor = 8]
-      goto: floor_08
-    - text: Обратно на площадку
-      when: [floor == 9]
-      free: true
-      goto: floor_09
-    - text: Вверх, на одиннадцатый
-      when: [floor == 10]
-      effects: [floor = 11]
-      goto: floor_11
-    - text: Вниз, на девятый
-      when: [floor == 10]
-      effects: [floor = 9]
-      goto: floor_09
-    - text: Обратно на площадку
-      when: [floor == 10]
-      free: true
-      goto: floor_10
-
-- id: stairs
-  location: stairwell
-  background: stairwell_up
-  title: Лестница
-  text: |
-    Ступени скрипят заранее, будто предупреждают кого-то наверху. Пахнет мокрым деревом и чужим табаком.
-  choices:
-    - text: Вверх, на второй
-      when: [floor == 1]
-      effects: [floor = 2]
-      goto: floor_02
-    - text: Обратно на площадку
-      when: [floor == 1]
-      free: true
-      goto: floor_01
-    - text: Вверх, на третий
-      when: [floor == 2]
-      effects: [floor = 3]
-      goto: floor_03
-    - text: Вниз, в вестибюль
-      when: [floor == 2]
-      effects: [floor = 1]
-      goto: floor_01
-    - text: Обратно на площадку
-      when: [floor == 2]
-      free: true
-      goto: floor_02
-    - text: Вверх, на четвёртый
-      when: [floor == 3]
-      effects: [floor = 4]
-      goto: floor_04
-    - text: Вниз, на второй
-      when: [floor == 3]
-      effects: [floor = 2]
-      goto: floor_02
-    - text: Обратно на площадку
-      when: [floor == 3]
-      free: true
-      goto: floor_03
-    - text: Вверх, на пятый
-      when: [floor == 4]
-      effects: [floor = 5]
-      goto: floor_05
-    - text: Вниз, на третий
-      when: [floor == 4]
-      effects: [floor = 3]
-      goto: floor_03
-    - text: Обратно на площадку
-      when: [floor == 4]
-      free: true
-      goto: floor_04
+      effects: [seen.stairs_chalk = 1]
 
 # Желоб: только вниз, в подвал к Сайласу. Ход не тратится.
 - id: chute_peek
   location: chute
   background: landing_02
   title: Бельевой желоб
-  text: |
-    Ты откидываешь заслонку. Снизу тянет теплом и угольной гарью. Где-то очень глубоко гудит топка, и кто-то поёт без слов.
-
-    Эдди говорил: отсюда можно попасть в подвал за секунду. Обратно — только пешком.
+  lines:
+    - { who: narrator, text: "Снизу тянет теплом и угольной гарью. Где-то глубоко гудит топка и кто-то поёт без слов." }
+    - { who: gut, text: "Вниз — за секунду. Обратно — только пешком." }
   choices:
-    - text: Прыгнуть
+    - do: Прыгнуть
       free: true
       effects: [floor = 0]
-      outcome: |
-        Темнота, запах мыла и угля, удар о гору мешков с бельём. Ты лежишь в подвале и смотришь на огонь в открытой топке.
+      reply:
+        - { who: narrator, text: "Темнота, запах мыла и угля, удар о гору мешков. Ты лежишь в подвале и смотришь на огонь." }
       goto: basement
-    - text: Закрыть заслонку
+    - do: Закрыть заслонку
       free: true
       goto: floor_02

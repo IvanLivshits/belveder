@@ -19,8 +19,8 @@ packages/validator      →  packages/engine + packages/content-schema
 
 | Пакет | Отвечает за | Не содержит |
 |---|---|---|
-| content-schema | zod-схемы и типы: качества, сторилеты, фрагменты отчёта, правила мира, манифест ассетов | логики, рантайма |
-| engine | `(state, action, world) -> state`, выбор сторилета, условия, эффекты, отчёт, RNG | I/O, DOM, Telegram, `Date.now`, `Math.random`, имён персонажей/этажей/картинок |
+| content-schema | zod-схемы и типы: качества, сторилеты и реплики, фрагменты отчёта, правила мира, слухи, зацепки, лестница, манифест ассетов | логики, рантайма |
+| engine | `(state, action, world) -> state`, выбор сторилета, условия, эффекты, лента реплик, лестница, слух дня, отчёт, RNG | I/O, DOM, Telegram, `Date.now`, `Math.random`, имён персонажей/этажей/картинок |
 | validator | сборка YAML → JSON, правила проверки контента, симуляция прогонов | UI |
 | ui-kit | Preact-компоненты, принимающие готовые данные через props | игровой логики, fetch, Telegram |
 | apps/miniapp | загрузка контента, Telegram WebApp API, storage, вызов engine, рендер ui-kit | правил игры |

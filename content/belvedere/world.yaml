@@ -11,7 +11,7 @@ qualities:
     visible: true
     min: 0
     max: 16
-    hint: "Каждое действие стоит времени. Ночь длится 16 ходов, с 22:00 до 06:00. На рассвете ты окажешься у Долли, где бы ни был."
+    hint: "Каждое действие — полчаса. Ночь длится 16 ходов, с 22:00 до 06:00. Лестница — полчаса на два этажа. На рассвете ты окажешься у Долли, где бы ни был."
   - id: suspicion
     scope: run
     label: Подозрение
@@ -45,15 +45,25 @@ qualities:
   - { id: returned_tonight, scope: run, label: Вернулось этой ночью, min: 0, max: 1 }
   # Ставит движок перед отчётом ночи, которая кончилась концовкой (фрагменты twist_final, price_final).
   - { id: ending_night, scope: run, label: Ночь концовки, min: 0, max: 1 }
+  # Слух дня: движок ставит rumor.<id> = 1 в начале ночи (rumors.yaml).
+  - { id: rumor.*, scope: run, label: Слух дня, min: 0, max: 1 }
 
   - { id: nights, scope: profile, label: Ночей, min: 0 }
+  # v17. Отданные ночи. Первая ночь не в счёт. Третья отданная — концовка «Жилец».
+  - id: nights_lost
+    scope: profile
+    label: Ночи # коротко: в HUD шесть качеств, длинная подпись режется
+    visible: true
+    min: 0
+    max: 3
+    hint: "Ночь — тоже кусок жизни. Отдашь Долли три ночи — утром проснёшься в 3-В новым жильцом."
   - id: dolly_trust
     scope: profile
     label: Доверие Долли
     visible: true
     min: 0
     max: 5
-    hint: "Долли помнит все ночи, поэтому её доверие не сгорает. Чем оно выше, тем больше она тебе откроет."
+    hint: "Долли помнит все ночи, поэтому её доверие не сгорает. Сигаретой берут только задаток: дальше она смотрит на поступки. Грубость дому она тоже помнит."
   # Ложная биография Ника есть с самого начала (default 1); залог обнуляет флаг.
   - { id: mem.false.*, scope: profile, label: Жизнь Ника, default: 1, min: 0, max: 1 }
   - { id: mem.true.*, scope: profile, label: Жизнь Уолтера, min: 0, max: 1 }
@@ -72,6 +82,19 @@ qualities:
   - { id: found.*, scope: profile, label: Улики в деле, min: 0, max: 1 }
   # Ставит движок на концовке; переживает «Новое дело» (эпилоги смотрят на прошлые прохождения).
   - { id: endings.*, scope: profile, label: Увиденные концовки, min: 0, max: 1 }
+  # Знания: что Ник записал в блокнот. Открывают вопросы жильцам и закрывают зацепки.
+  - { id: knows.*, scope: profile, label: Знания, min: 0, max: 1 }
+  # Поручительства жильцов. vouches — их число; контент ставит его вместе с vouch.<жилец>.
+  - { id: vouch.*, scope: profile, label: Поручились, min: 0, max: 1 }
+  - id: vouches
+    scope: profile
+    label: Поручительства
+    min: 0
+    max: 7
+    hint: "Жилец поручился за тебя. Когда поручатся трое, тебя пустят на двенадцатый."
+  # Версия контента, с которой профиль последний раз начинал ночь. Ставится миграцией; по ней
+  # старые профили отличаются от новых, когда флаг надо выставить задним числом.
+  - { id: content_version, scope: profile, label: Версия контента, min: 0 }
 
 locations:
   - { id: office, label: Контора Ника }
@@ -117,6 +140,8 @@ locations:
   - { id: basement, label: Подвал }
   - { id: vault, label: Тринадцатый }
   - { id: pledge, label: Залог у Долли }
+  # Встречи по пути на лестнице (stairs.events).
+  - { id: stairs_event, label: На лестнице }
 
 rules:
   start: office
@@ -125,6 +150,29 @@ rules:
   clock: { quality: turn, start: "22:00", step: 30 }
   # Ночь, заложенная целиком, не попадает в итоговое «Дело Хейла» (проверяется по состоянию отчёта).
   pledgedNightWhen: [night_pledged == 1]
+  # Вещи Хейла, которые Вивиан кладёт на стол каждую ночь (они же первые карточки в папке улик).
+  onNightStart: [has.laundry_tag = 1, has.matchbook = 1, has.note_12 = 1]
+  # Слух первой ночи фиксирован; дальше — случайный из rumors.yaml, без повтора две ночи подряд.
+  firstNightRumor: pool_pie
+  # Сохранения до v2: Вивиан уже приходила, а знаний и зацепок в профиле нет. Условия всех строк
+  # проверяются по профилю, с которым началась ночь, потом применяются эффекты подошедших.
+  migrations:
+    - { when: [nights >= 1, met.vivian == 0], effects: [met.vivian = 1, knows.club = 1, knows.invitation = 1] }
+    - { when: [nights >= 1, met.vivian == 0, found.ring == 1], effects: [knows.room = 1] }
+    - { when: [nights >= 1, met.vivian == 0, found.pawn_ticket == 1], effects: [knows.shortage = 1, knows.matchbook = 1] }
+    - { when: [nights >= 1, met.vivian == 0, found.ledger_true == 1], effects: [knows.shortage = 1, knows.matchbook = 1] }
+  # Сохранения до v15: сцены «узнавания» (Пул, Руби, доктор) стояли на run-флагах и повторялись каждую ночь.
+  # Теперь они на met.*; старому профилю с вернувшимся воспоминанием флаг ставится задним числом.
+  # Новый профиль получает content_version в первую же ночь, до возврата воспоминаний, и строки его не трогают.
+    - { when: [content_version < 15, mem.true.name == 1], effects: [met.pool_walter = 1] }
+    - { when: [content_version < 15, mem.true.lantern == 1], effects: [met.ruby_recognized = 1] }
+    - { when: [content_version < 15, mem.true.hospital == 1], effects: [met.auerbach_shocked = 1] }
+    - { when: [content_version < 15], effects: [content_version = 15] }
+  # Сохранения до v16: записку Владельца Ник помнит навсегда, Эдди на лестнице встречается один раз за игру.
+    - { when: [content_version < 16, found.owner_note == 1], effects: [knows.owner_note = 1, met.eddie_stairs = 1] }
+    - { when: [content_version < 16], effects: [content_version = 16] }
+  # v17: старые профили начинают с nights_lost = 0, ставить нечего — только штамп.
+    - { when: [content_version < 17], effects: [content_version = 17] }
   # Ночь кончается только выбором на экране залога (endNight).
   # Перехваты проверяются после каждого выбора, срабатывает первый подходящий.
   interrupts:
@@ -196,6 +244,11 @@ report:
     - { id: finding, label: Находка }
     - { id: twist, label: Поворот }
     - { id: price, label: Цена }
+  # Строки прогресса под отчётом. {vouches} — качество; {leads_done} и {leads_total} считает движок
+  # по notebook.yaml → leads (total — появившиеся зацепки, done — закрытые из них).
+  progress:
+    - { when: [], text: "Зацепок закрыто: {leads_done} из {leads_total}." }
+    - { when: [knows.invitation == 1], text: "Поручились: {vouches} из 3." }
   # Пояснение над страницей отчёта; показываются все подходящие строки.
   notes:
     - when: [seen.client_first == 1]
@@ -212,3 +265,59 @@ morning:
       text: "Одна строка зачёркнута. На её месте пусто, и пустота ноет, как зуб."
     - when: [returned_tonight == 1]
       text: "Одна строка переписана. Ты не помнишь, когда успел."
+
+# Кто говорит в ленте реплик. narrator — без подписи, приглушённо; gut — внутренний голос Ника (курсив);
+# written — персонаж пишет, а не говорит (бумажка).
+speakers:
+  narrator: { label: "", style: narrator }
+  gut: { label: ЧУТЬЁ, style: inner }
+  nick: { label: НИК, color: "#c9b37e" }
+  vivian: { label: ВИВИАН, color: "#b48fb0" }
+  dolly: { label: ДОЛЛИ, color: "#d9925f" }
+  eddie: { label: ЭДДИ, color: "#7fb0c9" }
+  pool: { label: МИССИС ПУЛ, color: "#c9a77f" }
+  sloan: { label: СЛОУН, color: "#8fbf8f" }
+  gorman: { label: ГОРМАН, color: "#c96f6f" }
+  tony: { label: ТОНИ, color: "#b0a07f" }
+  mei: { label: МЭЙ, color: "#a9b4bf" }
+  # Руби не говорит, она пишет на салфетках: style written рисует её реплики бумажкой.
+  ruby: { label: РУБИ, color: "#c97f8f", style: written }
+  auerbach: { label: ДОКТОР, color: "#9fc0c0" }
+  bennett: { label: БЕННЕТ, color: "#c9b98f" }
+  fenn: { label: ФЕНН, color: "#b8a26a" }
+  cordelia: { label: МИСС ШОУ, color: "#b0a8c9" }
+  owner: { label: ВЛАДЕЛЕЦ, color: "#8a8a8a" }
+  silas: { label: САЙЛАС, color: "#c98a5f" }
+
+# Лестница — один экран (сторилет с layout: stairs задаёт только текст). Кнопки этажей рисует движок.
+stairs:
+  location: stairwell
+  # Качество «на каком я этаже»: его ставят двери площадок и переход по лестнице.
+  quality: floor
+  floors:
+    1: floor_01
+    2: floor_02
+    3: floor_03
+    4: floor_04
+    5: floor_05
+    6: floor_06
+    7: floor_07
+    8: floor_08
+    9: floor_09
+    10: floor_10
+    11: floor_11
+    12: floor_12
+  # Цена = ceil(|куда − откуда| / 2) ходов, не меньше 1, плюс модификаторы. Заменяет обычный ход за выбор.
+  cost: half
+  costMods:
+    - { when: [rumor.lights == 1], add: 1 }
+  # Закрытый этаж виден серой кнопкой с подписью. Открывает любая группа условий из open_any.
+  locks:
+    - floor: 12
+      open_any: [[has.cordelia_pass == 1], [has.clock_key == 1]]
+      text: "Решётка: «Только по приглашению»"
+  # Встречи по пути: сторилеты этой локации; floors: [от, до] должен пересечься с путём
+  # (этажи после текущего до целевого включительно). Выбор без goto продолжает путь на целевой этаж.
+  events: stairs_event
+  # Эффекты каждого перехода по лестнице.
+  onTravel: [seen.went_up = 1]

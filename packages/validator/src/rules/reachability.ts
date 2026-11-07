@@ -1,4 +1,5 @@
-/** Locations not reachable from rules.start through any goto (conditions ignored). */
+/** Locations not reachable from rules.start through any goto (conditions ignored). The stairs screen
+ *  leads to every landing and to its encounters, and an encounter leads on to any landing. */
 import { warning, type Issue, type Rule } from "./types";
 
 export const check: Rule = (world) => {
@@ -8,6 +9,16 @@ export const check: Rule = (world) => {
     const out = edges.get(s.location) ?? new Set<string>();
     for (const c of s.choices) if (c.goto) out.add(c.goto);
     edges.set(s.location, out);
+  }
+  const stairs = world.stairs;
+  if (stairs) {
+    const landings = Object.values(stairs.floors);
+    for (const from of [stairs.location, ...(stairs.events !== undefined ? [stairs.events] : [])]) {
+      const out = edges.get(from) ?? new Set<string>();
+      for (const to of landings) out.add(to);
+      if (stairs.events !== undefined && from === stairs.location) out.add(stairs.events);
+      edges.set(from, out);
+    }
   }
   const seen = new Set<string>([world.rules.start]);
   const queue = [world.rules.start];

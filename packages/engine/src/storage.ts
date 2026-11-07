@@ -7,7 +7,7 @@
  * Qualities are written as `q.<id>=<int>`, only non-default ones.
  * Chunk 0 starts with the header `<version>:<chunkCount>|`.
  */
-import { STATE_VERSION, emptyHistory, type GameState, type History, type NightRecord, type Profile, type Qualities } from "./state";
+import { STATE_VERSION, copyHistory, emptyHistory, type GameState, type History, type LogEntry, type NightRecord, type Profile, type Qualities } from "./state";
 
 export const STORAGE_VERSION = 1;
 /** Telegram CloudStorage value limit is 4096; keep headroom. */
@@ -55,17 +55,18 @@ function decodeDoc(doc: string): Map<string, string> {
 }
 
 // ---- history (the final story's raw material) ----
-// `h=` nights separated by `,`; one night is `<0|1>/<pair>/<slot:frag+…>/<quality:value+…>/<night number>`.
-// `pl=` pawned pair ids in order. Both optional: docs from before the story decode as empty.
+// `h=` nights separated by `,`; one night is `<0|1>/<pair>/<slot:frag+…>/<quality:value+…>/<night number>[/<rumor>]`.
+// `pl=` pawned pair ids in order, `vo=` voucher qualities in the order they were earned.
+// All optional: docs from before the story (or the vouchers) decode as empty.
 
 function encodeNight(n: NightRecord): string {
   const report = Object.keys(n.report).sort().map((s) => `${s}:${n.report[s]}`).join("+");
   const values = Object.keys(n.values).sort().map((q) => `${q}:${n.values[q]}`).join("+");
-  return `${n.pledged ? 1 : 0}/${n.pair ?? ""}/${report}/${values}/${n.night}`;
+  return `${n.pledged ? 1 : 0}/${n.pair ?? ""}/${report}/${values}/${n.night}${n.rumor !== undefined ? `/${n.rumor}` : ""}`;
 }
 
 function decodeNight(src: string, index: number): NightRecord {
-  const [pledged, pair, report, values, night] = src.split("/");
+  const [pledged, pair, report, values, night, rumor] = src.split("/");
   if (pledged === undefined || pair === undefined || report === undefined || values === undefined) throw new Error(`bad night record: ${src}`);
   const n = night === undefined || night === "" ? index + 1 : Number(night);
   if (!Number.isInteger(n)) throw new Error(`bad night number: ${night}`);
@@ -76,7 +77,7 @@ function decodeNight(src: string, index: number): NightRecord {
     report: Object.fromEntries(pairs(report)),
     values: Object.fromEntries(pairs(values).map(([k, v]) => { const n = Number(v); if (!Number.isInteger(n)) throw new Error(`bad value: ${kv(k, v)}`); return [k, n]; })),
   };
-  return pair === "" ? rec : { ...rec, pair };
+  return { ...rec, ...(pair === "" ? {} : { pair }), ...(rumor ? { rumor } : {}) };
 }
 const kv = (k: string, v: string) => `${k}:${v}`;
 
@@ -85,14 +86,16 @@ function encodeHistory(h: History): string[] {
   const out: string[] = [];
   if (h.nights.length > 0) out.push(`h=${h.nights.map(encodeNight).join(",")}`);
   if (h.pledges.length > 0) out.push(`pl=${h.pledges.join(",")}`);
+  if (h.vouchers?.length) out.push(`vo=${h.vouchers.join(",")}`);
   return out;
 }
 
 function historyFrom(fields: Map<string, string>): History {
-  const h = fields.get("h"), pl = fields.get("pl");
+  const h = fields.get("h"), pl = fields.get("pl"), vo = fields.get("vo");
   return {
     nights: h === undefined || h === "" ? [] : h.split(",").map((src, i) => decodeNight(src, i)),
     pledges: pl === undefined || pl === "" ? [] : pl.split(","),
+    ...(vo ? { vouchers: vo.split(",") } : {}),
   };
 }
 
@@ -118,7 +121,7 @@ export function serializeRun(state: GameState): string {
     `sl=${state.storyletId}`,
     `pc=${state.pendingChoice ?? ""}`,
     `end=${state.ending ?? ""}`,
-    `log=${state.log.map((e) => `${e.storylet}:${e.pair !== undefined ? `p${e.pair}` : e.choice}`).join(",")}`,
+    `log=${state.log.map((e) => `${e.storylet}:${e.pair !== undefined ? `p${e.pair}` : e.floor !== undefined ? `f${e.floor}` : e.choice}`).join(",")}`,
     `rep=${Object.keys(state.report).sort().map((s) => `${s}:${state.report[s]}`).join(",")}`,
     ...encodeQualities(state.run),
   ];
@@ -135,12 +138,12 @@ export function parseRun(doc: string, profile: Profile): GameState {
   };
   const phase = need("phase");
   if (phase !== "scene" && phase !== "outcome" && phase !== "report" && phase !== "ending") throw new Error(`bad phase: ${phase}`);
-  const log = need("log") === "" ? [] : need("log").split(",").map((e) => {
+  const log = need("log") === "" ? [] : need("log").split(",").map((e): LogEntry => {
     const i = e.lastIndexOf(":");
     const tail = e.slice(i + 1);
-    return tail.startsWith("p")
-      ? { storylet: e.slice(0, i), choice: -1, pair: tail.slice(1) }
-      : { storylet: e.slice(0, i), choice: Number(tail) };
+    if (tail.startsWith("p")) return { storylet: e.slice(0, i), choice: -1, pair: tail.slice(1) };
+    if (tail.startsWith("f")) return { storylet: e.slice(0, i), choice: -1, floor: Number(tail.slice(1)) };
+    return { storylet: e.slice(0, i), choice: Number(tail) };
   });
   const pc = need("pc");
   const report: Record<string, string> = {};
@@ -160,7 +163,7 @@ export function parseRun(doc: string, profile: Profile): GameState {
     profile: { ...profile.profile },
     log,
     report,
-    history: { nights: [...(profile.history?.nights ?? [])], pledges: [...(profile.history?.pledges ?? [])] },
+    history: copyHistory(profile.history),
     ending: f.get("end") ? f.get("end")! : null,
   };
 }

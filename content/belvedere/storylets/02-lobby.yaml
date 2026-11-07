@@ -1,6 +1,7 @@
-# Вестибюль: Долли, грузовой лифт, почтовые ящики, залог.
-# Приход в вестибюль (seen.lobby == 0) — одна из четырёх карточек по priority.
-# Любой выбор в них ставит seen.lobby = 1, дальше вестибюль — хаб lobby_hub.
+# Вестибюль (v2, реплики): Долли, слух дня, лифт, почтовые ящики, залог.
+# Приход (seen.lobby == 0) — одна карточка по priority, любой выбор ставит seen.lobby = 1.
+# Строка { who: dolly, rumor: true } — движок подставляет текст слуха дня;
+# если слуха нет, строка не показывается.
 
 - id: lobby_wary
   location: lobby
@@ -9,22 +10,24 @@
   background: lobby
   portrait: dolly_suspicion
   title: Вестибюль
-  text: |
-    Долли поднимает глаза раньше, чем за тобой закрывается дверь. Смотрит на твоё пальто, потом на ботинки, будто сверяет с описью.
-
-    — Опять ты. — Спицы снова идут. — Хейла тут нет. Хейла нигде нет.
+  lines:
+    - { who: narrator, text: "Долли смотрит на твоё пальто, потом на ботинки. Сверяет с описью." }
+    - { who: dolly, text: "Опять ты. Хейла тут нет. Хейла нигде нет." }
+    - { who: dolly, rumor: true }
   choices:
-    - text: Спросить, сколько дают за имя
+    - say: Сколько дают за имя?
       effects: [seen.lobby = 1, seen.dolly_hale = 1, clues += 1]
-      outcome: |
-        — Ты уже спрашивал. — Пауза. — Не ты. Он. Вы стоите на одном и том же месте.
-    - text: Предложить сигарету
-      when: [cigarettes >= 1]
+      reply:
+        - { who: dolly, text: "Ты уже спрашивал. Не ты. Он." }
+        - { who: dolly, text: "Вы стоите на одном и том же месте." }
+    - do: Угостить сигаретой
+      when: [cigarettes >= 1, dolly_trust < 2]
       effects: [seen.lobby = 1, seen.dolly_cig = 1, cigarettes -= 1, dolly_trust += 1]
-      outcome: |
-        Она берёт сигарету и кладёт к остальным. В кармане фартука их уже несколько. Все твоей марки.
-    - text: Молча пойти к лестнице
-      effects: [seen.lobby = 1, seen.lobby_silent = 1, suspicion += 1]
+      reply:
+        - { who: narrator, text: "Она кладёт сигарету к остальным. В кармане фартука их уже несколько." }
+        - { who: gut, text: "Все твоей марки." }
+    - do: Молча пойти к лестнице
+      effects: [seen.lobby = 1, seen.lobby_silent = 1, suspicion += 1, floor = 1]
       goto: floor_01
 
 - id: lobby_trusting
@@ -34,19 +37,21 @@
   background: lobby
   portrait: dolly_trust
   title: Вестибюль
-  text: |
-    Долли откладывает вязание и наливает чай во вторую чашку. Чашка стояла здесь до того, как ты вошёл.
-
-    — Садись на минуту. Наверху тебе сегодня не обрадуются. — Она кивает на решётку грузового лифта. — А он, может, и обрадуется.
+  lines:
+    - { who: narrator, text: "Долли наливает чай во вторую чашку. Чашка стояла здесь до того, как ты вошёл." }
+    - { who: dolly, text: "Садись на минуту. Наверху тебе сегодня не обрадуются." }
+    - { who: dolly, rumor: true }
   choices:
-    - text: Сесть и выпить чаю
+    - do: Сесть и выпить чаю
       effects: [seen.lobby = 1, seen.dolly_tea = 1, suspicion -= 1]
-      outcome: |
-        Чай горький и горячий. Долли рассказывает, кто сегодня в доме, кто спит, а кто только делает вид. Про Гормана она говорит последним.
-    - text: Спросить, откуда она знает, что тебя ждут
+      reply:
+        - { who: narrator, text: "Чай горький и горячий. Долли рассказывает, кто сегодня спит, а кто делает вид." }
+        - { who: dolly, text: "Днём нас тут нет. Не ищи. Ищи ночью." }
+    - say: Откуда вы знаете, что меня ждут?
       effects: [seen.lobby = 1, seen.dolly_knows = 1, clues += 1]
-      outcome: |
-        — Я ничего не забываю, Ник. Совсем ничего. Я это продала. — Она снова берёт спицы. — Хорошая была сделка. Спроси меня лет через двадцать.
+      reply:
+        - { who: dolly, text: "Я ничего не забываю, Ник. Совсем ничего. Я это продала." }
+        - { who: dolly, text: "Хорошая была сделка. Спроси меня лет через двадцать." }
 
 - id: lobby_late
   location: lobby
@@ -55,19 +60,98 @@
   background: lobby
   portrait: dolly_worry
   title: Вестибюль
-  text: |
-    Долли откладывает вязание раньше, чем ты успеваешь открыть рот.
-
-    — Ночей за тобой уже {nights}, а пальто всё то же. Пальто уже узнаёт меня само.
+  lines:
+    - { who: dolly, text: "Ночей за тобой уже {nights}, а пальто всё то же." }
+    - { who: dolly, text: "Пальто меня уже само узнаёт." }
   choices:
-    - text: Спросить, откуда она знает
+    - say: Откуда вы знаете?
       effects: [seen.lobby = 1, seen.dolly_late = 1, dolly_trust += 1, met.dolly_late = 1]
-      outcome: |
-        — Я считаю. Кто-то в этом доме должен считать. — Она смотрит на шахту лифта. — Фенн с десятого тоже считает. Только он считает часы, а я — тебя.
-    - text: Просто кивнуть и пройти
+      reply:
+        - { who: dolly, text: "Я считаю. Кто-то в этом доме должен считать." }
+        - { who: dolly, text: "Фенн с десятого считает часы. А я — тебя." }
+    - do: Кивнуть и пройти
       effects: [seen.lobby = 1, met.dolly_late = 1]
 
-# Хаб первой ночи: Долли напоминает, куда идти и когда вернуться.
+# Ночь с пирогом (слух pool_pie): Долли просит зайти до часу ночи — половина дилеммы.
+- id: lobby_pie
+  location: lobby
+  priority: 4
+  when: [seen.lobby == 0, nights >= 1, rumor.pool_pie == 1]
+  background: lobby
+  portrait: dolly
+  title: Вестибюль
+  lines:
+    - { who: dolly, rumor: true }
+    - { who: dolly, text: "Пул позовёт к столу, она всех зовёт. А ты загляни ко мне до часу ночи." }
+    - { who: gut, text: "Ужин у Пул — это час, не меньше." }
+  choices:
+    - say: Зачем?
+      effects: [seen.lobby = 1, seen.dolly_ask = 1]
+      reply:
+        - { who: dolly, text: "Затем, что я прошу. Здесь редко кто-то просит." }
+    - do: Кивнуть
+      effects: [seen.lobby = 1, seen.dolly_ask = 1]
+
+# Ник вернулся сверху до часу ночи (ход 6), как просили: доверие и одна поездка на лифте.
+- id: dolly_kept
+  location: lobby
+  priority: 6
+  when: [seen.dolly_ask == 1, seen.dolly_kept == 0, seen.pool_dinner == 0, seen.went_up == 1, turn <= 6, met.dolly_kept == 0]
+  background: lobby
+  portrait: dolly_trust
+  title: Вестибюль
+  lines:
+    - { who: dolly, text: "Пришёл. Надо же." }
+    - { who: narrator, text: "Она сдвигает решётку грузового лифта. Кабина пахнет маслом и чужими чемоданами." }
+    - { who: dolly, text: "Один раз прокачу. Дальше посмотрим, как себя покажешь." }
+  choices:
+    - do: Войти в кабину
+      free: true
+      effects: [seen.dolly_kept = 1, met.dolly_kept = 1, dolly_trust += 1, has.lift_ride = 1]
+      goto: freight_lift
+    - say: В другой раз
+      free: true
+      effects: [seen.dolly_kept = 1, met.dolly_kept = 1, dolly_trust += 1, has.lift_ride = 1]
+      reply:
+        - { who: dolly, text: "Другого раза у нас тут не бывает. Ну, до утра поездка твоя." }
+
+# Повторно сдержал слово: поездка есть, доверие уже засчитано.
+- id: dolly_kept_again
+  location: lobby
+  priority: 6
+  when: [seen.dolly_ask == 1, seen.dolly_kept == 0, seen.pool_dinner == 0, seen.went_up == 1, turn <= 6, met.dolly_kept == 1]
+  background: lobby
+  portrait: dolly_trust
+  title: Вестибюль
+  lines:
+    - { who: dolly, text: "Опять пришёл вовремя. Я начинаю к этому привыкать. Это опасно." }
+  choices:
+    - do: Войти в кабину
+      free: true
+      effects: [seen.dolly_kept = 1, has.lift_ride = 1]
+      goto: freight_lift
+    - say: В другой раз
+      free: true
+      effects: [seen.dolly_kept = 1, has.lift_ride = 1]
+
+# Ник выбрал ужин у Пул и опоздал.
+- id: dolly_waited
+  location: lobby
+  priority: 6
+  when: [seen.dolly_ask == 1, seen.pool_dinner == 1, seen.dolly_kept == 0, seen.dolly_waited == 0]
+  background: lobby
+  portrait: dolly_suspicion
+  title: Вестибюль
+  lines:
+    - { who: dolly, text: "Я ждала до часу. Пирог был вкусный?" }
+    - { who: gut, text: "Она знает. Она всегда знает." }
+  choices:
+    - say: Вкусный
+      free: true
+      effects: [seen.dolly_waited = 1]
+      reply:
+        - { who: dolly, text: "Вот и хорошо. Хоть кому-то сегодня хорошо." }
+
 - id: lobby_hub_first_night
   location: lobby
   priority: 1
@@ -75,104 +159,132 @@
   background: lobby
   portrait: dolly
   title: Вестибюль
-  text: |
-    Долли снова вяжет. Не поднимая глаз:
-
-    — Третий этаж, служебная дверь. И к шести будь внизу, у меня.
+  lines:
+    - { who: narrator, text: "Долли снова вяжет." }
+    - { who: dolly, text: "Спрашивай, пока я добрая. И к шести будь внизу." }
   choices:
-    - text: Предложить сигарету
-      when: [seen.dolly_cig == 0, cigarettes >= 1]
-      effects: [seen.dolly_cig = 1, cigarettes -= 1, dolly_trust += 1]
-      outcome: |
-        Долли берёт сигарету и прячет её в карман фартука. Не закуривает. Так берут задаток.
-    - text: Спросить, сколько дают за имя
+    - say: Что значит «12 — выкупить»?
+      when: [seen.dolly_invite == 0]
+      effects: [seen.dolly_invite = 1, knows.invitation = 1, clues += 1]
+      reply:
+        - { who: dolly, text: "Двенадцатый. Там Владелец. Там выкупают то, что заложили." }
+        - { who: dolly, text: "Наверх без приглашения не ходят. Хейла пригласили. Тебя — когда за тебя поручатся трое." }
+        - { who: gut, text: "Трое жильцов. Значит, придётся стучать в двери." }
+    - say: Сколько дают за имя?
       when: [seen.dolly_hale == 0]
       effects: [seen.dolly_hale = 1, clues += 1]
-      outcome: |
-        — Смотря чьё. За своё дают мало. За чужое, если тебя им зовут, — столько, что хватает на всё.
-    - text: К лестнице
+      reply:
+        - { who: dolly, text: "Смотря чьё. За своё дают мало." }
+        - { who: dolly, text: "За чужое, если тебя им зовут, — столько, что хватает на всё." }
+    - do: Угостить сигаретой
+      when: [seen.dolly_cig == 0, cigarettes >= 1, dolly_trust < 2]
+      effects: [seen.dolly_cig = 1, cigarettes -= 1, dolly_trust += 1]
+      reply:
+        - { who: narrator, text: "Долли прячет сигарету в карман фартука. Не закуривает." }
+        - { who: gut, text: "Так берут задаток, а не подарок." }
+    - do: Попросить грузовой лифт
+      when: [has.lift_ride == 1]
       free: true
+      goto: freight_lift
+    - do: На площадку
+      free: true
+      effects: [floor = 1]
       goto: floor_01
-    - text: Уйти до рассвета (залог)
+    - do: Уйти до рассвета (залог)
       free: true
       goto: pledge
 
-# Хаб вестибюля после первого разговора и при возвращении сверху.
 - id: lobby_hub_trusted
   location: lobby
   priority: 1
-  when: [seen.lobby == 1, dolly_trust >= 2]
+  when: [seen.lobby == 1, nights >= 1, dolly_trust >= 2]
   background: lobby
   portrait: dolly_trust
   title: Вестибюль
-  text: |
-    Долли вяжет и поглядывает на тебя поверх спиц. Без прежней настороженности: так смотрят на постоянного жильца.
-
-    — Не стой столбом. Спрашивай или иди.
+  lines:
+    - { who: narrator, text: "Долли поглядывает на тебя поверх спиц. Так смотрят на постоянного жильца." }
+    - { who: dolly, text: "Не стой столбом. Спрашивай или иди." }
   choices:
-    - text: Предложить сигарету
-      when: [seen.dolly_cig == 0, cigarettes >= 1]
-      effects: [seen.dolly_cig = 1, cigarettes -= 1, dolly_trust += 1]
-      outcome: |
-        Долли берёт сигарету и прячет её в карман фартука. Не закуривает. Так берут задаток.
-    - text: Спросить, сколько дают за имя
-      when: [seen.dolly_hale == 0]
-      effects: [seen.dolly_hale = 1, clues += 1]
-      outcome: |
-        — Смотря чьё. За своё дают мало. За чужое, если тебя им зовут, — столько, что хватает на всё.
-    - text: Попросить ключ от служебной двери на четвёртом
-      when: [dolly_trust >= 2, has.archive_key == 0]
+    - say: Что значит «12 — выкупить»?
+      when: [knows.invitation == 0]
+      effects: [seen.dolly_invite = 1, knows.invitation = 1, clues += 1]
+      reply:
+        - { who: dolly, text: "Наверх без приглашения не ходят. Хейла пригласили." }
+        - { who: dolly, text: "Тебя пустят, когда за тебя поручатся трое." }
+    # Сигаретами доверие поднимается только до 2. Дальше Долли объясняет, как его заслужить.
+    - do: Угостить сигаретой
+      when: [seen.dolly_cig == 0, cigarettes >= 1, dolly_trust >= 2]
+      free: true
+      effects: [seen.dolly_cig = 1]
+      reply:
+        - { who: dolly, text: "У меня полкармана твоих сигарет. Сигаретой берут задаток, Ник." }
+        - { who: dolly, text: "Доверие тут не покупают. Я смотрю, что ты делаешь для дома." }
+    - do: Попросить ключ от архива на четвёртом
+      when: [has.archive_key == 0]
       effects: [has.archive_key = 1]
-      outcome: |
-        Долли, не глядя, снимает с гвоздя ключ с бумажной биркой «4 — архив».
-
-        — Слоун поменял замок. Он думает, у меня нет второго. Пусть думает.
-    - text: Попросить грузовой лифт
+      reply:
+        - { who: narrator, text: "Долли, не глядя, снимает с гвоздя ключ с биркой «4 — архив»." }
+        - { who: dolly, text: "Слоун поменял замок. Думает, у меня нет второго. Пусть думает." }
+    - do: Попросить грузовой лифт
       when: [dolly_trust >= 3]
       free: true
       goto: freight_lift
-    - text: К лестнице
+    - do: Попросить грузовой лифт
+      when: [dolly_trust < 3, has.lift_ride == 1]
       free: true
+      goto: freight_lift
+    - do: На площадку
+      free: true
+      effects: [floor = 1]
       goto: floor_01
-    - text: Уйти до рассвета (залог)
+    - do: Уйти до рассвета (залог)
       free: true
       goto: pledge
 
-
 - id: lobby_hub
   location: lobby
-  when: [seen.lobby == 1]
+  when: [seen.lobby == 1, nights >= 1]
   background: lobby
   portrait: dolly
   title: Вестибюль
-  text: |
-    Спицы, шахта лифта, мокрый след твоих ботинок от двери. Долли делает вид, что тебя здесь нет. В этом доме это считается вежливостью.
+  lines:
+    - { who: narrator, text: "Спицы, шахта лифта, мокрый след твоих ботинок. Долли делает вид, что тебя нет." }
+    - { who: gut, text: "В этом доме это считается вежливостью." }
   choices:
-    - text: Предложить сигарету
-      when: [seen.dolly_cig == 0, cigarettes >= 1]
+    - say: Что значит «12 — выкупить»?
+      when: [knows.invitation == 0]
+      effects: [seen.dolly_invite = 1, knows.invitation = 1, clues += 1]
+      reply:
+        - { who: dolly, text: "Наверх без приглашения не ходят. Хейла пригласили." }
+        - { who: dolly, text: "Тебя пустят, когда за тебя поручатся трое." }
+    - do: Угостить сигаретой
+      when: [seen.dolly_cig == 0, cigarettes >= 1, dolly_trust < 2]
       effects: [seen.dolly_cig = 1, cigarettes -= 1, dolly_trust += 1]
-      outcome: |
-        Долли берёт сигарету и прячет её в карман фартука. Не закуривает. Так берут задаток.
-    - text: Спросить, сколько дают за имя
+      reply:
+        - { who: narrator, text: "Долли прячет сигарету в карман фартука. Не закуривает." }
+        - { who: gut, text: "Так берут задаток." }
+    - say: Сколько дают за имя?
       when: [seen.dolly_hale == 0]
       effects: [seen.dolly_hale = 1, clues += 1]
-      outcome: |
-        — Смотря чьё. За своё дают мало. За чужое, если тебя им зовут, — столько, что хватает на всё.
-    - text: Попросить ключ от служебной двери на четвёртом
-      when: [dolly_trust >= 2, has.archive_key == 0]
-      effects: [has.archive_key = 1]
-      outcome: |
-        Долли, не глядя, снимает с гвоздя ключ с бумажной биркой «4 — архив».
-
-        — Слоун поменял замок. Он думает, у меня нет второго. Пусть думает.
-    - text: Попросить грузовой лифт
-      when: [dolly_trust >= 3]
+      reply:
+        - { who: dolly, text: "Смотря чьё. За чужое, если тебя им зовут, — столько, что хватает на всё." }
+    # Сигаретами доверие поднимается только до 2. Дальше Долли объясняет, как его заслужить.
+    - do: Угостить сигаретой
+      when: [seen.dolly_cig == 0, cigarettes >= 1, dolly_trust >= 2]
+      free: true
+      effects: [seen.dolly_cig = 1]
+      reply:
+        - { who: dolly, text: "У меня полкармана твоих сигарет. Сигаретой берут задаток, Ник." }
+        - { who: dolly, text: "Доверие тут не покупают. Я смотрю, что ты делаешь для дома." }
+    - do: Попросить грузовой лифт
+      when: [has.lift_ride == 1]
       free: true
       goto: freight_lift
-    - text: К лестнице
+    - do: На площадку
       free: true
+      effects: [floor = 1]
       goto: floor_01
-    - text: Уйти до рассвета (залог)
+    - do: Уйти до рассвета (залог)
       free: true
       goto: pledge
 
@@ -181,53 +293,61 @@
   background: lobby
   portrait: dolly_trust
   title: Грузовой лифт
-  text: |
-    Долли сдвигает решётку. Кабина пахнет машинным маслом и чужими чемоданами. Она кладёт ладонь на рычаг.
-
-    — Куда? — Она смотрит на тебя дольше, чем нужно. — Выше восьмого вожу только своих.
+  lines:
+    - { who: narrator, text: "Долли кладёт ладонь на рычаг." }
+    - { who: dolly, text: "Куда? Выше восьмого вожу только своих." }
   choices:
-    - text: На второй
-      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 2]
+    - do: На второй
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, has.lift_ride = 0, floor = 2]
       goto: floor_02
-    - text: На третий
-      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 3]
+    - do: На третий
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, has.lift_ride = 0, floor = 3]
       goto: floor_03
-    - text: На четвёртый
-      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 4]
+    - do: На четвёртый
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, has.lift_ride = 0, floor = 4]
       goto: floor_04
-    - text: На пятый
-      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 5]
+    - do: На пятый
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, has.lift_ride = 0, floor = 5]
       goto: floor_05
-    - text: На шестой
-      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 6]
+    - do: На шестой
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, has.lift_ride = 0, floor = 6]
       goto: floor_06
-    - text: На седьмой
-      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 7]
+    - do: На седьмой
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, has.lift_ride = 0, floor = 7]
       goto: floor_07
-    - text: На восьмой
-      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 8]
+    - do: На восьмой
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, has.lift_ride = 0, floor = 8]
       goto: floor_08
-    - text: На девятый
+    - do: На девятый
       when: [dolly_trust >= 4]
-      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 9]
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, has.lift_ride = 0, floor = 9]
       goto: floor_09
-    - text: На десятый
+    - do: На десятый
       when: [dolly_trust >= 4]
-      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 10]
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, has.lift_ride = 0, floor = 10]
       goto: floor_10
-    - text: На одиннадцатый
+    - do: На одиннадцатый
       when: [dolly_trust >= 4]
-      effects: [seen.lift_used = 1, paths.freight_lift = 1, floor = 11]
+      effects: [seen.lift_used = 1, paths.freight_lift = 1, has.lift_ride = 0, floor = 11]
       goto: floor_11
-    - text: Попросить нажать две кнопки сразу
-      when: [dolly_trust >= 5]
-      effects: [seen.lift_used = 1, paths.vault = 1, floor = 13]
-      outcome: |
-        Долли долго смотрит на панель. Потом кладёт два пальца на «12» и «1» и нажимает одновременно.
-
-        — Я ничего не знаю о тринадцатом, — говорит она, пока лифт ползёт вверх мимо всех этажей. — Запомни: ничего.
+    # Тринадцатый — только для того, кто знает, что там лежит первым (запись № 1)
+    # и сам сосчитал этажи (paths.thirteen). Доверие нужно, но его мало.
+    - do: Попросить нажать две кнопки сразу
+      when: [dolly_trust >= 4, paths.thirteen == 1, knows.tomorrow == 1]
+      effects: [seen.lift_used = 1, paths.vault = 1, has.lift_ride = 0, floor = 13]
+      reply:
+        - { who: dolly, text: "Ты прочёл первую строку. Тогда тебе можно. Остальным — нет: они бы там остались." }
+        - { who: narrator, text: "Долли кладёт два пальца на «12» и «1» и нажимает одновременно." }
+        - { who: dolly, text: "Я ничего не знаю о тринадцатом. Запомни: ничего." }
       goto: vault
-    - text: Передумать
+    - do: Спросить про тринадцатый
+      when: [paths.thirteen == 1, knows.tomorrow == 0, seen.ask13 == 0]
+      free: true
+      effects: [seen.ask13 = 1]
+      reply:
+        - { who: dolly, text: "Нет никакого тринадцатого. А если бы был — туда возят тех, кто знает, что там лежит первым." }
+        - { who: dolly, text: "Сначала прочти первую строку. Потом проси." }
+    - do: Передумать
       free: true
       goto: lobby
 
@@ -235,54 +355,48 @@
   location: mailboxes
   background: lobby
   title: Почтовые ящики
-  text: |
-    Сто сорок латунных ящиков, у каждого окошко и фамилия на картонке. Пыль везде, кроме одного: 3-В, без фамилии.
+  lines:
+    - { who: narrator, text: "Сто сорок латунных ящиков, на каждом фамилия. Пыль везде, кроме одного: 3-В, без фамилии." }
   choices:
-    - text: Открыть ящик 3-В
+    - do: Открыть ящик 3-В
       when: [seen.mailbox_open == 0]
       effects: [seen.mailbox_open = 1, seen.mailbox_paid = 1, clues += 1]
-      outcome: |
-        Ящик не заперт. Внутри один листок, почерк ровный, как по линейке:
-
-        «Аренда комнаты 3-В оплачена до конца дела. — В.»
-
-        Какого дела, не сказано.
-    - text: Поискать ящик Хейла
+      reply:
+        - { who: narrator, text: "Один листок, почерк ровный, как по линейке: «Аренда комнаты 3-В оплачена до конца дела. — В.»" }
+        - { who: gut, text: "Какого дела, не сказано." }
+    - do: Поискать ящик Хейла
       when: [seen.mailbox_hale == 0]
       effects: [seen.mailbox_hale = 1]
-      outcome: |
-        Ящика с фамилией Хейл нет. Есть один пустой, с картонкой без букв. На латуни ещё видны дырочки от кнопок.
-    - text: Вернуться на площадку
+      reply:
+        - { who: narrator, text: "Ящика Хейла нет. Есть пустая картонка без букв. На латуни дырочки от кнопок." }
+    - do: Вернуться на площадку
       free: true
       goto: floor_01
 
-# Позже на ящике 3-В появляется фамилия. Её туда кто-то вставил, пока Ник терял память.
 - id: mailboxes_named
   location: mailboxes
   priority: 1
   when: [memories_returned >= 2]
   background: lobby
   title: Почтовые ящики
-  text: |
-    Сто сорок латунных ящиков. На 3-В появилась картонка. Свежая, буквы ещё блестят:
-
-    «Н. Кэллоуэй».
-
-    У тебя контора на Портовой. Ты никогда здесь не жил.
+  lines:
+    - { who: narrator, text: "На 3-В появилась картонка. Свежая, буквы ещё блестят: «Н. Кэллоуэй»." }
+    - { who: gut, text: "У тебя контора на Портовой. Ты никогда здесь не жил." }
   choices:
-    - text: Открыть ящик
+    - do: Открыть ящик
       when: [seen.mailbox_open == 0]
       effects: [seen.mailbox_open = 1, seen.mailbox_name = 1, clues += 1]
-      outcome: |
-        «Аренда комнаты 3-В оплачена до конца дела. Не благодарите. — В.»
-
-        Тот же почерк. Только теперь ты знаешь, чьё это дело.
-    - text: Вернуться на площадку
+      reply:
+        - { who: narrator, text: "«Аренда комнаты 3-В оплачена до конца дела. Не благодарите. — В.»" }
+        - { who: gut, text: "Тот же почерк. Только теперь ты знаешь, чьё это дело." }
+    - do: Вернуться на площадку
       free: true
       goto: floor_01
 
-# Залог. Варианты воспоминаний рисует движок из `memories`.
-# Порядок priority: пойман > рассвет > обычный выход.
+# Залог. Порядок priority: пойман > рассвет > стыд > обычный выход.
+# Цена отданной ночи (nights_lost): ночь — тоже кусок жизни. После двух отданных ночей
+# третья ведёт к концовке «Жилец». Долли каждый раз предупреждает заранее.
+# pledgeEffects — эффекты, которые применяются при любом залоге (конверт или ночь).
 
 - id: pledge_exit
   location: pledge
@@ -290,54 +404,98 @@
   background: lobby
   portrait: dolly
   title: Залог
-  text: |
-    Долли протягивает конверт. Внутри пусто, пока ты туда что-нибудь не положишь.
-
-    — Из Белведера не уходят с пустыми руками. Что оставишь в этот раз, Ник?
+  lines:
+    - { who: narrator, text: "Долли протягивает пустой конверт." }
+    - { who: dolly, text: "Из Белведера не уходят с пустыми руками. Что оставишь в этот раз, Ник?" }
+    - { who: dolly, text: "Одну ночь ты мне уже отдал. Ночь — тоже кусок жизни. Кто отдаёт ночи, тому не к чему возвращаться утром.", when: [nights_lost == 1] }
+    - { who: dolly, text: "Две ночи. Отдашь третью — утром проснёшься в 3-В. Новым жильцом. Я тебя предупредила.", when: [nights_lost >= 2] }
   choices:
-    - text: Заложить эту ночь
+    - do: Заложить эту ночь
+      when: [nights_lost < 2]
       free: true
-      effects: [night_pledged = 1]
-      outcome: |
-        Долли заклеивает конверт и подписывает дату. Утром ты не вспомнишь, что подписывал её сам.
+      effects: [night_pledged = 1, nights_lost += 1]
+      reply:
+        - { who: narrator, text: "Долли заклеивает конверт и подписывает дату. Утром ты не вспомнишь, что подписывал её сам." }
       endNight: true
+    - do: Заложить третью ночь
+      when: [nights_lost >= 2]
+      ending: tenant
+      reply:
+        - { who: dolly, text: "Ох, Ник." }
+        - { who: narrator, text: "Она заклеивает конверт и не подписывает. Подписывать больше нечего." }
+
+- id: pledge_shamed
+  location: pledge
+  layout: pledge
+  priority: 1
+  when: [suspicion >= 5, suspicion < 10, turn < 16]
+  background: lobby
+  portrait: dolly_suspicion
+  title: Залог
+  pledgeEffects: [dolly_trust -= 1]
+  lines:
+    - { who: dolly, text: "Весь дом про тебя шепчется. Двери, замки, крики на лестнице." }
+    - { who: dolly, text: "Мне за тебя стыдно, Ник. Это я запомню." }
+    - { who: dolly, text: "И ночи считаю: отдал уже одну.", when: [nights_lost == 1] }
+    - { who: dolly, text: "Две ночи. Третья — и проснёшься в 3-В.", when: [nights_lost >= 2] }
+  choices:
+    - do: Заложить эту ночь
+      when: [nights_lost < 2]
+      free: true
+      effects: [night_pledged = 1, nights_lost += 1]
+      endNight: true
+    - do: Заложить третью ночь
+      when: [nights_lost >= 2]
+      ending: tenant
+      reply:
+        - { who: narrator, text: "Долли заклеивает конверт и не подписывает." }
 
 - id: pledge_dawn
   location: pledge
   layout: pledge
-  priority: 1
+  priority: 2
   when: [turn >= 16]
   background: lobby_dawn
   portrait: dolly_worry
   title: Рассвет
-  text: |
-    В стёклах вестибюля серый свет. С улицы — сирена и хлопанье дверей: Горман приехал с нарядом.
-
-    Долли уже держит конверт. Ты не помнишь, как спустился.
-
-    — Быстро, — говорит она. — Пока он не поднялся.
+  lines:
+    - { who: narrator, text: "Серый свет в стёклах. Ты не помнишь, как спустился." }
+    - { who: dolly, text: "Быстро. Ещё минута — и проснулся бы в 3-В." }
+    - { who: dolly, text: "Ночь у тебя одна в запасе, не больше.", when: [nights_lost == 1] }
+    - { who: dolly, text: "Ночей в запасе нет. Отдавай конверт, или останешься.", when: [nights_lost >= 2] }
   choices:
-    - text: Заложить эту ночь
+    - do: Заложить эту ночь
+      when: [nights_lost < 2]
       free: true
-      effects: [night_pledged = 1]
+      effects: [night_pledged = 1, nights_lost += 1]
       endNight: true
+    - do: Заложить третью ночь
+      when: [nights_lost >= 2]
+      ending: tenant
+      reply:
+        - { who: narrator, text: "Рассвет доходит до стойки. Долли отворачивается к лифту." }
 
 - id: pledge_caught
   location: pledge
   layout: pledge
-  priority: 2
+  priority: 3
   when: [suspicion >= 10]
   background: lobby
   portrait: tony_threat
   title: Выход
-  text: |
-    Тони Риццо держит тебя за воротник, как мокрого щенка, и ставит перед стойкой. Он не злится. Ему просто поручили.
-
-    Долли не смотрит тебе в глаза.
-
-    — Выбирай сам, — говорит она тихо. — Пока за тебя не выбрал он.
+  pledgeEffects: [dolly_trust -= 1]
+  lines:
+    - { who: narrator, text: "Тони Риццо ставит тебя перед стойкой, держа за воротник, как мокрого щенка." }
+    - { who: tony, text: "Ничего личного. Мне поручили." }
+    - { who: dolly, text: "Тебя привели за шиворот, Ник. Это я тоже запомню. Выбирай сам." }
   choices:
-    - text: Заложить эту ночь
+    - do: Заложить эту ночь
+      when: [nights_lost < 2]
       free: true
-      effects: [night_pledged = 1, seen.caught = 1]
+      effects: [night_pledged = 1, seen.caught = 1, nights_lost += 1]
       endNight: true
+    - do: Заложить третью ночь
+      when: [nights_lost >= 2]
+      ending: tenant
+      reply:
+        - { who: tony, text: "Комната 3-В. Я провожу." }

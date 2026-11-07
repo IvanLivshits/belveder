@@ -7,10 +7,12 @@ export type Qualities = Record<string, number>;
 
 export interface LogEntry {
   storylet: string;
-  /** Index into storylet.choices (original, not filtered); -1 for a memory pledge. */
+  /** Index into storylet.choices (original, not filtered); -1 for a memory pledge or a walk on the stairs. */
   choice: number;
   /** Memory pair id when the entry is a pledge. */
   pair?: string;
+  /** Target floor when the entry is a walk on the stairs. */
+  floor?: number;
 }
 
 /** scene: waiting for a choice. outcome: showing a choice's outcome text. report: night over.
@@ -29,14 +31,22 @@ export interface NightRecord {
   report: Record<string, string>;
   /** Values of the placeholders used by those fragments, as they were at report time. */
   values: Record<string, number>;
+  /** The rumor drawn that night, if any (the next night draws a different one). */
+  rumor?: string;
 }
 /** Everything the final story needs, in play order. */
 export interface History {
   nights: NightRecord[];
   /** Memory pair ids, in the order they were pawned. */
   pledges: string[];
+  /** Qualities from `notebook.vouchers.names` in the order they were first set; absent while there are none. */
+  vouchers?: string[];
 }
 export const emptyHistory = (): History => ({ nights: [], pledges: [] });
+/** An independent copy; a history from before a field existed reads as empty there. */
+export function copyHistory(h: History | undefined): History {
+  return { nights: [...(h?.nights ?? [])], pledges: [...(h?.pledges ?? [])], ...(h?.vouchers?.length ? { vouchers: [...h.vouchers] } : {}) };
+}
 
 export interface GameState {
   v: typeof STATE_VERSION;

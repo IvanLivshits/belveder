@@ -1,5 +1,7 @@
 export * from "./Backdrop";
 export * from "./SceneCard";
+export * from "./Feed";
+export * from "./StairsPicker";
 export * from "./ChoiceList";
 export * from "./DoorPicker";
 export * from "./PledgePicker";

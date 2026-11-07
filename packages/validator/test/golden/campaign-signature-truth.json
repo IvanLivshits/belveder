@@ -1,5 +1,5 @@
 {
-  "digest": "798acb1d719831d0a036556a1b545ddc2305dbaa576dbc9a84d6f53bf7f13f0a",
+  "digest": "d8ebe04a0e043cfe46dc4c7dde257a11c2afba83004bf36aadd7856596ba71db",
   "snapshot": {
     "ending": "signature_truth",
     "history": {
@@ -14,78 +14,84 @@
             "finding": "finding_ring",
             "price": "price_marines",
             "twist": "twist_ring_returned",
-            "witnesses": "witnesses_eddie"
+            "witnesses": "witnesses_eddie_room"
           },
+          "rumor": "pool_pie",
           "values": {}
         },
         {
           "night": 2,
-          "pair": "lantern",
+          "pair": "ledger",
           "pledged": false,
           "report": {
             "client": "client_ring",
-            "entry": "entry_cig",
-            "finding": "finding_ruby_record",
-            "price": "price_mcginnis",
-            "twist": "twist_lantern_returned",
-            "witnesses": "witnesses_ruby"
+            "entry": "entry_kept",
+            "finding": "finding_true_ledger",
+            "price": "price_senator_dog",
+            "twist": "twist_ledger_returned",
+            "witnesses": "witnesses_sloan"
           },
+          "rumor": "pool_pie",
           "values": {}
         },
         {
           "night": 3,
-          "pair": "hospital",
+          "pair": "cashbox",
           "pledged": false,
           "report": {
-            "client": "client_lantern",
-            "entry": "entry_lift",
-            "finding": "finding_medical_file",
-            "price": "price_lorraine",
-            "twist": "twist_hospital_returned",
-            "witnesses": "witnesses_auerbach"
+            "client": "client_return",
+            "entry": "entry_tea",
+            "finding": "finding_ticket",
+            "price": "price_sheriff",
+            "twist": "twist_cashbox_returned",
+            "witnesses": "witnesses_sloan"
           },
+          "rumor": "gorman_inside",
           "values": {}
         },
         {
           "night": 4,
-          "pair": "voice",
+          "pair": "hospital",
+          "pledged": false,
+          "report": {
+            "client": "client_cashbox",
+            "entry": "entry_lift",
+            "finding": "finding_medical_file",
+            "price": "price_lorraine",
+            "twist": "twist_hospital_returned",
+            "witnesses": "witnesses_auerbach_silent"
+          },
+          "rumor": "eddie_blue",
+          "values": {}
+        },
+        {
+          "night": 5,
+          "pair": "lantern",
           "pledged": false,
           "report": {
             "client": "client_hospital",
+            "entry": "entry_lift",
+            "finding": "finding_ruby_record",
+            "price": "price_mcginnis",
+            "twist": "twist_lantern_returned",
+            "witnesses": "witnesses_ruby_listen"
+          },
+          "rumor": "eddie_blue",
+          "values": {}
+        },
+        {
+          "night": 6,
+          "pair": "voice",
+          "pledged": false,
+          "report": {
+            "client": "client_lantern",
             "entry": "entry_lift",
             "finding": "finding_default",
             "price": "price_father",
             "twist": "twist_voice_returned",
             "witnesses": "witnesses_ruby_walter"
           },
-          "values": {}
-        },
-        {
-          "night": 5,
-          "pair": "ledger",
-          "pledged": false,
-          "report": {
-            "client": "client_voice",
-            "entry": "entry_lift",
-            "finding": "finding_true_ledger",
-            "price": "price_senator_dog",
-            "twist": "twist_ledger_returned",
-            "witnesses": "witnesses_sloan"
-          },
-          "values": {}
-        },
-        {
-          "night": 6,
-          "pair": "cashbox",
-          "pledged": false,
-          "report": {
-            "client": "client_return",
-            "entry": "entry_lift",
-            "finding": "finding_ticket",
-            "price": "price_sheriff",
-            "twist": "twist_cashbox_returned",
-            "witnesses": "witnesses_sloan"
-          },
+          "rumor": "eddie_blue",
           "values": {}
         },
         {
@@ -93,31 +99,61 @@
           "pair": "name",
           "pledged": false,
           "report": {
-            "client": "client_cashbox",
+            "client": "client_voice",
             "entry": "entry_lift",
             "finding": "finding_signature_photo",
             "price": "price_license",
             "twist": "twist_name_returned",
-            "witnesses": "witnesses_eddie"
+            "witnesses": "witnesses_default"
           },
+          "rumor": "eddie_blue",
           "values": {}
         },
         {
           "night": 8,
+          "pledged": true,
+          "report": {
+            "client": "client_name",
+            "entry": "entry_lift",
+            "finding": "finding_clipping",
+            "price": "price_night",
+            "twist": "twist_thirteen",
+            "witnesses": "witnesses_default"
+          },
+          "rumor": "eddie_blue",
+          "values": {}
+        },
+        {
+          "night": 9,
+          "pledged": true,
+          "report": {
+            "client": "client_coffee",
+            "entry": "entry_lift",
+            "finding": "finding_book_one",
+            "price": "price_night",
+            "twist": "twist_default",
+            "witnesses": "witnesses_default"
+          },
+          "rumor": "eddie_blue",
+          "values": {}
+        },
+        {
+          "night": 10,
           "pair": "secret",
           "pledged": false,
           "report": {
-            "client": "client_name",
+            "client": "client_coffee",
             "entry": "entry_lift",
             "finding": "finding_vivian_envelope",
             "price": "price_scar",
             "twist": "twist_secret_returned",
             "witnesses": "witnesses_default"
           },
+          "rumor": "eddie_blue",
           "values": {}
         },
         {
-          "night": 9,
+          "night": 11,
           "pledged": false,
           "report": {
             "client": "client_default",
@@ -127,18 +163,25 @@
             "twist": "twist_final",
             "witnesses": "witnesses_default"
           },
+          "rumor": "lights",
           "values": {}
         }
       ],
       "pledges": [
         "ring",
-        "lantern",
-        "hospital",
-        "voice",
         "ledger",
         "cashbox",
+        "hospital",
+        "lantern",
+        "voice",
         "name",
         "secret"
+      ],
+      "vouchers": [
+        "vouch.sloan",
+        "vouch.eddie",
+        "vouch.auerbach",
+        "vouch.ruby"
       ]
     },
     "location": "lobby",
@@ -155,15 +198,30 @@
     "pendingChoice": null,
     "phase": "ending",
     "profile": {
+      "content_version": 17,
       "dolly_trust": 5,
       "endings.signature_truth": 1,
+      "found.cordelia_pass": 1,
+      "found.facade_photo": 1,
+      "found.laundry_tag": 1,
       "found.ledger_true": 1,
+      "found.matchbook": 1,
       "found.medical_file": 1,
+      "found.note_12": 1,
       "found.pawn_ticket": 1,
       "found.ring": 1,
       "found.ruby_record": 1,
       "found.signature_photo": 1,
       "found.vivian_envelope": 1,
+      "knows.club": 1,
+      "knows.denver": 1,
+      "knows.fire": 1,
+      "knows.invitation": 1,
+      "knows.matchbook": 1,
+      "knows.room": 1,
+      "knows.ruby_coffee": 1,
+      "knows.shortage": 1,
+      "knows.tomorrow": 1,
       "mem.false.father": 0,
       "mem.false.license": 0,
       "mem.false.lorraine": 0,
@@ -182,8 +240,13 @@
       "mem.true.voice": 1,
       "memories_returned": 8,
       "met.auerbach": 1,
+      "met.cordelia": 1,
       "met.dolly": 1,
+      "met.dolly_heard": 1,
+      "met.dolly_kept": 1,
+      "met.dolly_late": 1,
       "met.eddie": 1,
+      "met.gorman": 1,
       "met.mei": 1,
       "met.office_cashbox": 1,
       "met.office_hospital": 1,
@@ -193,18 +256,31 @@
       "met.office_ring": 1,
       "met.office_voice": 1,
       "met.ruby": 1,
+      "met.ruby_recognized": 1,
+      "met.sloan": 1,
       "met.sloan_deal": 1,
-      "nights": 9,
+      "met.vivian": 1,
+      "nights": 11,
+      "nights_lost": 2,
       "paths.freight_lift": 1,
+      "paths.thirteen": 1,
       "paths.vault": 1,
-      "visited.floor1.tenant": 2,
+      "visited.floor1.tenant": 10,
+      "visited.floor11.tenant": 1,
+      "visited.floor12.service": 1,
+      "visited.floor2.tenant": 2,
       "visited.floor3.service": 1,
       "visited.floor4.tenant": 2,
-      "visited.floor5.service": 1,
-      "visited.floor5.tenant": 1,
-      "visited.floor7.service": 3,
+      "visited.floor5.service": 2,
+      "visited.floor5.tenant": 2,
+      "visited.floor7.service": 8,
       "visited.floor7.tenant": 2,
-      "visited.floor8.tenant": 1
+      "visited.floor8.tenant": 1,
+      "vouch.auerbach": 1,
+      "vouch.eddie": 1,
+      "vouch.ruby": 1,
+      "vouch.sloan": 1,
+      "vouches": 4
     },
     "report": {
       "client": "client_default",
@@ -214,12 +290,16 @@
       "twist": "twist_final",
       "witnesses": "witnesses_default"
     },
-    "rng": 9,
+    "rng": 1831565823,
     "run": {
       "ending_night": 1,
+      "has.laundry_tag": 1,
+      "has.matchbook": 1,
+      "has.note_12": 1,
+      "rumor.lights": 1,
       "turn": 1
     },
-    "seed": 9,
+    "seed": 10,
     "storyletId": "lobby_vivian",
     "v": 1
   }

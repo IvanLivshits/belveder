@@ -25,13 +25,29 @@ export type QualityDef = z.infer<typeof QualityDefSchema>;
 export const LocationSchema = z.object({ id: Id, label: z.string().optional(), outdoor: z.boolean().default(false) });
 export type Location = z.infer<typeof LocationSchema>;
 
+/** One line of the scene feed. `who` is a key of `world.speakers`. A line carries either its own
+ *  `text` or `rumor: true` (the text of tonight's rumor in that speaker's voice; skipped without one). */
+export const LineSchema = z.object({
+  who: Id,
+  text: z.string().min(1).optional(),
+  rumor: z.boolean().default(false),
+  when: z.array(ConditionSchema).default([]),
+}).refine((l) => (l.text !== undefined) !== l.rumor, "a line needs either text or rumor: true");
+export type Line = z.infer<typeof LineSchema>;
+
+/** A choice is labelled by exactly one of `say` (the player's line, "— …"), `do` (an action, "[…]")
+ *  or `text` (a plain button: doors, old cards). The validator rejects a choice without any. */
 export const ChoiceSchema = z.object({
-  text: z.string().min(1),
+  text: z.string().min(1).optional(),
+  say: z.string().min(1).optional(),
+  do: z.string().min(1).optional(),
   when: z.array(ConditionSchema).default([]),
   effects: z.array(EffectSchema).default([]),
   goto: Id.optional(),
-  /** Shown on its own screen after effects are applied, before goto/endNight. */
+  /** Old format of `reply`: prose after the effects are applied; every paragraph becomes a narrator line. */
   outcome: z.string().min(1).optional(),
+  /** Lines that follow the choice in the feed, after its effects are applied. */
+  reply: z.array(LineSchema).min(1).optional(),
   /** Ends the night right after effects. */
   endNight: z.boolean().default(false),
   /** Skip `rules.onChoice` (e.g. does not cost a turn). */
@@ -41,8 +57,9 @@ export const ChoiceSchema = z.object({
 });
 export type Choice = z.infer<typeof ChoiceSchema>;
 
-/** scene: text + choices. doors: three doors. pledge: pick a false memory to pawn, or a plain choice. */
-export const LayoutSchema = z.enum(["scene", "doors", "pledge"]);
+/** scene: lines + choices. doors: three doors (choices with the same goto are variants of one door).
+ *  pledge: pick a false memory to pawn, or a plain choice. stairs: only the text; the floor buttons come from `world.stairs`. */
+export const LayoutSchema = z.enum(["scene", "doors", "pledge", "stairs"]);
 export type Layout = z.infer<typeof LayoutSchema>;
 
 export const StoryletSchema = z.object({
@@ -56,8 +73,19 @@ export const StoryletSchema = z.object({
   background: Id,
   portrait: Id.optional(),
   title: z.string().optional(),
-  text: z.string().min(1),
-  choices: z.array(ChoiceSchema).min(1),
+  /** Old format of `lines`: prose, every paragraph becomes a narrator line. */
+  text: z.string().min(1).optional(),
+  lines: z.array(LineSchema).min(1).optional(),
+  /** Encounter on the stairs (location `stairs.events`): shown only when the walked path crosses [from, to]. */
+  floors: z.tuple([z.number().int(), z.number().int()]).optional(),
+  choices: z.array(ChoiceSchema),
+  /** Pledge layout only: effects applied on any pledge made from this screen, a memory pair or a choice that
+   *  ends the night (endNight or ending), before the report is built. */
+  pledgeEffects: z.array(EffectSchema).default([]),
+}).superRefine((s, ctx) => {
+  if (s.pledgeEffects.length > 0 && s.layout !== "pledge") ctx.addIssue({ code: "custom", path: ["pledgeEffects"], message: "pledgeEffects belongs to a pledge layout" });
+  if (s.text === undefined && s.lines === undefined) ctx.addIssue({ code: "custom", message: "a storylet needs lines or text" });
+  if (s.choices.length === 0 && s.layout !== "stairs") ctx.addIssue({ code: "custom", path: ["choices"], message: "only a stairs layout may have no choices" });
 });
 export type Storylet = z.infer<typeof StoryletSchema>;
 
@@ -93,6 +121,31 @@ export type NotebookPage = z.infer<typeof NotebookPageSchema>;
 
 /** Templates may use `{label_fake}` and `{label_real}` of the pair. */
 export const LIFE_PLACEHOLDERS = ["label_fake", "label_real"] as const;
+/** An open question of the case. Appears while `when` holds, is closed once `done` holds (both profile-only).
+ *  `target` is the location the question leads to: its door (and its floor on the stairs) gets a paperclip. */
+export const LeadSchema = z.object({
+  id: Id,
+  when: z.array(ConditionSchema).default([]),
+  text: z.string().min(1),
+  target: Id.optional(),
+  done: z.array(ConditionSchema).min(1),
+  /** One line under the struck-through lead. */
+  answer: z.string().min(1),
+});
+export type Lead = z.infer<typeof LeadSchema>;
+
+/** The "who vouched for me" page: `slots` lines filled with `names` in the order their qualities were first set. */
+export const VouchersSchema = z.object({
+  title: z.string().min(1),
+  when: z.array(ConditionSchema).default([]),
+  slots: z.number().int().positive(),
+  empty: z.string().min(1),
+  /** quality id -> the line written when it is set. */
+  names: z.record(QualityIdSchema, z.string().min(1)),
+  footer: z.string().min(1).optional(),
+});
+export type Vouchers = z.infer<typeof VouchersSchema>;
+
 export const NotebookSchema = z.object({
   life: z.object({
     title: z.string().min(1),
@@ -103,6 +156,8 @@ export const NotebookSchema = z.object({
     footer: z.object({ when: z.array(ConditionSchema).default([]), text: z.string().min(1) }),
   }),
   pages: z.array(NotebookPageSchema),
+  leads: z.array(LeadSchema).default([]),
+  vouchers: VouchersSchema.optional(),
 });
 export type Notebook = z.infer<typeof NotebookSchema>;
 
@@ -123,9 +178,21 @@ export const ClockSchema = z.object({
 });
 export type Clock = z.infer<typeof ClockSchema>;
 
+/** One-off repair of a profile saved by an older version of the content. */
+export const MigrationSchema = z.object({
+  when: z.array(ConditionSchema).min(1),
+  effects: z.array(EffectSchema).min(1),
+});
+
 export const RulesSchema = z.object({
   /** Location of the first scene of every night. */
   start: Id,
+  /** Applied when a night starts, after the run bag is reset. */
+  onNightStart: z.array(EffectSchema).default([]),
+  /** The rumor of the very first night (the night counter is 0); later nights draw one at random. */
+  firstNightRumor: Id.optional(),
+  /** Checked when a night starts, all against the profile as it arrived; then the effects of every match are applied. */
+  migrations: z.array(MigrationSchema).default([]),
   clock: ClockSchema.optional(),
   /** Evaluated on the report state: when all hold, the night is recorded as pawned and left out of the final story. */
   pledgedNightWhen: z.array(ConditionSchema).optional(),
@@ -195,6 +262,46 @@ export type Story = z.infer<typeof StorySchema>;
 export const EndingsSchema = z.object({ endings: z.array(EndingSchema), story: StorySchema });
 export type Endings = z.infer<typeof EndingsSchema>;
 
+/** Tonight's rumor: one is drawn when the night starts and sets the run flag `rumor.<id>`; content reacts to the flag. */
+export const RumorSchema = z.object({
+  id: Id,
+  when: z.array(ConditionSchema).default([]),
+  text: z.string().min(1),
+});
+export type Rumor = z.infer<typeof RumorSchema>;
+
+/** Who speaks in the feed. `narrator`: no label, muted. `inner`: the player character's inner voice, italic.
+ *  `written`: the speaker writes instead of talking (notes, napkins), drawn as a scrap of paper. */
+export const SpeakerSchema = z.object({
+  label: z.string(),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "color must be #rrggbb").optional(),
+  style: z.enum(["narrator", "inner", "written"]).optional(),
+});
+export type Speaker = z.infer<typeof SpeakerSchema>;
+
+/** The staircase as one screen: a button per floor, drawn by the engine on a `layout: stairs` storylet. */
+export const StairsSchema = z.object({
+  /** Where the stairs screen lives. */
+  location: Id,
+  /** The quality holding the current floor. */
+  quality: QualityIdSchema,
+  /** floor number -> landing location. */
+  floors: z.record(z.string().regex(/^\d+$/, "floor must be a number"), Id),
+  /** half: ceil(|to − from| / 2) moves, at least 1. */
+  cost: z.literal("half").default("half"),
+  costMods: z.array(z.object({ when: z.array(ConditionSchema).default([]), add: z.number().int() })).default([]),
+  /** A locked floor stays visible with `text`; any group of `open_any` holding opens it. */
+  locks: z.array(z.object({ floor: z.number().int(), open_any: z.array(z.array(ConditionSchema).min(1)).min(1), text: z.string().min(1) })).default([]),
+  /** Location whose storylets are encounters on the way (see `Storylet.floors`). */
+  events: Id.optional(),
+  /** Applied on every walk between floors. */
+  onTravel: z.array(EffectSchema).default([]),
+});
+export type Stairs = z.infer<typeof StairsSchema>;
+
+/** Placeholders the engine fills in `report.progress` besides qualities: leads that appeared and those closed. */
+export const PROGRESS_PLACEHOLDERS = ["leads_done", "leads_total"] as const;
+
 /** Quality ids the engine writes on its own; a world with memories (or evidence, or endings) must declare them. */
 export const RESERVED_QUALITIES = {
   pledgedPrefix: "pledged.",
@@ -203,6 +310,8 @@ export const RESERVED_QUALITIES = {
   foundPrefix: "found.",
   /** Profile flag per ending reached: `endings.<id>`; the only qualities a new case keeps. */
   endingPrefix: "endings.",
+  /** Run flag per rumor: `rumor.<id>` for the one drawn this night. */
+  rumorPrefix: "rumor.",
   /** Run flag set before the report of the night that ended with an ending. */
   endingNight: "ending_night",
   /** Run flag: a real memory came back this night (memories_returned counts the whole game). */
@@ -220,6 +329,8 @@ export const WorldSchema = z.object({
   report: z.object({
     slots: z.array(z.object({ id: Id, label: z.string().optional() })).min(1),
     notes: z.array(ReportNoteSchema).default([]),
+    /** Case progress under the report; texts may use PROGRESS_PLACEHOLDERS. */
+    progress: z.array(ReportNoteSchema).default([]),
   }),
   memories: z.array(MemoryPairSchema).default([]),
   storylets: z.array(StoryletSchema),
@@ -227,6 +338,9 @@ export const WorldSchema = z.object({
   notebook: NotebookSchema.optional(),
   evidence: EvidenceSchema.default({ items: [] }),
   endings: EndingsSchema.optional(),
+  rumors: z.array(RumorSchema).default([]),
+  speakers: z.record(Id, SpeakerSchema).default({}),
+  stairs: StairsSchema.optional(),
   /** Morning screen: `notes` work like report.notes, evaluated on the report state (run flags still set). */
   morning: z.object({ notes: z.array(ReportNoteSchema).default([]) }).default({ notes: [] }),
 });

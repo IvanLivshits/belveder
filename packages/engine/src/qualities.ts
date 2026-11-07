@@ -29,8 +29,3 @@ export function setQuality<S extends Pick<GameState, "run" | "profile">>(state: 
   else bag[id] = clamped;
   return { ...state, [key]: bag };
 }
-
-/** Fresh run bag: every run quality at its default (i.e. empty). */
-export function resetRun<S extends Pick<GameState, "run">>(state: S): S {
-  return { ...state, run: {} };
-}
