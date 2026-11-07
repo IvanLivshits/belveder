@@ -168,12 +168,13 @@ export function pawnableMemories(state: GameState, world: World) {
 }
 
 /** Pawnable pairs with `canReturn`: whether pledging right now would bring the real memory back.
- *  The UI may highlight such an envelope without saying what returns. */
+ *  The UI may highlight such an envelope without saying what returns; a pair's `hint` (if any) is the caption for it. */
 export function pledgeOptions(state: GameState, world: World) {
   return pawnableMemories(state, world).map((pair) => ({
     id: pair.id,
     label: pair.label_fake,
     canReturn: evaluateAll(state, world, pair.returnWhen),
+    ...(pair.hint !== undefined ? { hint: pair.hint } : {}),
   }));
 }
 

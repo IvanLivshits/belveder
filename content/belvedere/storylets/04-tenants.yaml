@@ -271,7 +271,7 @@
       reply:
         - { who: narrator, text: "Он не курит. Кладёт сигарету параллельно краю стола и немного успокаивается." }
     - say: Полиция о вас не узнает
-      when: [seen.sloan_promise == 0]
+      when: [seen.sloan_promise == 0, knows.shortage == 1]
       effects: [seen.sloan_promise = 1, debt.sloan += 1, met.sloan = 1]
       reply:
         - { who: sloan, text: "Сержант Горман узнаёт всё, что ему выгодно." }
@@ -288,19 +288,29 @@
       reply:
         - { who: narrator, text: "Слоун без спора достаёт из ящика копию книги клуба. Слишком быстро." }
         - { who: gut, text: "Март сходится до цента. У таких людей всё сходится." }
+    # Слоун раскрывает не больше одного секрета за ночь (seen.sloan_secret).
     - say: Куда делись четыре тысячи?
-      when: [knows.shortage == 1, debt.sloan >= 1, seen.sloan_cashbox == 0]
-      effects: [seen.sloan_cashbox = 1, has.pawn_ticket = 1, clues += 1]
+      when: [knows.shortage == 1, debt.sloan >= 1, seen.sloan_cashbox == 0, seen.sloan_secret == 0]
+      effects: [seen.sloan_cashbox = 1, seen.sloan_secret = 1, knows.cashbox = 1, has.pawn_ticket = 1, clues += 1]
       reply:
         - { who: sloan, text: "В марте из кассы пропали четыре тысячи. Я нашёл недостачу." }
-        - { who: sloan, text: "Утром пятнадцатого деньги вернулись. До цента. А человек — нет." }
+        - { who: sloan, text: "Утром шестнадцатого деньги вернулись. До цента. А человек — нет." }
         - { who: narrator, text: "Он кладёт на стол квитанцию ломбарда: «Предмет залога: имя»." }
+    # Настоящую книгу Слоун отдаёт только тому, кто уже рисковал ради него (vouch.sloan),
+    # и только если Ник видел подделку. Иначе он объясняет, почему нет.
     - say: Молчание за настоящую копию
-      when: [knows.shortage == 1, debt.sloan >= 2, has.ledger_true == 0]
-      effects: [has.ledger_true = 1, clues += 1, met.sloan_deal = 1]
+      when: [knows.shortage == 1, has.ledger_true == 0, has.ledger_fake == 1, vouch.sloan == 1, seen.sloan_secret == 0]
+      effects: [has.ledger_true = 1, seen.sloan_secret = 1, clues += 1, met.sloan_deal = 1]
       reply:
+        - { who: sloan, text: "Вы соврали ради меня полицейскому. Тогда и я рискну." }
         - { who: narrator, text: "Слоун отодвигает шкаф. За ним вторая книга, перевязанная бечёвкой." }
-        - { who: sloan, text: "В архиве лежит та, что для Гормана. Эта — для вас. Март, сорок первая строка." }
+        - { who: sloan, text: "Эта — настоящая. Вторую такую же я спрятал в архиве. На случай, если со мной что-то случится." }
+    - say: Молчание за настоящую копию
+      when: [knows.shortage == 1, has.ledger_true == 0, has.ledger_fake == 1, vouch.sloan == 0, seen.sloan_refused == 0]
+      effects: [seen.sloan_refused = 1]
+      reply:
+        - { who: sloan, text: "Молчание — это слово. Слова у вас пока ничего не стоят." }
+        - { who: sloan, text: "Рискните ради меня хоть раз. Тогда поговорим." }
     - do: Уйти
       free: true
       goto: floor_04

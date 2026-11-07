@@ -218,6 +218,9 @@ export const MemoryPairSchema = z.object({
   label_real: z.string().min(1),
   /** If all hold when the fake memory is pawned, the real flag is set to 1. */
   returnWhen: z.array(ConditionSchema).default([]),
+  /** Caption under the envelope while `returnWhen` holds: what in tonight's finds speaks for this memory
+   *  (a pair without an object, like two favours, is otherwise given away as spare). Without it the UI uses a generic one. */
+  hint: z.string().min(1).optional(),
 });
 
 /** One card of the evidence folder. `flag` is a run quality; the first time it becomes 1 the engine

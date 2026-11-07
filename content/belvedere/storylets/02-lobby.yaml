@@ -96,7 +96,7 @@
 - id: dolly_kept
   location: lobby
   priority: 6
-  when: [seen.dolly_ask == 1, seen.dolly_kept == 0, seen.pool_dinner == 0, seen.went_up == 1, turn <= 6, met.dolly_kept == 0]
+  when: [seen.dolly_ask == 1, seen.dolly_kept == 0, seen.went_up == 1, turn <= 6, met.dolly_kept == 0]
   background: lobby
   portrait: dolly_trust
   title: Вестибюль
@@ -119,7 +119,7 @@
 - id: dolly_kept_again
   location: lobby
   priority: 6
-  when: [seen.dolly_ask == 1, seen.dolly_kept == 0, seen.pool_dinner == 0, seen.went_up == 1, turn <= 6, met.dolly_kept == 1]
+  when: [seen.dolly_ask == 1, seen.dolly_kept == 0, seen.went_up == 1, turn <= 6, met.dolly_kept == 1]
   background: lobby
   portrait: dolly_trust
   title: Вестибюль
@@ -138,7 +138,7 @@
 - id: dolly_waited
   location: lobby
   priority: 6
-  when: [seen.dolly_ask == 1, seen.pool_dinner == 1, seen.dolly_kept == 0, seen.dolly_waited == 0]
+  when: [seen.dolly_ask == 1, seen.pool_dinner == 1, seen.dolly_kept == 0, seen.dolly_waited == 0, turn >= 7]
   background: lobby
   portrait: dolly_suspicion
   title: Вестибюль
@@ -168,7 +168,7 @@
       effects: [seen.dolly_invite = 1, knows.invitation = 1, clues += 1]
       reply:
         - { who: dolly, text: "Двенадцатый. Там Владелец. Там выкупают то, что заложили." }
-        - { who: dolly, text: "Наверх без приглашения не ходят. Хейла пригласили. Тебя — когда за тебя поручатся трое." }
+        - { who: dolly, text: "Наверх без приглашения не ходят. Хейла пригласили. Тебя — когда поручатся трое. Иначе только как вор." }
         - { who: gut, text: "Трое жильцов. Значит, придётся стучать в двери." }
     - say: Сколько дают за имя?
       when: [seen.dolly_hale == 0]
@@ -210,7 +210,7 @@
       effects: [seen.dolly_invite = 1, knows.invitation = 1, clues += 1]
       reply:
         - { who: dolly, text: "Наверх без приглашения не ходят. Хейла пригласили." }
-        - { who: dolly, text: "Тебя пустят, когда за тебя поручатся трое." }
+        - { who: dolly, text: "Тебя пустят, когда за тебя поручатся трое. Без приглашения — только как вор." }
     # Сигаретами доверие поднимается только до 2. Дальше Долли объясняет, как его заслужить.
     - do: Угостить сигаретой
       when: [seen.dolly_cig == 0, cigarettes >= 1, dolly_trust >= 2]
@@ -220,7 +220,7 @@
         - { who: dolly, text: "У меня полкармана твоих сигарет. Сигаретой берут задаток, Ник." }
         - { who: dolly, text: "Доверие тут не покупают. Я смотрю, что ты делаешь для дома." }
     - do: Попросить ключ от архива на четвёртом
-      when: [has.archive_key == 0]
+      when: [has.archive_key == 0, visited.floor4.service >= 1]
       effects: [has.archive_key = 1]
       reply:
         - { who: narrator, text: "Долли, не глядя, снимает с гвоздя ключ с биркой «4 — архив»." }
@@ -256,7 +256,7 @@
       effects: [seen.dolly_invite = 1, knows.invitation = 1, clues += 1]
       reply:
         - { who: dolly, text: "Наверх без приглашения не ходят. Хейла пригласили." }
-        - { who: dolly, text: "Тебя пустят, когда за тебя поручатся трое." }
+        - { who: dolly, text: "Тебя пустят, когда за тебя поручатся трое. Без приглашения — только как вор." }
     - do: Угостить сигаретой
       when: [seen.dolly_cig == 0, cigarettes >= 1, dolly_trust < 2]
       effects: [seen.dolly_cig = 1, cigarettes -= 1, dolly_trust += 1]
@@ -385,7 +385,7 @@
   choices:
     - do: Открыть ящик
       when: [seen.mailbox_open == 0]
-      effects: [seen.mailbox_open = 1, seen.mailbox_name = 1, clues += 1]
+      effects: [seen.mailbox_open = 1, seen.mailbox_name = 1, seen.mailbox_paid = 1, clues += 1]
       reply:
         - { who: narrator, text: "«Аренда комнаты 3-В оплачена до конца дела. Не благодарите. — В.»" }
         - { who: gut, text: "Тот же почерк. Только теперь ты знаешь, чьё это дело." }

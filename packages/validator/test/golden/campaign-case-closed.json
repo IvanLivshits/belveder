@@ -1,5 +1,5 @@
 {
-  "digest": "7e461b0c3393bb12b2865333532e4747172553824e85f9c0943cdf0fbfe4adef",
+  "digest": "0d0fd784cfffba55edf7c4de181f4ee2f24b7ea5424ffac102172dbdf1d9aed9",
   "snapshot": {
     "ending": "case_closed",
     "history": {
@@ -21,14 +21,14 @@
         },
         {
           "night": 2,
-          "pair": "ledger",
+          "pair": "cashbox",
           "pledged": false,
           "report": {
             "client": "client_ring",
             "entry": "entry_kept",
-            "finding": "finding_true_ledger",
-            "price": "price_senator_dog",
-            "twist": "twist_ledger_returned",
+            "finding": "finding_ticket",
+            "price": "price_sheriff",
+            "twist": "twist_cashbox_returned",
             "witnesses": "witnesses_sloan"
           },
           "rumor": "pool_pie",
@@ -36,14 +36,14 @@
         },
         {
           "night": 3,
-          "pair": "cashbox",
+          "pair": "ledger",
           "pledged": false,
           "report": {
-            "client": "client_return",
+            "client": "client_cashbox",
             "entry": "entry_tea",
-            "finding": "finding_ticket",
-            "price": "price_sheriff",
-            "twist": "twist_cashbox_returned",
+            "finding": "finding_true_ledger",
+            "price": "price_senator_dog",
+            "twist": "twist_ledger_returned",
             "witnesses": "witnesses_sloan"
           },
           "rumor": "gorman_inside",
@@ -53,7 +53,7 @@
           "night": 4,
           "pledged": false,
           "report": {
-            "client": "client_cashbox",
+            "client": "client_return",
             "entry": "entry_default",
             "finding": "finding_pass",
             "price": "price_final",
@@ -66,8 +66,8 @@
       ],
       "pledges": [
         "ring",
-        "ledger",
-        "cashbox"
+        "cashbox",
+        "ledger"
       ],
       "vouchers": [
         "vouch.sloan",
@@ -78,8 +78,8 @@
     "location": "tenant_12",
     "log": [
       {
-        "choice": 1,
-        "storylet": "office_cashbox"
+        "choice": 0,
+        "storylet": "office_ledger"
       },
       {
         "choice": 3,
@@ -168,16 +168,18 @@
     "pendingChoice": null,
     "phase": "ending",
     "profile": {
-      "content_version": 17,
+      "content_version": 20,
       "dolly_trust": 5,
       "endings.case_closed": 1,
       "found.cordelia_pass": 1,
       "found.laundry_tag": 1,
+      "found.ledger_fake": 1,
       "found.ledger_true": 1,
       "found.matchbook": 1,
       "found.note_12": 1,
       "found.pawn_ticket": 1,
       "found.ring": 1,
+      "knows.cashbox": 1,
       "knows.club": 1,
       "knows.denver": 1,
       "knows.invitation": 1,
@@ -205,6 +207,7 @@
       "met.pool": 1,
       "met.sloan": 1,
       "met.sloan_deal": 1,
+      "met.stairs_chalk": 1,
       "met.vivian": 1,
       "nights": 4,
       "paths.freight_lift": 1,
@@ -220,7 +223,7 @@
       "vouches": 3
     },
     "report": {
-      "client": "client_cashbox",
+      "client": "client_return",
       "entry": "entry_default",
       "finding": "finding_pass",
       "price": "price_final",
@@ -238,7 +241,7 @@
       "has.matchbook": 1,
       "has.note_12": 1,
       "rumor.pool_pie": 1,
-      "seen.client_cashbox": 1,
+      "seen.client_return": 1,
       "seen.cordelia_vouched": 1,
       "seen.dolly_ask": 1,
       "seen.eddie": 1,

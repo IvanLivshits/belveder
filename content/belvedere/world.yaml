@@ -175,6 +175,11 @@ rules:
     - { when: [content_version < 16], effects: [content_version = 16] }
   # v17: старые профили начинают с nights_lost = 0, ставить нечего — только штамп.
     - { when: [content_version < 17], effects: [content_version = 17] }
+  # v20: воспоминания возвращаются по папке улик (found.*), «голос» — по met.ruby_voice: старым профилям,
+  # которые уже слышали Руби (пластинка в папке или сцена узнавания), флаг ставится задним числом.
+    - { when: [content_version < 20, found.ruby_record == 1], effects: [met.ruby_voice = 1] }
+    - { when: [content_version < 20, met.ruby_recognized == 1], effects: [met.ruby_voice = 1] }
+    - { when: [content_version < 20], effects: [content_version = 20] }
   # Ночь кончается только выбором на экране залога (endNight).
   # Перехваты проверяются после каждого выбора, срабатывает первый подходящий.
   interrupts:
@@ -193,50 +198,58 @@ memories:
     real: mem.true.ring
     label_fake: Морская пехота, Тихий океан
     label_real: "Кольцо: свадьба на Канал-стрит"
-    returnWhen: [has.ring == 1]
+    returnWhen: [found.ring == 1]
+    hint: "Кольцо в кармане тяжелеет. Тихий океан вдруг кажется чужим, как плохо выученная роль."
   - id: lantern
     fake: mem.false.mcginnis
     real: mem.true.lantern
     label_fake: Бар «Макгиннис», где меня все знают
     label_real: "«Синий фонарь»: бухгалтерия, Руби на сцене"
-    returnWhen: [has.ruby_record == 1]
+    returnWhen: [found.ruby_record == 1]
+    hint: "Пластинка Руби. «Макгиннис», где тебя все знают… А может, тебя знали в другом баре?"
   - id: ledger
     fake: mem.false.senator_dog
     real: mem.true.ledger
-    label_fake: Первое дело — собака сенатора
+    label_fake: Первое дело — бриллианты сенатора
     label_real: "Цифры: недостача в 4 000"
-    returnWhen: [has.ledger_true == 1]
+    returnWhen: [found.ledger_true == 1]
+    hint: "Настоящая книга клуба. Твоё «первое дело» вдруг пахнет бухгалтерией, а не бриллиантами."
   - id: hospital
     fake: mem.false.lorraine
     real: mem.true.hospital
     label_fake: Лорейн, ушедшая к трубачу
     label_real: "Больничный коридор: ночь операции"
-    returnWhen: [has.medical_file == 1]
+    returnWhen: [found.medical_file == 1]
+    hint: "Медкарта Вивиан. Лорейн ушла к трубачу. А кто тогда стоял ночью в больничном коридоре?"
   - id: voice
     fake: mem.false.father
     real: mem.true.voice
     label_fake: Отец-патрульный, погибший на посту
     label_real: Голос Вивиан, зовущий по имени
     # По библии ещё «или запись эфира Беннета» — нужен OR, пока только Руби.
-    returnWhen: [debt.ruby >= 2]
+    returnWhen: [met.ruby_voice == 1]
+    hint: "Ты слышал голос Руби с пластинки. Голос, который ты помнишь с детства, — точно отцовский?"
   - id: cashbox
     fake: mem.false.sheriff
     real: mem.true.cashbox
     label_fake: Пёс по кличке Шериф
     label_real: "Касса клуба: ночь, когда я взял деньги"
-    returnWhen: [has.pawn_ticket == 1, seen.sloan_cashbox == 1]
+    returnWhen: [found.pawn_ticket == 1]
+    hint: "Квитанция ломбарда: «Предмет залога: имя». Пёс по кличке Шериф — а был ли пёс?"
   - id: name
     fake: mem.false.license
     real: mem.true.name
     label_fake: Лицензия частного детектива № 2214
     label_real: Имя
-    returnWhen: [has.signature_photo == 1, memories_returned >= 4]
+    returnWhen: [found.signature_photo == 1, memories_returned >= 4]
+    hint: "Негатив: женщина с тростью подписывает книгу. Лицензия № 2214 — на чьё имя её выписали?"
   - id: secret
     fake: mem.false.scar
     real: mem.true.secret
     label_fake: Шрам от ножа в Бруклине
     label_real: "Тайное: что заложила Вивиан"
-    returnWhen: [seen.vault13 == 1, mem.true.name == 1]
+    returnWhen: [found.vivian_envelope == 1, mem.true.name == 1]
+    hint: "Конверт Вивиан. Шрам из Бруклина — или то, что случилось той ночью у чёрной стойки?"
 
 report:
   slots:

@@ -1,5 +1,5 @@
 {
-  "digest": "d8ebe04a0e043cfe46dc4c7dde257a11c2afba83004bf36aadd7856596ba71db",
+  "digest": "1afab69d3a49a59d69b63d05b91aa7f48a5067124c3f5dd8bc4695575fb9818b",
   "snapshot": {
     "ending": "signature_truth",
     "history": {
@@ -21,14 +21,14 @@
         },
         {
           "night": 2,
-          "pair": "ledger",
+          "pair": "cashbox",
           "pledged": false,
           "report": {
             "client": "client_ring",
             "entry": "entry_kept",
-            "finding": "finding_true_ledger",
-            "price": "price_senator_dog",
-            "twist": "twist_ledger_returned",
+            "finding": "finding_ticket",
+            "price": "price_sheriff",
+            "twist": "twist_cashbox_returned",
             "witnesses": "witnesses_sloan"
           },
           "rumor": "pool_pie",
@@ -36,14 +36,14 @@
         },
         {
           "night": 3,
-          "pair": "cashbox",
+          "pair": "ledger",
           "pledged": false,
           "report": {
-            "client": "client_return",
+            "client": "client_cashbox",
             "entry": "entry_tea",
-            "finding": "finding_ticket",
-            "price": "price_sheriff",
-            "twist": "twist_cashbox_returned",
+            "finding": "finding_true_ledger",
+            "price": "price_senator_dog",
+            "twist": "twist_ledger_returned",
             "witnesses": "witnesses_sloan"
           },
           "rumor": "gorman_inside",
@@ -54,7 +54,7 @@
           "pair": "hospital",
           "pledged": false,
           "report": {
-            "client": "client_cashbox",
+            "client": "client_return",
             "entry": "entry_lift",
             "finding": "finding_medical_file",
             "price": "price_lorraine",
@@ -169,8 +169,8 @@
       ],
       "pledges": [
         "ring",
-        "ledger",
         "cashbox",
+        "ledger",
         "hospital",
         "lantern",
         "voice",
@@ -198,12 +198,13 @@
     "pendingChoice": null,
     "phase": "ending",
     "profile": {
-      "content_version": 17,
+      "content_version": 20,
       "dolly_trust": 5,
       "endings.signature_truth": 1,
       "found.cordelia_pass": 1,
       "found.facade_photo": 1,
       "found.laundry_tag": 1,
+      "found.ledger_fake": 1,
       "found.ledger_true": 1,
       "found.matchbook": 1,
       "found.medical_file": 1,
@@ -213,6 +214,7 @@
       "found.ruby_record": 1,
       "found.signature_photo": 1,
       "found.vivian_envelope": 1,
+      "knows.cashbox": 1,
       "knows.club": 1,
       "knows.denver": 1,
       "knows.fire": 1,
@@ -257,8 +259,10 @@
       "met.office_voice": 1,
       "met.ruby": 1,
       "met.ruby_recognized": 1,
+      "met.ruby_voice": 1,
       "met.sloan": 1,
       "met.sloan_deal": 1,
+      "met.stairs_chalk": 1,
       "met.vivian": 1,
       "nights": 11,
       "nights_lost": 2,
