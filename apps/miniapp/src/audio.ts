@@ -158,6 +158,12 @@ const absolute = (url: string) => new URL(url, location.href).href;
 /** Reads one of FILES through the Cache API; a miss goes to the network at low priority (the pictures of the
  *  first screens matter more) and is stored for the next cold start. Without the Cache API it is a plain fetch. */
 async function fetchBytes(url: string): Promise<ArrayBuffer> {
+  // The dev server names files without a hash, so a replaced bank would still be served from the store: skip it.
+  if (import.meta.env.DEV) {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
+    return res.arrayBuffer();
+  }
   let cache: Cache | undefined;
   try {
     cache = await caches.open(CACHE);
