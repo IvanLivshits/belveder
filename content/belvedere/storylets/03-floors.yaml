@@ -76,8 +76,16 @@
   background: landing_04
   title: Площадка 4
   lines:
-    - { who: narrator, text: "Из-под двери аудитора зелёный свет. На служебной двери новый медный замок." }
-    - { who: narrator, text: "Служебная дверь приоткрыта. Внутри темно.", when: [rumor.sloan_lamp == 1] }
+    # Состояние двух дверей зависит от слуха и от того, что Ник уже сделал за ночь.
+    # Дверь аудитора: в ночь sloan_lamp у Слоуна темно, пока Ник к нему не зашёл (он уже вернулся с лампой).
+    - { who: narrator, text: "Из-под двери аудитора зелёный свет.", when: [rumor.sloan_lamp == 0] }
+    - { who: narrator, text: "Под дверью аудитора темно. Ни шагов, ни арифмометра.", when: [rumor.sloan_lamp == 1, seen.sloan_met == 0] }
+    - { who: narrator, text: "Из-под двери аудитора снова зелёный свет. Новая лампа ярче старой.", when: [rumor.sloan_lamp == 1, seen.sloan_met == 1] }
+    # Служебная дверь (архив): ровно одно описание на каждое состояние.
+    - { who: narrator, text: "Служебная дверь приоткрыта. Новый медный замок висит на одной дужке. Внутри темно.", when: [rumor.sloan_lamp == 1] }
+    - { who: narrator, text: "На служебной двери новый медный замок.", when: [rumor.sloan_lamp == 0, seen.archive_open == 0, has.archive_key == 0] }
+    - { who: narrator, text: "На служебной двери новый медный замок. Ключ от него лежит у тебя в кармане, тяжёлый, как чужой.", when: [rumor.sloan_lamp == 0, has.archive_key == 1] }
+    - { who: narrator, text: "Медный замок на служебной двери в свежих царапинах. Твоих.", when: [rumor.sloan_lamp == 0, seen.archive_open == 1, has.archive_key == 0] }
   choices:
     - text: Кабинет аудитора
       when: [suspicion < 5]

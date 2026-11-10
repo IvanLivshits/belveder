@@ -2,7 +2,7 @@
  *  If content changes on purpose: UPDATE_GOLDEN=1 bun test, one line per golden in docs/golden-changelog.md. */
 import { describe, expect, test } from "bun:test";
 import {
-  choiceCost, choose, clockTime, continueOutcome, currentNotes, currentReport, currentRumor, currentScene, emptyProfile, endingView, evidenceView, extendFeed, getQuality,
+  choiceCost, choose, clockTime, setQuality, continueOutcome, currentNotes, currentReport, currentRumor, currentScene, emptyProfile, endingView, evidenceView, extendFeed, getQuality,
   morningNotes, newCase, newNight, notebookView, openFeed, pledge, pledgeOptions, profileOf, progressNotes, storyView, travel,
   type GameState, type Profile,
 } from "@belvedere/engine";
@@ -435,6 +435,27 @@ describe("belvedere: the rumor of the night", () => {
     expect(q(s, "suspicion")).toBe(1); // only the silent walk past Dolly
     const locked = route(walk(route(night(profileOf(ringNight()), 7, "eddie_blue"), QUICK_IN), 4), ["Архив"]);
     expect(locked.storyletId).toBe("archive_locked");
+  });
+
+  test("v23: landing 4 shows exactly one line per door in every state of the rumor, the key, the pick and Sloan's visit", () => {
+    const base = walk(route(night(profileOf(ringNight()), 7, "sloan_lamp"), QUICK_IN), 4);
+    expect(base.storyletId).toBe("floor_04_doors");
+    const quiet: GameState = { ...base, run: Object.fromEntries(Object.entries(base.run).filter(([k]) => !k.startsWith("rumor."))) };
+    for (const lamp of [0, 1]) for (const key of [0, 1]) for (const opened of [0, 1]) for (const met of [0, 1]) {
+      let s = lamp ? base : quiet;
+      s = setQuality(s, world, "has.archive_key", key);
+      s = setQuality(s, world, "seen.archive_open", opened);
+      s = setQuality(s, world, "seen.sloan_met", met);
+      const texts = feedTexts(s);
+      const why = `lamp=${lamp} key=${key} opened=${opened} met=${met}: ${texts.join(" | ")}`;
+      expect(texts.length, why).toBe(2);
+      expect(texts.filter((t) => t.includes("аудитора")).length, why).toBe(1);
+      expect(texts.filter((t) => t.includes("лужебн")).length, why).toBe(1);
+      if (lamp) expect(texts[1], why).toContain("приоткрыта");
+      else expect(texts[1], why).not.toContain("приоткрыта");
+      if (lamp && !met) expect(texts[0], why).toContain("темно");
+      else expect(texts[0], why).toContain("зелёный свет");
+    }
   });
 
   test("flickering lights: the archive lock is picked in the dark without suspicion", () => {
