@@ -1,12 +1,14 @@
-/* Belvedere ui-kit. Telegram sets --tg-theme-*; fallbacks are the noir palette. */
+/* Belvedere ui-kit. The noir palette is fixed: the game is always night, so Telegram's --tg-theme-* are ignored
+ * (a client's blue theme used to replace the brass and wash out the buttons). */
 :root {
-  --bg: var(--tg-theme-bg-color, #0b0d12);
-  --panel: var(--tg-theme-secondary-bg-color, #14171f);
-  --text: var(--tg-theme-text-color, #e8e2d3);
-  --hint: var(--tg-theme-hint-color, #8d8775);
-  --accent: var(--tg-theme-button-color, #c9a24a);
-  --accent-text: var(--tg-theme-button-text-color, #0b0d12);
-  --link: var(--tg-theme-link-color, #d7b55e);
+  color-scheme: dark;
+  --bg: #0b0d12;
+  --panel: #14171f;
+  --text: #e8e2d3;
+  --hint: #8d8775;
+  --accent: #c9a24a;
+  --accent-text: #0b0d12;
+  --link: #d7b55e;
   --app-height: var(--tg-viewport-stable-height, 100vh);
   --font: Georgia, "Times New Roman", serif;
 }
@@ -86,7 +88,8 @@ button { font: inherit; }
 .choices { display: flex; flex-direction: column; gap: 8px; }
 .choice {
   width: 100%; text-align: left; padding: 11px 14px; border-radius: 10px;
-  border: 1px solid rgba(201,162,74,0.35); background: rgba(11,13,18,0.75); color: var(--text); cursor: pointer;
+  border: 1px solid rgba(201,162,74,0.55); background: rgba(201,162,74,0.08); color: var(--text); cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
   transition: background 0.12s, transform 0.08s;
 }
 .choice:active { transform: scale(0.985); background: rgba(201,162,74,0.18); }
@@ -150,6 +153,12 @@ button { font: inherit; }
 /* The clock's label carries the move count: it is never cut, the others give way. */
 .hud__item--whole { flex: none; }
 .hud__label { font-size: clamp(7px, 2.2cqw, 9px); letter-spacing: clamp(0.02em, 0.25cqw, 0.07em); text-transform: uppercase; color: var(--hint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Phone-wide columns: six labels plus three icons only fit in one row with tight tracking and gaps. */
+@container (max-width: 440px) {
+  .hud { gap: 3px; padding-left: 12px; padding-right: 12px; }
+  .hud::after { left: 12px; right: 12px; }
+  .hud__label { font-size: 8px; letter-spacing: 0; }
+}
 .hud__num { display: block; font-size: 14px; line-height: 14px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
 .hud__num small { font-size: 10px; font-weight: 400; color: var(--hint); }
 .hud__pips { display: flex; gap: 2px; height: 14px; align-items: center; }
