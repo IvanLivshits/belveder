@@ -8,7 +8,7 @@ export function seedRng(seed: number): RngState {
 
 /** Returns a float in [0, 1) and the next RNG state. */
 export function nextFloat(state: RngState): [value: number, next: RngState] {
-  let a = (state + 0x6d2b79f5) >>> 0;
+  const a = (state + 0x6d2b79f5) >>> 0;
   let t = a;
   t = Math.imul(t ^ (t >>> 15), t | 1);
   t ^= t + Math.imul(t ^ (t >>> 7), t | 61);

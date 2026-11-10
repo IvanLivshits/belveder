@@ -1,6 +1,6 @@
 /** Every quality used in a condition/effect must be declared in world.qualities: storylets and their lines,
  *  rules, report, notebook (pages, leads, vouchers), rumors, stairs, endings. rules.start must be a declared location. */
-import { parseCondition, parseEffect, qualityMatches, type World } from "@belvedere/content-schema";
+import { parseCondition, parseEffect, qualityMatches } from "@belvedere/content-schema";
 import { error, type Issue, type Rule } from "./types";
 
 export const check: Rule = (world) => {

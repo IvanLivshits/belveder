@@ -8,7 +8,7 @@ const toVault = (p: Profile, seed = 3) => { let s = newNight(p, w, seed); s = ch
 
 describe("night history", () => {
   test("every finished night is recorded: pledged flag, pawned pair, report ids and placeholder values", () => {
-    let s = pledge(toVault({ v: 1, profile: { trust: 1 } }), w, "a"); // heat 2, a returns
+    const s = pledge(toVault({ v: 1, profile: { trust: 1 } }), w, "a"); // heat 2, a returns
     expect(s.history).toEqual({ nights: [{ night: 1, pledged: false, pair: "a", report: { summary: "sum_returned" }, values: {} }], pledges: ["a"] });
     let n = choose(toVault(profileOf(s)), w, 0); // pledge the night as a whole
     expect(n.history.nights[1]).toEqual({ night: 2, pledged: true, report: { summary: "sum_trust" }, values: {} });

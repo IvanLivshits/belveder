@@ -30,6 +30,8 @@ export function SceneCard({ title, entries, shown, onReveal, children }: SceneCa
     if (el) el.scrollTop = el.scrollHeight;
   }, [shown, settled]);
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: a tap anywhere skips the typewriter; the choices below are real buttons
+    // biome-ignore lint/a11y/useKeyWithClickEvents: same, the panel is not a control
     <section class="panel" ref={panel} onClick={settled ? undefined : () => onReveal(entries.length)}>
       <div class="panel__scroll">
         {title && <h2 class="scene__title">{title}</h2>}

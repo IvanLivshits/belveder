@@ -31,7 +31,7 @@ declare global {
 const webApp = typeof window !== "undefined" ? window.Telegram?.WebApp : undefined;
 
 /** True only inside a real Telegram client (initData is empty in a plain browser). */
-export const isTelegram = Boolean(webApp && webApp.initData);
+export const isTelegram = Boolean(webApp?.initData);
 
 export function initTelegram(): void {
   if (!webApp || !isTelegram) return;

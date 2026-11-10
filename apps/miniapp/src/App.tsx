@@ -304,7 +304,7 @@ export function App() {
       return { label, value, max: q.max };
     });
   const ev = world.evidence.items.length > 0 ? evidenceView(state, world) : null;
-  const evidenceUnread = ev !== null && ev.items.some((i) => !ui.evidenceSeen.includes(i.id));
+  const evidenceUnread = ev?.items.some((i) => !ui.evidenceSeen.includes(i.id));
   const openEvidence = ev
     ? () => {
         const ids = ev.items.map((i) => i.id);
@@ -314,7 +314,7 @@ export function App() {
     : undefined;
   const nb = notebookView(state, world);
   const leadsUnread = nb !== null && leadIds(nb).some((id) => !ui.leadsSeen.includes(id));
-  const unread = leadsUnread || (nb !== null && nb.pages.some((p) => !ui.pagesRead.includes(p.id)));
+  const unread = leadsUnread || nb?.pages.some((p) => !ui.pagesRead.includes(p.id));
   // The notebook opens on the leads when there is a new one (or nothing new at all), on the pages otherwise.
   const openNotebook = nb ? () => showNotebook(nb, leadIds(nb).length > 0 && (leadsUnread || !unread) ? "leads" : "pages") : undefined;
   const rumor = currentRumor(state, world);

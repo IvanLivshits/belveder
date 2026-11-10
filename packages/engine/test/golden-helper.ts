@@ -7,7 +7,7 @@ export async function expectGolden(dir: string, name: string, value: unknown): P
   const file = `${dir}/golden/${name}.json`;
   const actual = { digest: await digest(value), snapshot: value };
   if (process.env["UPDATE_GOLDEN"]) {
-    await Bun.write(file, JSON.stringify(JSON.parse(canonicalJson(actual)), null, 2) + "\n");
+    await Bun.write(file, `${JSON.stringify(JSON.parse(canonicalJson(actual)), null, 2)}\n`);
     return;
   }
   const f = Bun.file(file);
