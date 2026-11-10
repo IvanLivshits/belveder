@@ -5,7 +5,7 @@ import {
 import { RESERVED_QUALITIES } from "@belvedere/content-schema";
 import { type AnimationKind, Backdrop, ChoiceList, ConfirmSheet, DoorPicker, EndingPage, EvidencePage, Hint, MorningPage, NotebookPage, PledgePicker, QualityBar, ReportPage, SceneCard, StairsPicker, StoryPage, TitleScreen, type LifeLineItem } from "@belvedere/ui-kit";
 import { useCallback, useEffect, useState } from "preact/hooks";
-import { initAudio, isSoundOn, playCue, playLighter, setSoundOn, setTension, stopCue } from "./audio";
+import { holdAudio, initAudio, isSoundOn, playCue, playLighter, setSoundOn, setTension, stopCue } from "./audio";
 import { loadContent, type Content } from "./content";
 import { saves } from "./saves";
 import { EMPTY_UI, type UiMeta } from "./storage";
@@ -89,7 +89,10 @@ export function App() {
 
   // Wipes every device: tombstones go to the cloud, other clients pick them up on their next load.
   const reset = useCallback(async () => {
-    if (!(await confirmDialog("Стереть весь прогресс на всех устройствах? Ночи, воспоминания и блокнот начнутся заново."))) return;
+    const release = holdAudio(); // a browser's confirm blocks the page, and the music would loop on the last buffer
+    await new Promise((done) => setTimeout(done, 50)); // let the audio context really suspend before the page blocks
+    const ok = await confirmDialog("Стереть весь прогресс на всех устройствах? Ночи, воспоминания и блокнот начнутся заново.").finally(release);
+    if (!ok) return;
     const fresh = saves.resetAll();
     setProfile(emptyProfile());
     setState(null);

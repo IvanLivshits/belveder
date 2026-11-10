@@ -54,6 +54,8 @@ let gestured = false;
 let enabled = readEnabled();
 /** The app is on screen: visible page and, in Telegram, not minimised (see onActiveChange). */
 let active = !document.hidden;
+/** How many blocking dialogs are open (see `holdAudio`). */
+let held = 0;
 /** The tension level FMOD has now (the blending between levels is FMOD's job). */
 let tension = 0;
 /** The one-shot sound that is playing now (the music is paused meanwhile). */
@@ -93,7 +95,7 @@ function teardown(e: Engine | null): void {
 function apply(inGesture = false): void {
   const e = engine;
   if (!e) return;
-  const shouldRun = gestured && enabled && active && (began || inGesture);
+  const shouldRun = gestured && enabled && active && held === 0 && (began || inGesture);
   try {
     if (shouldRun && !running) {
       if (!began) {
@@ -325,6 +327,20 @@ export function playCue(id: string): void {
  *  last one that had paused it. */
 export function stopCue(id: string): void {
   if (engine) endCue(engine, id, true);
+}
+
+/** Silences the mixer until the returned function is called. FMOD mixes on the main thread, so a blocking
+ *  `window.confirm` would freeze it on the last buffer and the music would loop as a stuck record. */
+export function holdAudio(): () => void {
+  held++;
+  apply();
+  let done = false;
+  return () => {
+    if (done) return;
+    done = true;
+    held--;
+    apply();
+  };
 }
 
 export function isSoundOn(): boolean {
