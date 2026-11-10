@@ -23,10 +23,14 @@ export interface QualityBarProps {
   /** Repeats tonight's rumor; the button is rendered only when given. */
   onRumor?: (() => void) | undefined;
   rumorLabel?: string | undefined;
+  /** Switches the sound; the button is rendered only when given. */
+  onSound?: (() => void) | undefined;
+  soundOn?: boolean | undefined;
+  soundLabel?: string | undefined;
 }
 
 /** Top HUD strip: label in small caps, value as pips, bar or number. Pure presentation, no quality names. */
-export function QualityBar({ items, onNotebook, badge, notebookLabel, onEvidence, evidenceBadge, evidenceLabel, onRumor, rumorLabel }: QualityBarProps) {
+export function QualityBar({ items, onNotebook, badge, notebookLabel, onEvidence, evidenceBadge, evidenceLabel, onRumor, rumorLabel, onSound, soundOn, soundLabel }: QualityBarProps) {
   return (
     <div class="hud">
       {onNotebook && (
@@ -47,6 +51,14 @@ export function QualityBar({ items, onNotebook, badge, notebookLabel, onEvidence
         <button class="hud__book hud__folder" type="button" onClick={onRumor} aria-label={rumorLabel ?? "rumor"} title={rumorLabel}>
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M4 5h16v11H11l-4 3.5V16H4zM8 9h8M8 12h5" />
+          </svg>
+        </button>
+      )}
+      {onSound && (
+        <button class="hud__book hud__folder" type="button" onClick={onSound} aria-label={soundLabel ?? "sound"} aria-pressed={soundOn === true} title={soundLabel}>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" />
+            {soundOn ? <path d="M15.5 9.5a3.5 3.5 0 0 1 0 5M17.8 7.2a7 7 0 0 1 0 9.6" /> : <path d="M16 9.5l5 5M21 9.5l-5 5" />}
           </svg>
         </button>
       )}

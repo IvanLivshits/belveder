@@ -51,6 +51,7 @@ export function App() {
   const [feed, setFeed] = useState<Feed>({ location: "", entries: [] });
   const [shown, setShown] = useState(0);
   const [soundOn, setSoundOnState] = useState(isSoundOn);
+  const toggleSound = () => { setSoundOn(!soundOn); setSoundOnState(!soundOn); };
 
   useEffect(() => {
     (async () => {
@@ -199,7 +200,7 @@ export function App() {
           onContinue={() => setScreen({ kind: "night" })}
           onNewNight={startNight}
           soundLabel={soundOn ? "Звук: вкл" : "Звук: выкл"}
-          onToggleSound={() => { setSoundOn(!soundOn); setSoundOnState(!soundOn); }}
+          onToggleSound={toggleSound}
         />
       </div>
     );
@@ -328,7 +329,7 @@ export function App() {
   const rumor = currentRumor(state, world);
   // The speech-bubble icon repeats tonight's rumor as a hint (once on screen, a second tap adds nothing).
   const showRumor = rumor ? () => setHints((h) => (h.includes(rumor.text) ? h : [rumor.text, ...h])) : undefined;
-  const bar = <QualityBar items={hud} onNotebook={openNotebook} badge={unread} notebookLabel="Блокнот" onEvidence={openEvidence} evidenceBadge={evidenceUnread} evidenceLabel="Улики" onRumor={showRumor} rumorLabel="Слух дня" />;
+  const bar = <QualityBar items={hud} onNotebook={openNotebook} badge={unread} notebookLabel="Блокнот" onEvidence={openEvidence} evidenceBadge={evidenceUnread} evidenceLabel="Улики" onRumor={showRumor} rumorLabel="Слух дня" onSound={toggleSound} soundOn={soundOn} soundLabel={soundOn ? "Звук: вкл" : "Звук: выкл"} />;
   const card = findStorylet(world, state.storyletId);
 
   // A reply that leads elsewhere (or ends the night) is read where it was said, then "Дальше".
