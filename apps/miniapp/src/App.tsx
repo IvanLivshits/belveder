@@ -1,11 +1,11 @@
 import {
-  changedQualities, choiceCost, choose, clockTime, continueOutcome, currentNotes, currentReport, currentRumor, currentScene, emptyProfile, endingView, evidenceView, extendFeed, findStorylet, getQuality, isTense,
-  isResumable, morningNotes, newCase, newNight, notebookView, openFeed, pledge, profileOf, progressNotes, storyView, travel, type Feed, type GameState, type NotebookView, type Profile,
+  changedQualities, choiceCost, choose, clockTime, continueOutcome, currentNotes, currentReport, currentRumor, currentScene, emptyProfile, endingView, evidenceView, extendFeed, findStorylet, getQuality,
+  isResumable, morningNotes, newCase, newNight, notebookView, openFeed, pledge, profileOf, progressNotes, storyView, tensionLevel, travel, type Feed, type GameState, type NotebookView, type Profile,
 } from "@belvedere/engine";
 import { RESERVED_QUALITIES } from "@belvedere/content-schema";
-import { Backdrop, ChoiceList, ConfirmSheet, DoorPicker, EndingPage, EvidencePage, Hint, MorningPage, NotebookPage, PledgePicker, QualityBar, ReportPage, SceneCard, StairsPicker, StoryPage, TitleScreen, type LifeLineItem } from "@belvedere/ui-kit";
+import { type AnimationKind, Backdrop, ChoiceList, ConfirmSheet, DoorPicker, EndingPage, EvidencePage, Hint, MorningPage, NotebookPage, PledgePicker, QualityBar, ReportPage, SceneCard, StairsPicker, StoryPage, TitleScreen, type LifeLineItem } from "@belvedere/ui-kit";
 import { useCallback, useEffect, useState } from "preact/hooks";
-import { initAudio, isSoundOn, playLighter, setSoundOn, setTension } from "./audio";
+import { initAudio, isSoundOn, playCue, playLighter, setSoundOn, setTension, stopCue } from "./audio";
 import { loadContent, type Content } from "./content";
 import { saves } from "./saves";
 import { EMPTY_UI, type UiMeta } from "./storage";
@@ -98,13 +98,13 @@ export function App() {
   }, []);
   // Telegram's gear opens the same reset; in a browser the link lives at the bottom of the notebook.
   useEffect(() => setSettingsButton(content !== null, () => void reset()), [content, reset]);
-  // The music follows the run: tense while rules.tensionWhen holds, but only while the night is being played
+  // The music follows the run: the tension level from rules.tension, but only while the night is being played
   // (scene or outcome, on the night, notebook or evidence screens). The title, the report, the morning page,
   // the ending and the case story are always calm, even when a saved night is still in state.
   const playing = (screen.kind === "night" || screen.kind === "notebook" || screen.kind === "evidence")
     && (state?.phase === "scene" || state?.phase === "outcome");
-  const tense = playing && content !== null && state !== null && isTense(state, content.world);
-  useEffect(() => setTension(tense), [tense]);
+  const tension = playing && content !== null && state !== null ? tensionLevel(state, content.world) : 0;
+  useEffect(() => setTension(tension), [tension]);
 
   if (screen.kind === "loading") return <div class="screen screen--loading">Загрузка…</div>;
   if (screen.kind === "error" || !content) return <div class="screen"><p class="scene__text" style="padding:24px">Ошибка: {screen.kind === "error" ? screen.message : "нет контента"}</p></div>;
@@ -127,7 +127,15 @@ export function App() {
     setScreen({ kind: "notebook", tab });
   };
 
+  /** The morning page's pencil: the crossing out of a memory, then, when it was exchanged, the writing of the new one. */
+  const pencil = (kind: AnimationKind, on: boolean) => {
+    const cue = kind === "strike" ? "pencil_crossing_out" : "pencil_writing";
+    if (on) playCue(cue); // when the animation ends the sound plays out; leaving the page cuts it (startNight)
+  };
+
   const startNight = () => {
+    stopCue("pencil_crossing_out");
+    stopCue("pencil_writing");
     playLighter();
     const s = newNight(profile, world, randomSeed());
     setState(s);
@@ -176,7 +184,7 @@ export function App() {
   if (screen.kind === "morning") {
     return (
       <div class="screen">
-        <MorningPage title="Утро" life={screen.life} notes={screen.notes} nextLabel="Следующая ночь" onNext={startNight} texture={texture} />
+        <MorningPage title="Утро" life={screen.life} notes={screen.notes} nextLabel="Следующая ночь" onNext={startNight} texture={texture} onAnimate={pencil} />
       </div>
     );
   }
@@ -343,13 +351,18 @@ export function App() {
   const item = (c: (typeof scene.choices)[number]) => ({ index: c.index, text: c.text, mode: c.mode, available: c.available, lead: c.lead, cost: c.choice.ending !== undefined ? undefined : costLabel(choiceCost(state, world, c.choice)) });
   const items = scene.choices.map(item);
   // An ending choice asks first; there is no way back after it.
-  const onChoose = (index: number) => (scene.storylet.choices[index]?.ending !== undefined ? setConfirm(index) : advance(choose(state, world, index)));
+  const pick = (index: number) => {
+    const cue = scene.storylet.choices[index]?.cue;
+    if (cue !== undefined) playCue(cue);
+    advance(choose(state, world, index));
+  };
+  const onChoose = (index: number) => (scene.storylet.choices[index]?.ending !== undefined ? setConfirm(index) : pick(index));
   const confirmSheet = confirm !== null ? (
     <ConfirmSheet
       text="Это финал дела. Дальше пути назад не будет."
       okLabel="Закончить дело"
       cancelLabel="Ещё нет"
-      onOk={() => { const i = confirm; setConfirm(null); advance(choose(state, world, i)); }}
+      onOk={() => { const i = confirm; setConfirm(null); pick(i); }}
       onCancel={() => setConfirm(null)}
     />
   ) : pledgeConfirm !== null && (

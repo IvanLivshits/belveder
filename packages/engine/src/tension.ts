@@ -1,8 +1,8 @@
 import type { World } from "@belvedere/content-schema";
 import { evaluateAll, type Bags } from "./conditions";
 
-/** True while `rules.tensionWhen` holds (AND; the schema forbids an empty list). Presentation only: the app picks the music from it. False without the rule. */
-export function isTense(state: Bags, world: World): boolean {
-  const when = world.rules.tensionWhen;
-  return when !== undefined && evaluateAll(state, world, when);
+/** The music's tension level from `rules.tension`: the first rule whose conditions all hold, else 0. Presentation only:
+ *  the app passes it to the sound engine as is. */
+export function tensionLevel(state: Bags, world: World): number {
+  return world.rules.tension?.find((rule) => evaluateAll(state, world, rule.when))?.level ?? 0;
 }
