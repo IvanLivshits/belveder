@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "bun run src/index.ts",
-    "set-webhook": "bun run src/set-webhook.ts"
+    "set-webhook": "bun run src/set-webhook.ts",
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
     "grammy": "^1.38.0"

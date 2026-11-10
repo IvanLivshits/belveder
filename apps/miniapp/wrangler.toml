@@ -1,0 +1,6 @@
+# Static Mini App on Cloudflare Workers: `bun run build`, then `bunx wrangler deploy` from this folder.
+name = "belvedere"
+compatibility_date = "2026-11-01"
+
+[assets]
+directory = "./dist"

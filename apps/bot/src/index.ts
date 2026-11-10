@@ -1,5 +1,6 @@
-/** grammY bot on a webhook. /start replies with a button that opens the Mini App. */
-import { Bot, InlineKeyboard, webhookCallback } from "grammy";
+/** grammY bot on a webhook, served by Bun for local development (ngrok in front). */
+import { webhookCallback } from "grammy";
+import { createBot } from "./bot";
 
 const token = process.env["BOT_TOKEN"];
 const webAppUrl = process.env["WEBAPP_URL"];
@@ -10,13 +11,7 @@ if (!token || !webAppUrl || !secret) {
   process.exit(1);
 }
 
-export const bot = new Bot(token);
-
-bot.command("start", (ctx) =>
-  ctx.reply("Белведер. Двенадцать этажей, если верить вывеске.\nНочь длится шестнадцать ходов.", {
-    reply_markup: new InlineKeyboard().webApp("Войти в башню", webAppUrl),
-  }),
-);
+export const bot = createBot(token, webAppUrl);
 
 // Fail fast on a bad token instead of on the first update.
 await bot.init();

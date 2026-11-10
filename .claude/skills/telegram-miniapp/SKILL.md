@@ -41,6 +41,14 @@ description: Telegram WebApp API в apps/miniapp и apps/bot: тема, viewport
 grammY на вебхуке, polling не используем. `/start` отвечает кнопкой `web_app: { url: WEBAPP_URL }`. Вебхук ставится скриптом `bun run bot:webhook` с `secret_token`, сервер проверяет заголовок `X-Telegram-Bot-Api-Secret-Token`.
 Для кнопки меню: BotFather → Bot Settings → Menu Button → URL Mini App.
 
+## Продакшен: Cloudflare Workers
+
+- Mini App — воркер `belvedere` со статикой из `apps/miniapp/dist` (`apps/miniapp/wrangler.toml`). Бот — воркер `belvedere-bot` (`apps/bot/wrangler.toml`, вход `src/worker.ts`, адаптер grammY `cloudflare-mod`); сам бот общий с Bun-сервером и живёт в `src/bot.ts`.
+- `WEBAPP_URL` бота — переменная в `wrangler.toml`; `BOT_TOKEN` и `WEBHOOK_SECRET` — секреты воркера (`bunx wrangler secret put` из `apps/bot`), в репозитории их нет.
+- Вебхук Telegram указывает на `https://<бот>.workers.dev/webhook`; переставить — `WEBHOOK_URL` в `.env` и `bun run bot:webhook`. Вебхук один: пока он смотрит на воркер, локальный бот обновлений не получает.
+- Деплой автоматический: `.github/workflows/ci.yml`, job `deploy` после зелёного `check` на пуше в `main`. Секреты репозитория: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
+- Сеть в воркере только внутри запроса, поэтому бот создаётся при первом обращении, а не на уровне модуля.
+
 ## Локальная отладка
 
 1. `bun dev` → Vite на `http://localhost:5173` (если порт занят, Vite возьмёт следующий — смотри вывод).

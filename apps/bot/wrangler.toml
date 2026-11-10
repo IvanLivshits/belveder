@@ -1,0 +1,8 @@
+# Telegram bot on Cloudflare Workers. Deploy: `bunx wrangler deploy` from this folder.
+# Secrets (once): `bunx wrangler secret put BOT_TOKEN`, `bunx wrangler secret put WEBHOOK_SECRET`.
+name = "belvedere-bot"
+main = "src/worker.ts"
+compatibility_date = "2026-11-01"
+
+[vars]
+WEBAPP_URL = "https://belvedere.belvedere-miniapp.workers.dev"
