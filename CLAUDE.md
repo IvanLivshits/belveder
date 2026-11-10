@@ -10,8 +10,10 @@
 - `bun test` — сценарные прогоны с golden digest + тесты storage.
 - `bun run validate` — сборка контента в `content/belvedere/build/world.json` и проверка (битые ссылки, тупики, симуляция).
 - `bun run typecheck` — `tsc -b` по всем пакетам.
+- `bun run lint` — Biome по `apps/`, `packages/`, `tools/` (только линтер, форматтер выключен).
 - `bun run assets` — `tools/assets/convert.py`: `tools/assets/sources/*.png` → `assets/*.webp` + `assets/assets.json`.
 - `bun run bot` / `bun run bot:webhook` — бот grammY на вебхуке; секреты в `.env` (см. `.env.example`).
+- Деплой: пуш в `main` (слитый PR) после зелёного CI выкатывает Mini App и бота на Cloudflare Workers (`.github/workflows/ci.yml`, `apps/*/wrangler.toml`). Руками: `bun run build`, затем `bun run --cwd apps/miniapp deploy` и `bun run --cwd apps/bot deploy`.
 
 ## Где что лежит
 
