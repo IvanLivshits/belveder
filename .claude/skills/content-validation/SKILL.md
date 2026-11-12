@@ -12,7 +12,7 @@ description: Что проверяет validator, как добавить нов
 
 | Правило | Что ловит | Уровень |
 |---|---|---|
-| `qualities` | условие или эффект на необъявленное качество, в том числе в `rules.*` (включая `pledgedNightWhen`, `tensionWhen`, `onNightStart`, `migrations`), `when` строк реплик, `report.notes`, `report.progress`, `morning.notes`, `notebook` (страницы, зацепки, `vouchers.names`), слухах, `stairs` и эпилогах концовок; `rules.clock.quality` не объявлено; `rules.start` указывает на несуществующую локацию | error |
+| `qualities` | условие или эффект на необъявленное качество, в том числе в `rules.*` (включая `pledgedNightWhen`, `tension`, `onNightStart`, `migrations`), `when` строк реплик, `report.notes`, `report.progress`, `morning.notes`, `notebook` (страницы, зацепки, `vouchers.names`), слухах, `stairs` и эпилогах концовок; `rules.clock.quality` не объявлено; `rules.start` указывает на несуществующую локацию | error |
 | `references` | `goto` выбора или перехвата на несуществующую локацию; `background`/`portrait` нет в `assets.json`; `stairs.location`, `stairs.events`, площадка из `stairs.floors` или `target` зацепки — не локация; замок на этаж, которого нет в `stairs.floors` | error |
 | `dead-ends` | локация без сторилетов (error); сторилет, у которого все choices условные (warning; карточка `layout: stairs` не считается: её этажи рисует движок; `layout: pledge` тоже: там всегда есть конверты, а залог ночи идёт вариантами) | error / warning |
 | `reachability` | локация, недостижимая из `rules.start` по графу `goto` (условия игнорируются; лестница ведёт на все площадки и к встречам, встреча — на любую площадку) | warning |
