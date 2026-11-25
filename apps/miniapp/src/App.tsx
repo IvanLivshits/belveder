@@ -1,5 +1,5 @@
 import {
-  changedQualities, choiceCost, choose, clockTime, continueOutcome, currentNotes, currentReport, currentRumor, currentScene, emptyProfile, endingView, evidenceView, extendFeed, findStorylet, getQuality,
+  changedQualities, choiceCost, choose, clockTime, continueOutcome, currentNotes, currentReport, currentRumor, currentScene, emptyProfile, endingView, evidenceView, extendFeed, findStorylet, getQuality, hasPlayed,
   isResumable, morningNotes, newCase, newNight, notebookView, openFeed, pledge, profileOf, progressNotes, storyView, tensionLevel, travel, type Feed, type GameState, type NotebookView, type Profile,
 } from "@belvedere/engine";
 import { RESERVED_QUALITIES } from "@belvedere/content-schema";
@@ -153,6 +153,7 @@ export function App() {
   };
 
   // Tips exist only where Telegram can take Stars; in a plain browser the block is simply absent.
+  // The notebook shows them from the second night on (hasPlayed): "if the night was worth it" needs a night.
   const tip: TipJarProps | undefined = canPay ? {
     text: "Игра бесплатная. Если ночь того стоила, угостите Ника.",
     options: TIPS.map((t) => ({ id: t.id, label: t.label, price: `${t.amount} ⭐` })),
@@ -247,7 +248,7 @@ export function App() {
           onBack={() => setScreen({ kind: "night" })}
           resetLabel="Сбросить прогресс"
           onReset={() => void reset()}
-          tip={tip}
+          tip={hasPlayed(state, world) ? tip : undefined}
           texture={texture}
         />
       </div>
