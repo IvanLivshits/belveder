@@ -36,7 +36,7 @@ description: Telegram WebApp API в apps/miniapp и apps/bot: тема, viewport
 
 Цифровое в Mini App продаётся только за Stars (валюта `XTR`, `provider_token` пустой, в `prices` ровно одна позиция). У нас это добровольные чаевые: в игре они ничего не открывают, поэтому покупки нигде не хранятся и проверять нечего.
 
-- Mini App: суммы и подписи в `apps/miniapp/src/tips.ts`; `payTip(amount)` берёт ссылку у бота (`VITE_BOT_URL`, по умолчанию прод-воркер) и открывает её через `openInvoice` из `telegram.ts`. Статус `paid` — «спасибо», всё остальное (закрыл, ошибка, нет сети) молча возвращает кнопки. Блок `TipJar` показывается только при `canPay` (внутри Telegram, Bot API 6.1+).
+- Mini App: суммы и подписи в `apps/miniapp/src/tips.ts`; `payTip(amount)` берёт ссылку у бота (`VITE_BOT_URL`, по умолчанию прод-воркер) и открывает её через `openInvoice` из `telegram.ts`. Статус `paid` — «спасибо», всё остальное (закрыл, ошибка, нет сети) молча возвращает кнопки. Блок `TipJar` показывается только при `canPay` (внутри Telegram, Bot API 6.1+); в блокноте ещё и только после первой законченной ночи или закрытого дела (`hasPlayed` из engine): просить не за что, пока игрок ничего не сыграл.
 - Бот (`apps/bot/src/bot.ts`): `GET /invoice?amount=N` (1..`TIP_MAX`, CORS `*`) → `createInvoiceLink`. Ссылка создаётся на каждый тап: про многоразовость ссылок документация молчит. Эндпоинт публичный: ссылка — только предложение заплатить.
 - `pre_checkout_query` надо подтвердить за 10 секунд, иначе платёж отменится; `successful_payment` — ответ с `telegram_payment_charge_id`.
 - Telegram требует команды `/paysupport` и `/terms`; контакт для них — `SUPPORT_CONTACT` (var в `wrangler.toml`, локально в `.env`).
