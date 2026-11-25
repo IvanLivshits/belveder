@@ -69,6 +69,7 @@ ev_clock_key,evidence,1:1,800,Предмет — часовой ключ Фен�
 ev_cordelia_pass,evidence,1:1,800,Предмет — пропуск Корделии
 ev_silas_matches,evidence,1:1,800,Предмет — спички Сайласа
 ev_facade_photo,evidence,1:1,800,Улика — фото верхушки дома с 13-м этажом
+ev_laundry_tag,evidence,1:1,800,Улика — бирка из прачечной на рубашке Хейла
 env_sealed,envelopes,1:1,800,Закрытый конверт (общий)
 mem_dolly,envelopes,1:1,800,Воспоминание «Как забывают»
 mem_eddie,envelopes,1:1,800,Воспоминание «Отец в шляпе»

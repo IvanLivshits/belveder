@@ -349,6 +349,11 @@
     "w": 800,
     "h": 800
   },
+  "ev_laundry_tag": {
+    "src": "evidence/ev_laundry_tag.9f7c6011.webp",
+    "w": 800,
+    "h": 800
+  },
   "env_sealed": {
     "src": "envelopes/env_sealed.19b93f02.webp",
     "w": 800,

@@ -13,6 +13,7 @@ items:
   - id: laundry_tag
     order: 1
     flag: has.laundry_tag
+    image: ev_laundry_tag
     title: Бирка из прачечной
     text: |
       «Белведер, 2 эт., Хейл, 14 рубашек». Картон размок, чернила расплылись, но цифры видно.
