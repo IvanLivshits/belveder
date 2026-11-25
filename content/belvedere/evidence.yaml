@@ -121,6 +121,7 @@ items:
   - id: archive_key
     order: 60
     flag: has.archive_key
+    image: ev_archive_key
     title: Ключ «4 — архив»
     text: |
       Ключ с бумажной биркой, снят Долли с гвоздя за стойкой. Слоун поменял замок и думает, что второго ключа нет.
