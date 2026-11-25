@@ -2,7 +2,9 @@
 # Secrets (once): `bunx wrangler secret put BOT_TOKEN`, `bunx wrangler secret put WEBHOOK_SECRET`.
 name = "belvedere-bot"
 main = "src/worker.ts"
+# SUPPORT_CONTACT: where /paysupport and /terms send players (a @username or an email).
 compatibility_date = "2026-11-01"
 
 [vars]
 WEBAPP_URL = "https://belvedere.belvedere-miniapp.workers.dev"
+SUPPORT_CONTACT = "@Ivan_Livshits"

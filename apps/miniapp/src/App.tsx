@@ -3,13 +3,14 @@ import {
   isResumable, morningNotes, newCase, newNight, notebookView, openFeed, pledge, profileOf, progressNotes, storyView, tensionLevel, travel, type Feed, type GameState, type NotebookView, type Profile,
 } from "@belvedere/engine";
 import { RESERVED_QUALITIES } from "@belvedere/content-schema";
-import { type AnimationKind, Backdrop, ChoiceList, ConfirmSheet, DoorPicker, EndingPage, EvidencePage, Hint, MorningPage, NotebookPage, PledgePicker, QualityBar, ReportPage, SceneCard, StairsPicker, StoryPage, TitleScreen, type LifeLineItem } from "@belvedere/ui-kit";
+import { type AnimationKind, Backdrop, ChoiceList, ConfirmSheet, DoorPicker, EndingPage, EvidencePage, Hint, MorningPage, NotebookPage, PledgePicker, QualityBar, ReportPage, SceneCard, StairsPicker, StoryPage, TitleScreen, type LifeLineItem, type TipJarProps } from "@belvedere/ui-kit";
 import { useCallback, useEffect, useState } from "preact/hooks";
 import { holdAudio, initAudio, isSoundOn, playCue, playLighter, setSoundOn, setTension, stopCue } from "./audio";
 import { loadContent, type Content } from "./content";
 import { saves } from "./saves";
 import { EMPTY_UI, type UiMeta } from "./storage";
-import { confirmDialog, haptic, setBackButton, setSettingsButton } from "./telegram";
+import { canPay, confirmDialog, haptic, setBackButton, setSettingsButton } from "./telegram";
+import { payTip, TIPS } from "./tips";
 
 type Life = { title: string; intro: string; footer: string | null; lines: LifeLineItem[] };
 type Screen =
@@ -52,6 +53,8 @@ export function App() {
   const [shown, setShown] = useState(0);
   const [soundOn, setSoundOnState] = useState(isSoundOn);
   const toggleSound = () => { setSoundOn(!soundOn); setSoundOnState(!soundOn); };
+  /** Voluntary tips: a payment sheet is open, or one has just been paid. Not saved anywhere. */
+  const [tipState, setTipState] = useState<"idle" | "busy" | "thanks">("idle");
 
   useEffect(() => {
     (async () => {
@@ -149,6 +152,20 @@ export function App() {
     saves.persistRun(s);
   };
 
+  // Tips exist only where Telegram can take Stars; in a plain browser the block is simply absent.
+  const tip: TipJarProps | undefined = canPay ? {
+    text: "Игра бесплатная. Если ночь того стоила, угостите Ника.",
+    options: TIPS.map((t) => ({ id: t.id, label: t.label, price: `${t.amount} ⭐` })),
+    busy: tipState === "busy",
+    thanks: tipState === "thanks" ? "Спасибо. Ник это запомнит. Насколько он вообще что-то помнит." : null,
+    onTip: (id) => {
+      const amount = TIPS.find((t) => t.id === id)?.amount;
+      if (amount === undefined) return;
+      setTipState("busy");
+      void payTip(amount).then((paid) => setTipState(paid ? "thanks" : "idle"));
+    },
+  } : undefined;
+
   const paper = src("paper_dark");
   const texture = paper ? `url(${paper})` : undefined;
   const hint = hints[0] !== undefined && <Hint text={hints[0]} onDismiss={dismissHint} />;
@@ -173,7 +190,7 @@ export function App() {
       };
       return (
         <div class="screen">
-          <StoryPage title={story.title} sections={story.sections} nightLabel={(n) => `Ночь ${n}`} nextLabel="Новое дело" onNext={startCase} texture={texture} />
+          <StoryPage title={story.title} sections={story.sections} nightLabel={(n) => `Ночь ${n}`} nextLabel="Новое дело" onNext={startCase} tip={tip} texture={texture} />
         </div>
       );
     }
@@ -230,6 +247,7 @@ export function App() {
           onBack={() => setScreen({ kind: "night" })}
           resetLabel="Сбросить прогресс"
           onReset={() => void reset()}
+          tip={tip}
           texture={texture}
         />
       </div>

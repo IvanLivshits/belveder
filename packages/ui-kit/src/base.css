@@ -295,4 +295,9 @@ button { font: inherit; }
 .story__litany { margin: 0 0 22px; padding-top: 14px; border-top: 1px dashed rgba(141,135,117,0.35); }
 .story__ending { margin: 0 0 16px; padding-top: 14px; border-top: 1px solid rgba(201,162,74,0.3); }
 .story__ending .report__text { margin-bottom: 12px; }
+.tips { margin: 28px 0 0; padding-top: 14px; border-top: 1px dashed rgba(141,135,117,0.35); }
+.tips__text { margin: 0 0 10px; font-size: 13px; line-height: 1.45; text-align: center; font-style: italic; color: var(--hint); }
+.tips__options { display: flex; flex-direction: column; gap: 6px; }
+.tips__option { font-size: 14px; padding-top: 8px; padding-bottom: 8px; }
+.tips__price { color: var(--hint); white-space: nowrap; }
 .story__closing { margin: 20px 0 0; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; text-align: center; color: var(--hint); }

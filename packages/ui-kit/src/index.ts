@@ -17,3 +17,4 @@ export * from "./reading";
 export * from "./ConfirmSheet";
 export * from "./EndingPage";
 export * from "./StoryPage";
+export * from "./TipJar";

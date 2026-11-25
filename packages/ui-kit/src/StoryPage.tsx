@@ -1,3 +1,5 @@
+import { TipJar, type TipJarProps } from "./TipJar";
+
 export type StorySectionItem =
   | { kind: "opening"; text: string }
   | { kind: "night"; night: number; paragraphs: string[] }
@@ -13,11 +15,13 @@ export interface StoryPageProps {
   nightLabel: (n: number) => string;
   nextLabel: string;
   onNext: () => void;
+  /** Voluntary tips under the story; omitted where payments are unavailable. */
+  tip?: TipJarProps | undefined;
   texture?: string | undefined;
 }
 
 /** The whole case as one long paper page: the nights' reports in order, the price paid, the ending. */
-export function StoryPage({ title, sections, nightLabel, nextLabel, onNext, texture }: StoryPageProps) {
+export function StoryPage({ title, sections, nightLabel, nextLabel, onNext, tip, texture }: StoryPageProps) {
   return (
     <article class={`paper paper--story${texture ? " paper--textured" : ""}`} style={texture ? { "--paper-texture": texture } : undefined}>
       <h1 class="report__title">{title}</h1>
@@ -54,6 +58,7 @@ export function StoryPage({ title, sections, nightLabel, nextLabel, onNext, text
       <div class="report__actions">
         <button class="choice choice--primary" type="button" onClick={onNext}>{nextLabel}</button>
       </div>
+      {tip && <TipJar {...tip} />}
     </article>
   );
 }
