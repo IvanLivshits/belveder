@@ -1,11 +1,12 @@
 /** The same bot as a Cloudflare Worker (`bunx wrangler deploy` from apps/bot).
- *  WEBAPP_URL is a var in wrangler.toml; BOT_TOKEN and WEBHOOK_SECRET are secrets (`wrangler secret put`). */
+ *  WEBAPP_URL and SUPPORT_CONTACT are vars in wrangler.toml; BOT_TOKEN and WEBHOOK_SECRET are secrets (`wrangler secret put`). */
 import { webhookCallback, type Bot } from "grammy";
-import { createBot } from "./bot";
+import { createBot, createTipLink, tipInvoiceResponse } from "./bot";
 
 interface Env {
   BOT_TOKEN: string;
   WEBAPP_URL: string;
+  SUPPORT_CONTACT: string;
   WEBHOOK_SECRET: string;
 }
 
@@ -16,8 +17,11 @@ export default {
   async fetch(req: Request, env: Env): Promise<Response> {
     const url = new URL(req.url);
     if (url.pathname === "/health") return new Response("ok");
-    if (req.method !== "POST" || url.pathname !== "/webhook") return new Response("not found", { status: 404 });
-    bot ??= createBot(env.BOT_TOKEN, env.WEBAPP_URL);
-    return webhookCallback(bot, "cloudflare-mod", { secretToken: env.WEBHOOK_SECRET })(req);
+    const isInvoice = req.method === "GET" && url.pathname === "/invoice";
+    if (!isInvoice && (req.method !== "POST" || url.pathname !== "/webhook")) return new Response("not found", { status: 404 });
+    bot ??= createBot(env.BOT_TOKEN, env.WEBAPP_URL, env.SUPPORT_CONTACT);
+    const b = bot;
+    if (isInvoice) return tipInvoiceResponse(url, (amount) => createTipLink(b, amount));
+    return webhookCallback(b, "cloudflare-mod", { secretToken: env.WEBHOOK_SECRET })(req);
   },
 };

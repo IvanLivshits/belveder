@@ -10,6 +10,7 @@
     "tsBuildInfoFile": "dist/.tsbuildinfo"
   },
   "include": [
-    "src"
+    "src",
+    "test"
   ]
 }
