@@ -45,7 +45,7 @@ changedQualities(prev, next)    → string[]   # что изменилось м�
 notebookView(state, world)      → { pages[], locked, life{lines[{pair, status: fake|empty|real, text}]}, leads, vouchers{title, lines[], footer} | null }
 evidenceView(state, world)      → { items[{id, title, image, text, tonight}], locked }   # папка улик: найденные карточки по `order`
 clockTime(state, world)         → "23:30" | null   # rules.clock: start + качество × step минут
-isTense(state, world)           → boolean          # rules.tensionWhen: приложение выбирает по нему музыку
+tensionLevel(state, world)      → number           # rules.tension: уровень напряжения музыки (MusicState), 0 без правила
 endingView(state, world)        → { id, title, image, paragraphs[], epilogues[] }   # phase === "ending"
 storyView(profile, world, id)   → { title, sections[] }   # «Дело Хейла» из истории ночей профиля
 newCase(profile)                → Profile   # только endings.*, история пустая
@@ -66,7 +66,7 @@ newCase(profile)                → Profile   # только endings.*, исто
 - **Концовки**: выбор с `ending: <id>` (из `endings.yaml`) после `outcome` завершает игру: движок ставит профильный `endings.<id> = 1` и run-флаг `ending_night = 1` (фрагменты отчёта финальной ночи), закрывает ночь как обычно (отчёт, `onNightEnd`, запись в историю) и переводит состояние в фазу `ending`. Приложение показывает экран концовки, затем рассказ, затем «Новое дело» (`newCase`: из профиля остаются только `endings.*`, по ним эпилоги следующих концовок узнают прошлые прохождения).
 - **История ночей**: `state.history` переезжает из профиля в ночь и обратно. На каждом конце ночи движок дописывает `NightRecord { night, pledged, pair?, report, values }`: реальный номер ночи (счётчик из `rules.onNightEnd` плюс один, `nightQuality`; так старые сохранения без истории не начинают с «Ночь 1»), заложена ли ночь целиком (`rules.pledgedNightWhen` по состоянию отчёта), какая пара заложена, id фрагментов по слотам и значения плейсхолдеров этих фрагментов на момент отчёта (чтобы страница рассказа не показывала сегодняшние числа). Отдельно список `pledges` — пары по порядку залога. `storyView` собирает части из `endings.yaml → story.parts`: `opening` (первый слот первой ночи), `nights` (незаложенные ночи сплошной прозой: абзац на слот без подписей, первая ночь без слота `opening`, ночи с заложенной парой без слота литании), `pledged_note`, `litany` (тексты последнего слота тех ночей, где заложена пара, одним абзацем), `ending`, `epilogues`; `closing` всегда в конце.
 - **Часы**: `rules.clock { quality, start, step }` — только отображение (`clockTime`); цена хода по-прежнему из `rules.onChoice` (`clockQuality`, `choiceCost`).
-- **Музыка**: `rules.tensionWhen` — непустой список условий (И), только отображение (`isTense`); приложение включает тревожную дорожку, пока он верен и идёт сама ночь (см. ADR 0005).
+- **Музыка**: `rules.tension` — список правил `{ level, when }`, первое подходящее даёт уровень напряжения (`tensionLevel`, без правила 0), только отображение; приложение передаёт его в FMOD как `MusicState`, пока идёт сама ночь. Выбор может запустить разовый звук (`cue`), например пластинку: музыка на это время ставится на паузу (см. ADR 0005).
 - **Отчёт**: для каждого слота берётся фрагмент с истинными `when` и максимальным приоритетом; ничья через RNG. Считается до сброса run, поэтому может ссылаться на run-качества.
 - **Детерминизм**: одинаковый seed + действия → байт-в-байт одинаковое состояние. Проверяется golden digest = sha256 от канонического JSON.
 

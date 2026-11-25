@@ -19,8 +19,16 @@ const IDLE_FALLBACK_MS = 800;
 const EVENT_MUSIC = "event:/music";
 const EVENT_RAIN = "event:/rain";
 const EVENT_LIGHTER = "event:/lighter";
-/** Discrete parameter of the music event: 0 Rainy, 1 Tension. FMOD itself blends between them. */
+/** Discrete parameter of the music event: 0 the calmest (morning, no suspicion), 1 to 3 rising tension. FMOD itself blends between them. */
 const PARAM_TENSION = "MusicState";
+/** One-shot sounds that the content or the screens ask for by name (`cue: record` on a choice, the pencil on the
+ *  morning page). `pausesMusic`: the music stands still while it plays and resumes at the current tension afterwards.
+ *  A name or an event that is missing from the banks is silent. */
+const CUES: Readonly<Record<string, { event: string; pausesMusic: boolean }>> = {
+  record: { event: "event:/record", pausesMusic: true },
+  pencil_crossing_out: { event: "event:/pencil_crossing_out", pausesMusic: false },
+  pencil_writing: { event: "event:/pencil_writing", pausesMusic: false },
+};
 const STORAGE_KEY = "belvedere.sound";
 const UPDATE_MS = 50;
 
@@ -30,6 +38,10 @@ interface Engine {
   lighter: FMOD.Studio.EventDescription;
   music: FMOD.Studio.EventInstance;
   rain: FMOD.Studio.EventInstance;
+  cues: Map<string, { desc: FMOD.Studio.EventDescription; pausesMusic: boolean }>;
+  /** FMOD's constants, kept here because only `load()` holds the runtime object. */
+  stopped: number;
+  immediate: number;
 }
 
 let engine: Engine | null = null;
@@ -42,7 +54,15 @@ let gestured = false;
 let enabled = readEnabled();
 /** The app is on screen: visible page and, in Telegram, not minimised (see onActiveChange). */
 let active = !document.hidden;
-let tense = false;
+/** How many blocking dialogs are open (see `holdAudio`). */
+let held = 0;
+/** The tension level FMOD has now (the blending between levels is FMOD's job). */
+let tension = 0;
+/** The one-shot sound that is playing now (the music is paused meanwhile). */
+/** `seen`: FMOD has reported it as not stopped at least once; until then "stopped" only means it has not started yet. */
+const playing = new Map<string, { instance: FMOD.Studio.EventInstance; pausesMusic: boolean; seen: boolean; at: number }>();
+/** How long a freshly started sound may report "stopped" before we believe it (a sound that failed to start). */
+const START_GRACE_MS = 1500;
 /** The events have been started at least once. */
 let began = false;
 /** The mixer runs and `system.update()` is ticking. */
@@ -59,6 +79,7 @@ function teardown(e: Engine | null): void {
   clearInterval(timer);
   running = false;
   began = false;
+  playing.clear();
   loading = false;
   failed = true;
   disarm();
@@ -74,7 +95,7 @@ function teardown(e: Engine | null): void {
 function apply(inGesture = false): void {
   const e = engine;
   if (!e) return;
-  const shouldRun = gestured && enabled && active && (began || inGesture);
+  const shouldRun = gestured && enabled && active && held === 0 && (began || inGesture);
   try {
     if (shouldRun && !running) {
       if (!began) {
@@ -106,9 +127,31 @@ function tick(): void {
   if (!e) { clearInterval(timer); return; }
   try {
     e.system.update();
+    for (const [id, c] of playing) {
+      if (c.instance.getPlaybackState() !== e.stopped) c.seen = true;
+      else if (c.seen || performance.now() - c.at > START_GRACE_MS) endCue(e, id, false);
+    }
+    // The music is paused exactly while a sound that pauses it plays; this also repairs any drift.
+    const wantPaused = [...playing.values()].some((p) => p.pausesMusic);
+    if (e.music.getPaused() !== wantPaused) e.music.setPaused(wantPaused);
   } catch (err) {
     console.warn("audio: update failed, disabled", err);
     teardown(e);
+  }
+}
+
+/** The one-shot sound `id` is over (or cut): free it and, when no other sound that pauses the music is left, let the
+ *  music go on. */
+function endCue(e: Engine, id: string, cut: boolean): void {
+  const c = playing.get(id);
+  if (!c) return;
+  playing.delete(id);
+  try {
+    if (cut) c.instance.stop(e.immediate);
+    c.instance.release();
+  } catch (err) { console.warn("audio: cue", err); }
+  if (c.pausesMusic && ![...playing.values()].some((p) => p.pausesMusic)) {
+    try { e.music.setPaused(false); } catch (err) { console.warn("audio: music resume", err); }
   }
 }
 
@@ -117,6 +160,12 @@ const absolute = (url: string) => new URL(url, location.href).href;
 /** Reads one of FILES through the Cache API; a miss goes to the network at low priority (the pictures of the
  *  first screens matter more) and is stored for the next cold start. Without the Cache API it is a plain fetch. */
 async function fetchBytes(url: string): Promise<ArrayBuffer> {
+  // The dev server names files without a hash, so a replaced bank would still be served from the store: skip it.
+  if (import.meta.env.DEV) {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
+    return res.arrayBuffer();
+  }
   let cache: Cache | undefined;
   try {
     cache = await caches.open(CACHE);
@@ -161,10 +210,15 @@ async function load(): Promise<void> {
     const lighter = system.getEvent(EVENT_LIGHTER);
     lighter.loadSampleData(); // so the first flick has no delay
     const music = system.getEvent(EVENT_MUSIC).createInstance();
-    music.setParameterByName(PARAM_TENSION, tense ? 1 : 0, true);
+    music.setParameterByName(PARAM_TENSION, tension, true);
     const rain = system.getEvent(EVENT_RAIN).createInstance();
+    const cues = new Map<string, { desc: FMOD.Studio.EventDescription; pausesMusic: boolean }>();
+    for (const [id, { event, pausesMusic }] of Object.entries(CUES)) {
+      // A cue missing from the banks must not take the music down with it.
+      try { const desc = system.getEvent(event); desc.loadSampleData(); cues.set(id, { desc, pausesMusic }); } catch (err) { console.warn(`audio: cue ${id} is not in the banks`, err); }
+    }
     system.flushSampleLoading();
-    engine = { core: system.getCoreSystem(), system, lighter, music, rain };
+    engine = { core: system.getCoreSystem(), system, lighter, music, rain, cues, stopped: fmod.STUDIO_PLAYBACK_STOPPED, immediate: fmod.STUDIO_STOP_IMMEDIATE };
   } catch (err) {
     try { system.release(); } catch { /* already broken */ }
     throw err;
@@ -236,15 +290,57 @@ export function playLighter(): void {
   }
 }
 
-/** Switches the music between the rainy-night and the tension layer. Safe to call every render. */
-export function setTension(on: boolean): void {
-  if (on === tense) return;
+/** Sets the music's tension level (0 is the rainy night, see `tensionLevel` in the engine). Safe to call every render. */
+export function setTension(level: number): void {
+  if (level === tension) return;
+  if (!engine) { tension = level; return; } // nothing plays yet: load() starts at this level
   try {
-    engine?.music.setParameterByName(PARAM_TENSION, on ? 1 : 0);
-    tense = on; // only after FMOD took it, so a failed call is retried on the next render
+    engine.music.setParameterByName(PARAM_TENSION, level);
+    tension = level; // only after FMOD took it, so a failed call is retried on the next render
   } catch (err) {
     console.warn("audio: tension", err);
   }
+}
+
+/** Plays a one-shot sound by its name; if it pauses the music, the music waits until the sound ends. Sounds are
+ *  independent: the pencil can play over the record. Skipped while muted, hidden, not loaded yet, unknown, or while
+ *  the same sound is still playing. */
+export function playCue(id: string): void {
+  const e = engine;
+  const entry = e?.cues.get(id);
+  if (!e || !entry || !running || playing.has(id)) return;
+  try {
+    const instance = entry.desc.createInstance();
+    if (entry.pausesMusic) e.music.setPaused(true);
+    playing.set(id, { instance, pausesMusic: entry.pausesMusic, seen: false, at: performance.now() });
+    instance.start();
+  } catch (err) {
+    console.warn("audio: cue", id, err);
+    if (playing.has(id)) endCue(e, id, true);
+    else if (entry.pausesMusic && ![...playing.values()].some((p) => p.pausesMusic)) {
+      try { e.music.setPaused(false); } catch { /* the music is gone with the engine */ }
+    }
+  }
+}
+
+/** Cuts the one-shot sound `id` if it plays (the others are left alone), and brings the music back when it was the
+ *  last one that had paused it. */
+export function stopCue(id: string): void {
+  if (engine) endCue(engine, id, true);
+}
+
+/** Silences the mixer until the returned function is called. FMOD mixes on the main thread, so a blocking
+ *  `window.confirm` would freeze it on the last buffer and the music would loop as a stuck record. */
+export function holdAudio(): () => void {
+  held++;
+  apply();
+  let done = false;
+  return () => {
+    if (done) return;
+    done = true;
+    held--;
+    apply();
+  };
 }
 
 export function isSoundOn(): boolean {

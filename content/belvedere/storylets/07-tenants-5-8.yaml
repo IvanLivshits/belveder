@@ -217,6 +217,7 @@
     - say: Поставите пластинку?
       when: [seen.ruby_listen == 0, seen.record_stolen == 0, vouch.ruby == 0]
       effects: [seen.ruby_listen = 1, met.ruby_voice = 1, debt.ruby += 1, turn += 1, vouch.ruby = 1, vouches += 1, seen.ruby_vouched = 1]
+      cue: record
       reply:
         - { who: narrator, text: "Из патефона поёт её голос: тёплый, низкий, живой. Руби слушает с закрытыми глазами." }
         - { who: gut, text: "Этот голос ты слышал раньше. Не на пластинке. Ближе." }
@@ -224,6 +225,7 @@
     - say: Поставите пластинку?
       when: [seen.ruby_listen == 0, seen.record_stolen == 0, vouch.ruby == 1]
       effects: [seen.ruby_listen = 1, met.ruby_voice = 1, debt.ruby += 1, turn += 1]
+      cue: record
       reply:
         - { who: narrator, text: "Из патефона поёт её голос: тёплый, низкий, живой. Руби слушает с закрытыми глазами." }
         - { who: gut, text: "Этот голос ты слышал раньше. Не на пластинке. Ближе." }

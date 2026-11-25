@@ -1,7 +1,7 @@
 /** Pure view helpers: choice cost, max clamping, change detection, report notes, notebook. */
 import { describe, expect, test } from "bun:test";
 import { WorldSchema, type World, type WorldInput } from "@belvedere/content-schema";
-import { changedQualities, choiceCost, choose, clockQuality, clockTime, continueOutcome, currentNotes, emptyProfile, evidenceView, isTense, lifeStatus, morningNotes, newNight, notebookView, pledge, profileOf } from "../src";
+import { changedQualities, choiceCost, choose, clockQuality, clockTime, continueOutcome, currentNotes, emptyProfile, evidenceView, tensionLevel, lifeStatus, morningNotes, newNight, notebookView, pledge, profileOf } from "../src";
 import { miniWorld } from "./mini-world";
 
 const variant = (patch: (w: WorldInput) => void): World => {
@@ -155,22 +155,27 @@ describe("evidence folder", () => {
 });
 
 describe("tension", () => {
-  const tense = variant((w) => { w.rules.tensionWhen = ["heat >= 1"]; });
+  const tense = variant((w) => {
+    w.rules.tension = [{ level: 2, when: ["heat >= 1"] }, { level: 1, when: ["heat >= 0"] }];
+  });
 
-  test("follows the quality that the rule names", () => {
+  test("the first rule that holds gives the level; none holding gives 0", () => {
     let s = newNight(emptyProfile(), tense, 1);
-    expect(isTense(s, tense)).toBe(false);
+    expect(tensionLevel(s, tense)).toBe(1); // only the lower rule holds
     s = choose(s, tense, 1); // "wait": heat += 1
-    expect(isTense(s, tense)).toBe(true);
+    expect(tensionLevel(s, tense)).toBe(2); // both hold: the first one wins
+    const none = variant((w) => { w.rules.tension = [{ level: 3, when: ["heat >= 5"] }]; });
+    expect(tensionLevel(newNight(emptyProfile(), none, 1), none)).toBe(0);
   });
 
-  test("a new night starts calm again", () => {
+  test("a new night starts from the bottom again", () => {
     const s = choose(newNight(emptyProfile(), tense, 1), tense, 1);
-    expect(isTense(newNight(profileOf(s), tense, 2), tense)).toBe(false);
+    expect(tensionLevel(s, tense)).toBe(2);
+    expect(tensionLevel(newNight(profileOf(s), tense, 2), tense)).toBe(1); // heat is a run quality: it resets
   });
 
-  test("without the rule it is never tense", () => {
+  test("without the rule it is always 0", () => {
     const s = choose(newNight(emptyProfile(), miniWorld, 1), miniWorld, 1);
-    expect(isTense(s, miniWorld)).toBe(false);
+    expect(tensionLevel(s, miniWorld)).toBe(0);
   });
 });

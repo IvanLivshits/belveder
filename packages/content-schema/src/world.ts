@@ -54,6 +54,8 @@ export const ChoiceSchema = z.object({
   free: z.boolean().default(false),
   /** Finishes the game with this ending (from `endings.yaml`) after the outcome, if any. */
   ending: Id.optional(),
+  /** Sound played when the choice is made (presentation only). The id is a name the app maps to a sound event; an unknown one is silent. */
+  cue: Id.optional(),
 });
 export type Choice = z.infer<typeof ChoiceSchema>;
 
@@ -194,8 +196,9 @@ export const RulesSchema = z.object({
   /** Checked when a night starts, all against the profile as it arrived; then the effects of every match are applied. */
   migrations: z.array(MigrationSchema).default([]),
   clock: ClockSchema.optional(),
-  /** Presentation only, like `clock`: while all hold, the app plays the tense music (`isTense` in engine). */
-  tensionWhen: z.array(ConditionSchema).min(1).optional(),
+  /** Presentation only, like `clock`: the first rule whose conditions all hold gives the music's tension level (the
+   *  `MusicState` value in FMOD); none holds: 0. List the higher levels first. `tensionLevel` in the engine. */
+  tension: z.array(z.object({ level: z.number().int().min(1), when: z.array(ConditionSchema).min(1) })).optional(),
   /** Evaluated on the report state: when all hold, the night is recorded as pawned and left out of the final story. */
   pledgedNightWhen: z.array(ConditionSchema).optional(),
   /** Applied after every non-free choice, e.g. `turn += 1`. */
