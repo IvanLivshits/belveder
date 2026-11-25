@@ -1,5 +1,7 @@
 import { RESERVED_QUALITIES, type StoryPartKind, type World } from "@belvedere/content-schema";
 import { evaluateAll, type Bags } from "./conditions";
+import { nightQuality } from "./cost";
+import { getQuality } from "./qualities";
 import { EngineError, emptyHistory, type GameState, type NightRecord, type Profile } from "./state";
 import { paragraphs, renderText } from "./text";
 
@@ -112,6 +114,14 @@ export function storyView(profile: Profile, world: World, endingId: string): { t
   }
   sections.push({ kind: "closing", text: renderText(story.closing, bags, world) });
   return { title: story.title, sections };
+}
+
+/** True once the player has something behind them: a finished night of this case (the counter from
+ *  `rules.onNightEnd`) or an ending of an earlier one (`endings.*`, all that `newCase` keeps). */
+export function hasPlayed(bags: Bags, world: World): boolean {
+  const counter = nightQuality(world);
+  if (counter !== null && getQuality(bags, world, counter) >= 1) return true;
+  return Object.entries(bags.profile).some(([id, value]) => id.startsWith(RESERVED_QUALITIES.endingPrefix) && value >= 1);
 }
 
 /** A fresh profile for the next case: only the `endings.*` flags survive, the history is empty. */

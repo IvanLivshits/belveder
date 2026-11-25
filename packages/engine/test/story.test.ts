@@ -1,6 +1,6 @@
 /** Endings, the night history and the final story on the mini world. */
 import { describe, expect, test } from "bun:test";
-import { choose, continueOutcome, currentScene, emptyProfile, endingView, newCase, newNight, parseProfile, parseRun, pledge, profileOf, serializeProfile, serializeRun, storyView, type Profile } from "../src";
+import { choose, continueOutcome, currentScene, emptyProfile, endingView, hasPlayed, newCase, newNight, parseProfile, parseRun, pledge, profileOf, serializeProfile, serializeRun, storyView, type Profile } from "../src";
 import { miniWorld as w } from "./mini-world";
 
 /** hall -> room -> vault with an outcome on the way. */
@@ -103,6 +103,17 @@ describe("story", () => {
     const n = newNight(fresh, w, 1);
     expect(n.profile).toEqual({ "endings.fire": 1 });
     expect(n.history).toEqual({ nights: [], pledges: [] });
+  });
+
+  test("hasPlayed: false on the very first night, true after a finished night or a closed case", () => {
+    const first = newNight(emptyProfile(), w, 1);
+    expect(hasPlayed(first, w)).toBe(false);
+    const done = choose(toVault(emptyProfile()), w, 0); // the night is pawned and counted
+    expect(hasPlayed(newNight(profileOf(done), w, 1), w)).toBe(true);
+    // a new case starts the night counter over, but the ending behind it still counts
+    const fresh = newNight(newCase(profileOf(campaign())), w, 1);
+    expect(fresh.profile).toEqual({ "endings.fire": 1 });
+    expect(hasPlayed(fresh, w)).toBe(true);
   });
 
   test("unknown ending or a world without endings throw", () => {
