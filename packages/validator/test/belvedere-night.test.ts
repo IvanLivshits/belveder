@@ -831,7 +831,7 @@ describe("belvedere: floors 5–8 and the folder", () => {
     const card = evidenceView(n, world).items.find((i) => i.id === "ring")!;
     expect(card.image).toBe("ev_ring");
     expect(card.title).toBe("Обручальное кольцо");
-    expect(evidenceView(n, world).items[0]).toMatchObject({ id: "laundry_tag", image: undefined, title: "Бирка из прачечной" });
+    expect(evidenceView(n, world).items[0]).toMatchObject({ id: "laundry_tag", image: "ev_laundry_tag", title: "Бирка из прачечной" });
   });
 
   test("Ruby is home after 01:00: on foot Nick is early now; cigarette and record together bring the lantern back", () => {
