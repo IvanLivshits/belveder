@@ -389,6 +389,11 @@
     "w": 800,
     "h": 800
   },
+  "ev_book_41": {
+    "src": "evidence/ev_book_41.360a06cf.webp",
+    "w": 800,
+    "h": 800
+  },
   "env_sealed": {
     "src": "envelopes/env_sealed.19b93f02.webp",
     "w": 800,
