@@ -364,6 +364,11 @@
     "w": 800,
     "h": 800
   },
+  "ev_tenant_register": {
+    "src": "evidence/ev_tenant_register.19602834.webp",
+    "w": 800,
+    "h": 800
+  },
   "env_sealed": {
     "src": "envelopes/env_sealed.19b93f02.webp",
     "w": 800,

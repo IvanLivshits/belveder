@@ -71,6 +71,7 @@ items:
   - id: tenant_register
     order: 30
     flag: has.tenant_register
+    image: ev_tenant_register
     title: Книга жильцов
     text: |
       Клеёнчатая книга миссис Пул. «Кэллоуэй Н., комната 3-В, с 15 марта». Прежний адрес — прочерк. Прежнее имя — прочерк.
