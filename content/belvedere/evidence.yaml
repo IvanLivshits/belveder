@@ -23,6 +23,7 @@ items:
   - id: matchbook
     order: 2
     flag: has.matchbook
+    image: ev_matchbook
     title: Коробок «Синего фонаря»
     text: |
       Спички портового клуба. На обороте столбиком: «38 · 39 · 41 · 41 · 41». Карандаш, почерк не Хейла.
