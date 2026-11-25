@@ -9,6 +9,8 @@ interface BackButtonApi {
   offClick(cb: () => void): void;
 }
 
+export type InvoiceStatus = "paid" | "cancelled" | "failed" | "pending";
+
 interface WebAppApi {
   initData: string;
   colorScheme: "light" | "dark";
@@ -22,6 +24,7 @@ interface WebAppApi {
   CloudStorage: CloudStorageApi;
   HapticFeedback?: { impactOccurred(style: "light" | "medium" | "heavy"): void };
   showConfirm?(message: string, cb: (ok: boolean) => void): void;
+  openInvoice?(url: string, cb: (status: InvoiceStatus) => void): void;
 }
 
 declare global {
@@ -87,6 +90,16 @@ export function confirmDialog(message: string): Promise<boolean> {
     });
   }
   return Promise.resolve(window.confirm(message));
+}
+
+/** Stars invoices open only inside Telegram (Bot API 6.1+). */
+export const canPay = isTelegram && typeof webApp?.openInvoice === "function";
+
+/** Shows Telegram's payment sheet for an invoice link and resolves with how it was closed. */
+export function openInvoice(url: string): Promise<InvoiceStatus> {
+  return new Promise((res) => {
+    try { webApp!.openInvoice!(url, res); } catch { res("failed"); }
+  });
 }
 
 export const cloudStorage: CloudStorageApi | undefined = isTelegram ? webApp?.CloudStorage : undefined;
