@@ -32,6 +32,17 @@ description: Telegram WebApp API в apps/miniapp и apps/bot: тема, viewport
 
 Вне Telegram `isTelegram === false`: адаптер не трогает BackButton/haptic/цвета, иначе `telegram-web-app.js` засоряет консоль предупреждениями «not supported in version 6.0».
 
+## Чаевые (Telegram Stars)
+
+Цифровое в Mini App продаётся только за Stars (валюта `XTR`, `provider_token` пустой, в `prices` ровно одна позиция). У нас это добровольные чаевые: в игре они ничего не открывают, поэтому покупки нигде не хранятся и проверять нечего.
+
+- Mini App: суммы и подписи в `apps/miniapp/src/tips.ts`; `payTip(amount)` берёт ссылку у бота (`VITE_BOT_URL`, по умолчанию прод-воркер) и открывает её через `openInvoice` из `telegram.ts`. Статус `paid` — «спасибо», всё остальное (закрыл, ошибка, нет сети) молча возвращает кнопки. Блок `TipJar` показывается только при `canPay` (внутри Telegram, Bot API 6.1+).
+- Бот (`apps/bot/src/bot.ts`): `GET /invoice?amount=N` (1..`TIP_MAX`, CORS `*`) → `createInvoiceLink`. Ссылка создаётся на каждый тап: про многоразовость ссылок документация молчит. Эндпоинт публичный: ссылка — только предложение заплатить.
+- `pre_checkout_query` надо подтвердить за 10 секунд, иначе платёж отменится; `successful_payment` — ответ с `telegram_payment_charge_id`.
+- Telegram требует команды `/paysupport` и `/terms`; контакт для них — `SUPPORT_CONTACT` (var в `wrangler.toml`, локально в `.env`).
+- Возврат: `refundStarPayment(user_id, telegram_payment_charge_id)` руками через Bot API.
+- Появится платное содержимое — выдавать его только по `successful_payment` на сервере, а не по статусу `paid` в клиенте.
+
 ## initData
 
 В MVP сервера нет, initData не проверяем. Когда появится сервер: проверять HMAC-SHA256 подпись `initData` секретом `sha256(bot_token)` с ключом `WebAppData`, отбрасывать `auth_date` старше 24 часов. Никогда не доверять `initDataUnsafe` на сервере.
