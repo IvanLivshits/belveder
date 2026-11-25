@@ -1,4 +1,5 @@
 import { Life, type LifeLineItem } from "./Life";
+import { TipJar, type TipJarProps } from "./TipJar";
 
 export type { LifeLineItem } from "./Life";
 
@@ -43,11 +44,13 @@ export interface NotebookPageProps {
   /** Small link at the very bottom (settings live here, away from the night loop). */
   resetLabel?: string | undefined;
   onReset?: (() => void) | undefined;
+  /** Voluntary tips above the reset link; omitted where payments are unavailable. */
+  tip?: TipJarProps | undefined;
   texture?: string | undefined;
 }
 
 /** Nick's notebook: leads (and who vouched) on one tab; the life page and every open reference page on the other. */
-export function NotebookPage({ life, pages, locked, tabs, tab, onTab, leads, vouchers, ruleLabel, lockedLabel, backLabel, onBack, resetLabel, onReset, texture }: NotebookPageProps) {
+export function NotebookPage({ life, pages, locked, tabs, tab, onTab, leads, vouchers, ruleLabel, lockedLabel, backLabel, onBack, resetLabel, onReset, tip, texture }: NotebookPageProps) {
   const showLeads = leads !== undefined && tab === "leads";
   return (
     <article class={`paper${texture ? " paper--textured" : ""}`} style={texture ? { "--paper-texture": texture } : undefined}>
@@ -96,6 +99,7 @@ export function NotebookPage({ life, pages, locked, tabs, tab, onTab, leads, vou
       <div class="report__actions">
         <button class="choice choice--primary" type="button" onClick={onBack}>{backLabel}</button>
       </div>
+      {tip && <TipJar {...tip} />}
       {onReset && resetLabel && <button class="title__reset notebook__reset" type="button" onClick={onReset}>{resetLabel}</button>}
     </article>
   );
