@@ -7,3 +7,4 @@ compatibility_date = "2026-11-01"
 
 [vars]
 WEBAPP_URL = "https://belvedere.belvedere-miniapp.workers.dev"
+SUPPORT_CONTACT = "@Ivan_Livshits"
