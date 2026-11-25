@@ -81,6 +81,7 @@ items:
   - id: contract
     order: 35
     flag: has.contract
+    image: ev_contract
     title: Договор найма на 3-В
     text: |
       Бессрочный. Арендатор: Н. Кэллоуэй. Подпись внизу — моя, один в один с гонорарной распиской.
